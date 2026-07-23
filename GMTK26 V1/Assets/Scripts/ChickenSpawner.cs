@@ -19,17 +19,17 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] public Vector2 spawnAreaMax = new Vector2(7.5f, 4.5f);
 
     [Header("Initial Batch")]
-    [SerializeField] public int initialSpawnCountMin = 5;
-    [SerializeField] public int initialSpawnCountMax = 10;
+    [SerializeField] public int initialSpawnCountMin = 4;
+    [SerializeField] public int initialSpawnCountMax = 8;
 
     [Header("Ongoing Spawns")]
-    [SerializeField] public float minSpawnInterval = 3f;
-    [SerializeField] public float maxSpawnInterval = 8f;
-    [SerializeField] public int maxChickenCount = 30;
+    [SerializeField] public float minSpawnInterval = 1.5f;
+    [SerializeField] public float maxSpawnInterval = 3.5f;
+    [SerializeField] public int maxChickenCount = 24;
 
     [Header("Spawn Mix")]
-    [Tooltip("Target bombs per 10 chickens on screen (3 => about 30% bombs, and normals stay in the majority).")]
-    [SerializeField] private int bombsPerTenChickens = 3;
+    [Tooltip("Target bombs per 10 chickens on screen (6 => about 60% bombs).")]
+    [SerializeField] private int bombsPerTenChickens = 6;
 
     private readonly List<GameObject> liveChickens = new List<GameObject>();
     private Vector2 spawnPos;
@@ -103,8 +103,20 @@ public class ChickenSpawner : MonoBehaviour
         if (!hasNormal)
             return PickRandomPrefab(bombChickenPrefabs);
 
-        if (CanSpawnBomb() && Random.value < bombsPerTenChickens / 10f)
-            return PickRandomPrefab(bombChickenPrefabs);
+        if (CanSpawnBomb())
+        {
+            int total = liveChickens.Count;
+            int bombs = CountLiveBombs();
+            float targetRatio = bombsPerTenChickens / 10f;
+
+            // Under quota → strongly prefer bombs; at quota → still roll at target rate.
+            float bombChance = targetRatio;
+            if (total == 0 || (float)bombs / Mathf.Max(1, total) < targetRatio)
+                bombChance = Mathf.Min(0.9f, targetRatio + 0.35f);
+
+            if (Random.value < bombChance)
+                return PickRandomPrefab(bombChickenPrefabs);
+        }
 
         return PickRandomPrefab(normalChickenPrefabs);
     }
@@ -113,13 +125,8 @@ public class ChickenSpawner : MonoBehaviour
     {
         int total = liveChickens.Count;
         int bombs = CountLiveBombs();
-        int normals = total - bombs;
 
-        // After spawning a bomb: normals must still outnumber bombs.
-        if (normals <= bombs + 1)
-            return false;
-
-        // Keep bombs at or under the target ratio (e.g. 3 per 10).
+        // Keep bombs at or under the target ratio (e.g. 6 per 10).
         int targetPerTen = Mathf.Max(0, bombsPerTenChickens);
         return (bombs + 1) * 10 <= (total + 1) * targetPerTen;
     }
