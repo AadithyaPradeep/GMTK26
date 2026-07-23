@@ -58,6 +58,14 @@ public class ChickenWander : MonoBehaviour
         }
     }
 
+    public void Highlight()
+    {
+        animator.SetBool("Highlight", true);
+    }
+    public void NoHighlight()
+    {
+        animator.SetBool("Highlight", false);
+    }
     private void PickNewTarget()
     {
         targetPosition = new Vector2(
@@ -78,7 +86,12 @@ public class ChickenWander : MonoBehaviour
             float deltaX = next.x - current.x;
             if (deltaX != 0f)
                 spriteRenderer.flipX = deltaX < 0f;
-              GetComponentInChildren<SpriteRenderer>().flipX = deltaX < 0f;
+           
+
+            foreach (var sr in GetComponentsInChildren<SpriteRenderer>())
+            {
+                sr.flipX = spriteRenderer.flipX;
+            }
 
             transform.position = next;
             yield return null;

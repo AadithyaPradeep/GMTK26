@@ -25,13 +25,25 @@ public class PlayerMovement : MonoBehaviour
         if (GetLiveDirection().x < 0)
         {
             spriteRenderer.flipX = true;
-            GetComponentInChildren<SpriteRenderer>().flipX = true;
+            
+
+            foreach (var sr in GetComponentsInChildren<SpriteRenderer>())
+            {
+                sr.flipX = spriteRenderer.flipX;
+            }
+            
             animator.SetBool("Running", true);
         }
         if (GetLiveDirection().x > 0)
         {
             spriteRenderer.flipX = false;
-            GetComponentInChildren<SpriteRenderer>().flipX = false;
+
+
+            foreach (var sr in GetComponentsInChildren<SpriteRenderer>())
+            {
+                sr.flipX = spriteRenderer.flipX;
+            }
+
             animator.SetBool("Running", true);
 
         }

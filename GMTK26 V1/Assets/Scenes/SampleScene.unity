@@ -132,6 +132,8 @@ GameObject:
   - component: {fileID: 229318275}
   - component: {fileID: 229318279}
   - component: {fileID: 229318278}
+  - component: {fileID: 229318280}
+  - component: {fileID: 229318281}
   m_Layer: 0
   m_Name: Farmer
   m_TagString: Untagged
@@ -282,6 +284,38 @@ MonoBehaviour:
   rb: {fileID: 229318278}
   animator: {fileID: 229318275}
   spriteRenderer: {fileID: 229318276}
+--- !u!114 &229318280
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 229318274}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e22043d0bd2fe214294eb98824b1cf90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrabCluck
+  hc: {fileID: 229318281}
+  aimAnimator: {fileID: 0}
+  hand: {fileID: 1425583984}
+--- !u!114 &229318281
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 229318274}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cac0909504394664c8c4d829aaca84c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HighlightCluck
+  cluckLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  range: 1
+  lastObject: {fileID: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -483,7 +517,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: -1
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0.890255, g: 0.90943396, b: 0.5336489, a: 1}
@@ -504,12 +538,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 556173523}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.4174, y: -0.0696, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -5.057, y: 0.21154, z: 0}
   m_LocalScale: {x: 19.296175, y: 11.435334, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 686521443}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &619394800
 GameObject:
@@ -596,7 +630,11 @@ MonoBehaviour:
         m_SelectedSource:
           rid: -2
         m_Provider2DCache:
-          rid: -2
+          rid: 6580745835809079516
+    - rid: 6580745835809079516
+      type: {class: 'Provider2DCache`1[[UnityEngine.Rendering.Universal.Light2DProvider, Unity.RenderPipelines.Universal.2D.Runtime]]', ns: UnityEngine.Rendering.Universal, asm: Unity.RenderPipelines.Universal.2D.Runtime}
+      data:
+        m_Cache: []
 --- !u!4 &619394802
 Transform:
   m_ObjectHideFlags: 0
@@ -610,6 +648,38 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &686521442
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 686521443}
+  m_Layer: 0
+  m_Name: Map
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &686521443
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 686521442}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 5.4744, y: -0.28114, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 556173525}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &911303573
@@ -645,11 +715,11 @@ MonoBehaviour:
   - {fileID: 1533770966765506361, guid: 2bbbc67fbaa9dc1459c37c1da7720b60, type: 3}
   spawnAreaMin: {x: -5, y: -5}
   spawnAreaMax: {x: 5, y: 5}
-  initialSpawnCountMin: 5
-  initialSpawnCountMax: 10
-  minSpawnInterval: 3
-  maxSpawnInterval: 8
-  maxChickenCount: 30
+  initialSpawnCountMin: 1
+  initialSpawnCountMax: 3
+  minSpawnInterval: 5
+  maxSpawnInterval: 10
+  maxChickenCount: 8
 --- !u!4 &911303575
 Transform:
   m_ObjectHideFlags: 0
@@ -857,17 +927,29 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 992075106239147467, guid: 2bbbc67fbaa9dc1459c37c1da7720b60, type: 3}
+      propertyPath: m_FlipX
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 992075106239147467, guid: 2bbbc67fbaa9dc1459c37c1da7720b60, type: 3}
+      propertyPath: m_Size.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 992075106239147467, guid: 2bbbc67fbaa9dc1459c37c1da7720b60, type: 3}
+      propertyPath: m_Size.y
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 1533770966765506361, guid: 2bbbc67fbaa9dc1459c37c1da7720b60, type: 3}
       propertyPath: m_Name
       value: Cluck
       objectReference: {fileID: 0}
     - target: {fileID: 8006547201263414286, guid: 2bbbc67fbaa9dc1459c37c1da7720b60, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.86
+      value: -1.41
       objectReference: {fileID: 0}
     - target: {fileID: 8006547201263414286, guid: 2bbbc67fbaa9dc1459c37c1da7720b60, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.3
+      value: 0.21
       objectReference: {fileID: 0}
     - target: {fileID: 8006547201263414286, guid: 2bbbc67fbaa9dc1459c37c1da7720b60, type: 3}
       propertyPath: m_LocalPosition.z
@@ -913,6 +995,6 @@ SceneRoots:
   - {fileID: 519420032}
   - {fileID: 619394802}
   - {fileID: 369397270440855265}
-  - {fileID: 556173525}
   - {fileID: 229318277}
   - {fileID: 911303575}
+  - {fileID: 686521443}
