@@ -1,31 +1,31 @@
 fileFormatVersion: 2
-guid: d36443c38da44c34abd445cc5553f87a
+guid: 182a60a3a4bc213429cd9c6ffbcfb966
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -438407831064127898
-    second: HighlightCluckIdle_0
+      213: -5133307221609999547
+    second: HighlightedBombCluck_0
   - first:
-      213: -8680021472167874028
-    second: HighlightCluckIdle_1
+      213: -7873344298725707696
+    second: HighlightedBombCluck_1
   - first:
-      213: 708265206268682403
-    second: HighlightCluckIdle_2
+      213: -3086889730593542219
+    second: HighlightedBombCluck_2
   - first:
-      213: -401139463462352810
-    second: HighlightCluckIdle_3
+      213: 4600332931073538456
+    second: HighlightedBombCluck_3
   - first:
-      213: -2124758696915302087
-    second: HighlightCluckIdle_4
+      213: 5962285753183346334
+    second: HighlightedBombCluck_4
   - first:
-      213: -7186744914246951760
-    second: HighlightCluckIdle_5
+      213: -5485599420769621488
+    second: HighlightedBombCluck_5
   - first:
-      213: -8542819317393620828
-    second: HighlightCluckIdle_6
+      213: 355020443986690097
+    second: HighlightedBombCluck_6
   - first:
-      213: 1597422805044806792
-    second: HighlightCluckIdle_7
+      213: -3497414786552069509
+    second: HighlightedBombCluck_7
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -134,7 +134,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: HighlightCluckIdle_0
+      name: HighlightedBombCluck_0
       rect:
         serializedVersion: 2
         x: 0
@@ -149,14 +149,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6665ca286667ae9f0800000000000000
-      internalID: -438407831064127898
+      spriteID: 5431df48744d2c8b0800000000000000
+      internalID: -5133307221609999547
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HighlightCluckIdle_1
+      name: HighlightedBombCluck_1
       rect:
         serializedVersion: 2
         x: 32
@@ -171,14 +171,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 412bba4b57e5a8780800000000000000
-      internalID: -8680021472167874028
+      spriteID: 0507b1833134cb290800000000000000
+      internalID: -7873344298725707696
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HighlightCluckIdle_2
+      name: HighlightedBombCluck_2
       rect:
         serializedVersion: 2
         x: 64
@@ -193,14 +193,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 3a0e96ad37344d900800000000000000
-      internalID: 708265206268682403
+      spriteID: 5bfab23252a2925d0800000000000000
+      internalID: -3086889730593542219
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HighlightCluckIdle_3
+      name: HighlightedBombCluck_3
       rect:
         serializedVersion: 2
         x: 96
@@ -215,14 +215,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6588fe688cdde6af0800000000000000
-      internalID: -401139463462352810
+      spriteID: 8997b2d5d6aa7df30800000000000000
+      internalID: 4600332931073538456
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HighlightCluckIdle_4
+      name: HighlightedBombCluck_4
       rect:
         serializedVersion: 2
         x: 128
@@ -237,14 +237,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 93901fcf8375382e0800000000000000
-      internalID: -2124758696915302087
+      spriteID: e9e9ddf8d4b4eb250800000000000000
+      internalID: 5962285753183346334
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HighlightCluckIdle_5
+      name: HighlightedBombCluck_5
       rect:
         serializedVersion: 2
         x: 160
@@ -259,14 +259,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 0bc17f6d39d834c90800000000000000
-      internalID: -7186744914246951760
+      spriteID: 01a20f8046c3fd3b0800000000000000
+      internalID: -5485599420769621488
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HighlightCluckIdle_6
+      name: HighlightedBombCluck_6
       rect:
         serializedVersion: 2
         x: 192
@@ -281,14 +281,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4a08866b71fc17980800000000000000
-      internalID: -8542819317393620828
+      spriteID: 13004db76394de400800000000000000
+      internalID: 355020443986690097
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HighlightCluckIdle_7
+      name: HighlightedBombCluck_7
       rect:
         serializedVersion: 2
         x: 224
@@ -303,8 +303,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 884cdc2e39f2b2610800000000000000
-      internalID: 1597422805044806792
+      spriteID: b728d5f18cfa67fc0800000000000000
+      internalID: -3497414786552069509
       vertices: []
       indices: 
       edges: []
@@ -313,7 +313,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 42657ea26808c274dabffb87a961e3ff
+    spriteID: d01a5dd17c642354c9b8d51fe6114021
     internalID: 0
     vertices: []
     indices: 
@@ -325,14 +325,14 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      HighlightCluckIdle_0: -438407831064127898
-      HighlightCluckIdle_1: -8680021472167874028
-      HighlightCluckIdle_2: 708265206268682403
-      HighlightCluckIdle_3: -401139463462352810
-      HighlightCluckIdle_4: -2124758696915302087
-      HighlightCluckIdle_5: -7186744914246951760
-      HighlightCluckIdle_6: -8542819317393620828
-      HighlightCluckIdle_7: 1597422805044806792
+      HighlightedBombCluck_0: -5133307221609999547
+      HighlightedBombCluck_1: -7873344298725707696
+      HighlightedBombCluck_2: -3086889730593542219
+      HighlightedBombCluck_3: 4600332931073538456
+      HighlightedBombCluck_4: 5962285753183346334
+      HighlightedBombCluck_5: -5485599420769621488
+      HighlightedBombCluck_6: 355020443986690097
+      HighlightedBombCluck_7: -3497414786552069509
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
