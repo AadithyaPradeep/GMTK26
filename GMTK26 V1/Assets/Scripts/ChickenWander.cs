@@ -21,6 +21,12 @@ public class ChickenWander : MonoBehaviour
 
     private static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
 
+    public void SetWanderArea(Vector2 min, Vector2 max)
+    {
+        areaMin = min;
+        areaMax = max;
+    }
+
     private void Awake()
     {
         animator = GetComponent<Animator>();
