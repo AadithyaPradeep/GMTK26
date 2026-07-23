@@ -7,6 +7,10 @@ public class ChickenSpawner : MonoBehaviour
     [Header("Prefabs")]
     [SerializeField] public GameObject[] chickenPrefabs;
 
+    [Header("Flee Target")]
+    [Tooltip("Assigned to every spawned chicken so clones can flee. Prefabs cannot reference a scene Farmer themselves.")]
+    [SerializeField] public Transform farmerTransform;
+
     [Header("Spawn Area")]
     [SerializeField] public Vector2 spawnAreaMin = new Vector2(-5f, -5f);
     [SerializeField] public Vector2 spawnAreaMax = new Vector2(5f, 5f);
@@ -64,6 +68,7 @@ public class ChickenSpawner : MonoBehaviour
         if (wander != null)
         {
             wander.SetWanderArea(spawnAreaMin, spawnAreaMax);
+            wander.farmerTransform = farmerTransform;
         }
 
         liveChickens.Add(chicken);
