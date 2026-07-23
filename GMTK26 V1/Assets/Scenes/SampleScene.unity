@@ -719,12 +719,12 @@ MonoBehaviour:
   farmerTransform: {fileID: 229318277}
   spawnAreaMin: {x: -7.5, y: -4.5}
   spawnAreaMax: {x: 7.5, y: 4.5}
-  initialSpawnCountMin: 1
-  initialSpawnCountMax: 3
-  minSpawnInterval: 5
-  maxSpawnInterval: 10
-  maxChickenCount: 8
-  bombsPerTenChickens: 3
+  initialSpawnCountMin: 4
+  initialSpawnCountMax: 8
+  minSpawnInterval: 1.5
+  maxSpawnInterval: 3.5
+  maxChickenCount: 24
+  bombsPerTenChickens: 6
 --- !u!4 &911303575
 Transform:
   m_ObjectHideFlags: 0
