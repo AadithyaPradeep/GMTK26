@@ -711,9 +711,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 488eb7f64c11fd5419e021bc43310a4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChickenSpawner
-  chickenPrefabs:
+  normalChickenPrefabs:
   - {fileID: 1533770966765506361, guid: 2bbbc67fbaa9dc1459c37c1da7720b60, type: 3}
+  bombChickenPrefabs:
   - {fileID: 4603569667051958, guid: 1069ebe1a88e5ed489dcbb211fa6e5ed, type: 3}
+  farmerTransform: {fileID: 229318277}
   spawnAreaMin: {x: -5, y: -5}
   spawnAreaMax: {x: 5, y: 5}
   initialSpawnCountMin: 1
@@ -721,6 +723,7 @@ MonoBehaviour:
   minSpawnInterval: 5
   maxSpawnInterval: 10
   maxChickenCount: 8
+  bombsPerTenChickens: 3
 --- !u!4 &911303575
 Transform:
   m_ObjectHideFlags: 0
