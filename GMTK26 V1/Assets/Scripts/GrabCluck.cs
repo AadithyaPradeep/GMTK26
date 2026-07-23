@@ -42,7 +42,9 @@ public class GrabCluck : MonoBehaviour
             }
             else
             {
-                grabbedCluck = hc.GetSelectedClucks().transform;
+                ChickenWander selected = hc.GetSelectedClucks();
+                if (selected == null) return;
+                grabbedCluck = selected.transform;
                 grabbedCluck.SetParent(transform);
                 grabbedCluck.localPosition = new Vector3(0, 0.3f, 0);
                 grabbedCluck.GetComponent<BoxCollider2D>().enabled = false;
