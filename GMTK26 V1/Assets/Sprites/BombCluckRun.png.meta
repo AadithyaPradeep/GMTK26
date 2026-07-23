@@ -1,31 +1,31 @@
 fileFormatVersion: 2
-guid: d36443c38da44c34abd445cc5553f87a
+guid: 7f5325e102fd676489adcdf83dda782b
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -438407831064127898
-    second: HighlightCluckIdle_0
+      213: 5692051710865432521
+    second: BombCluckRun_0
   - first:
-      213: -8680021472167874028
-    second: HighlightCluckIdle_1
+      213: 7796784012175359608
+    second: BombCluckRun_1
   - first:
-      213: 708265206268682403
-    second: HighlightCluckIdle_2
+      213: 8406324140037029924
+    second: BombCluckRun_2
   - first:
-      213: -401139463462352810
-    second: HighlightCluckIdle_3
+      213: -6555699898393791311
+    second: BombCluckRun_3
   - first:
-      213: -2124758696915302087
-    second: HighlightCluckIdle_4
+      213: -4066833703118102644
+    second: BombCluckRun_4
   - first:
-      213: -7186744914246951760
-    second: HighlightCluckIdle_5
+      213: 1115804491370646705
+    second: BombCluckRun_5
   - first:
-      213: -8542819317393620828
-    second: HighlightCluckIdle_6
+      213: -2004490619338999463
+    second: BombCluckRun_6
   - first:
-      213: 1597422805044806792
-    second: HighlightCluckIdle_7
+      213: -3049483841755497117
+    second: BombCluckRun_7
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -134,177 +134,177 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: HighlightCluckIdle_0
+      name: BombCluckRun_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 32
-        height: 32
+        width: 64
+        height: 64
       alignment: 9
-      pivot: {x: 0.42, y: 0.5}
+      pivot: {x: 0.46, y: 0.49999997}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6665ca286667ae9f0800000000000000
-      internalID: -438407831064127898
+      spriteID: 9cfd94d8fda3efe40800000000000000
+      internalID: 5692051710865432521
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HighlightCluckIdle_1
-      rect:
-        serializedVersion: 2
-        x: 32
-        y: 0
-        width: 32
-        height: 32
-      alignment: 9
-      pivot: {x: 0.42, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 412bba4b57e5a8780800000000000000
-      internalID: -8680021472167874028
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: HighlightCluckIdle_2
+      name: BombCluckRun_1
       rect:
         serializedVersion: 2
         x: 64
         y: 0
-        width: 32
-        height: 32
+        width: 64
+        height: 64
       alignment: 9
-      pivot: {x: 0.42, y: 0.5}
+      pivot: {x: 0.46, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 3a0e96ad37344d900800000000000000
-      internalID: 708265206268682403
+      spriteID: 87e382cffbdb33c60800000000000000
+      internalID: 7796784012175359608
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HighlightCluckIdle_3
-      rect:
-        serializedVersion: 2
-        x: 96
-        y: 0
-        width: 32
-        height: 32
-      alignment: 9
-      pivot: {x: 0.42, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 6588fe688cdde6af0800000000000000
-      internalID: -401139463462352810
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: HighlightCluckIdle_4
+      name: BombCluckRun_2
       rect:
         serializedVersion: 2
         x: 128
         y: 0
-        width: 32
-        height: 32
+        width: 64
+        height: 64
       alignment: 9
-      pivot: {x: 0.42, y: 0.5}
+      pivot: {x: 0.46, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 93901fcf8375382e0800000000000000
-      internalID: -2124758696915302087
+      spriteID: 420c2b9444349a470800000000000000
+      internalID: 8406324140037029924
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HighlightCluckIdle_5
-      rect:
-        serializedVersion: 2
-        x: 160
-        y: 0
-        width: 32
-        height: 32
-      alignment: 9
-      pivot: {x: 0.42, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 0bc17f6d39d834c90800000000000000
-      internalID: -7186744914246951760
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: HighlightCluckIdle_6
+      name: BombCluckRun_3
       rect:
         serializedVersion: 2
         x: 192
         y: 0
-        width: 32
-        height: 32
+        width: 64
+        height: 64
       alignment: 9
-      pivot: {x: 0.42, y: 0.5}
+      pivot: {x: 0.46, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4a08866b71fc17980800000000000000
-      internalID: -8542819317393620828
+      spriteID: 1b47c2e0da97505a0800000000000000
+      internalID: -6555699898393791311
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HighlightCluckIdle_7
+      name: BombCluckRun_4
       rect:
         serializedVersion: 2
-        x: 224
+        x: 256
         y: 0
-        width: 32
-        height: 32
+        width: 64
+        height: 64
       alignment: 9
-      pivot: {x: 0.42, y: 0.5}
+      pivot: {x: 0.46, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 884cdc2e39f2b2610800000000000000
-      internalID: 1597422805044806792
+      spriteID: c8f1f054b44bf87c0800000000000000
+      internalID: -4066833703118102644
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BombCluckRun_5
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 0
+        width: 64
+        height: 64
+      alignment: 9
+      pivot: {x: 0.46, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1bcceeae5422c7f00800000000000000
+      internalID: 1115804491370646705
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BombCluckRun_6
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 0
+        width: 64
+        height: 64
+      alignment: 9
+      pivot: {x: 0.46, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 95932b6e66e9e24e0800000000000000
+      internalID: -2004490619338999463
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BombCluckRun_7
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 0
+        width: 64
+        height: 64
+      alignment: 9
+      pivot: {x: 0.46, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 36dbedf4a9e0ea5d0800000000000000
+      internalID: -3049483841755497117
       vertices: []
       indices: 
       edges: []
@@ -313,7 +313,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 42657ea26808c274dabffb87a961e3ff
+    spriteID: a55859dfe670d124cb6cd57bb2c3a101
     internalID: 0
     vertices: []
     indices: 
@@ -323,16 +323,16 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      HighlightCluckIdle_0: -438407831064127898
-      HighlightCluckIdle_1: -8680021472167874028
-      HighlightCluckIdle_2: 708265206268682403
-      HighlightCluckIdle_3: -401139463462352810
-      HighlightCluckIdle_4: -2124758696915302087
-      HighlightCluckIdle_5: -7186744914246951760
-      HighlightCluckIdle_6: -8542819317393620828
-      HighlightCluckIdle_7: 1597422805044806792
+      BombCluckRun_0: 5692051710865432521
+      BombCluckRun_1: 7796784012175359608
+      BombCluckRun_2: 8406324140037029924
+      BombCluckRun_3: -6555699898393791311
+      BombCluckRun_4: -4066833703118102644
+      BombCluckRun_5: 1115804491370646705
+      BombCluckRun_6: -2004490619338999463
+      BombCluckRun_7: -3049483841755497117
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
