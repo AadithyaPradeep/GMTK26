@@ -927,18 +927,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 992075106239147467, guid: 2bbbc67fbaa9dc1459c37c1da7720b60, type: 3}
-      propertyPath: m_FlipX
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 992075106239147467, guid: 2bbbc67fbaa9dc1459c37c1da7720b60, type: 3}
-      propertyPath: m_Size.x
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 992075106239147467, guid: 2bbbc67fbaa9dc1459c37c1da7720b60, type: 3}
-      propertyPath: m_Size.y
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: 1533770966765506361, guid: 2bbbc67fbaa9dc1459c37c1da7720b60, type: 3}
       propertyPath: m_Name
       value: Cluck
