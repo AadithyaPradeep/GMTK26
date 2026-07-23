@@ -15,8 +15,8 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] public Transform farmerTransform;
 
     [Header("Spawn Area")]
-    [SerializeField] public Vector2 spawnAreaMin = new Vector2(-5f, -5f);
-    [SerializeField] public Vector2 spawnAreaMax = new Vector2(5f, 5f);
+    [SerializeField] public Vector2 spawnAreaMin = new Vector2(-7.5f, -4.5f);
+    [SerializeField] public Vector2 spawnAreaMax = new Vector2(7.5f, 4.5f);
 
     [Header("Initial Batch")]
     [SerializeField] public int initialSpawnCountMin = 5;

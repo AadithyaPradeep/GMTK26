@@ -4,8 +4,8 @@ using UnityEngine;
 public class ChickenWander : MonoBehaviour
 {
     [Header("Wander Area")]
-    [SerializeField] private Vector2 areaMin = new Vector2(-5f, -5f);
-    [SerializeField] private Vector2 areaMax = new Vector2(5f, 5f);
+    [SerializeField] private Vector2 areaMin = new Vector2(-7.5f, -4.5f);
+    [SerializeField] private Vector2 areaMax = new Vector2(7.5f, 4.5f);
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 1.5f;

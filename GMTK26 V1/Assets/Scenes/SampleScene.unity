@@ -717,8 +717,8 @@ MonoBehaviour:
   bombChickenPrefabs:
   - {fileID: 4603569667051958, guid: 1069ebe1a88e5ed489dcbb211fa6e5ed, type: 3}
   farmerTransform: {fileID: 229318277}
-  spawnAreaMin: {x: -5, y: -5}
-  spawnAreaMax: {x: 5, y: 5}
+  spawnAreaMin: {x: -7.5, y: -4.5}
+  spawnAreaMax: {x: 7.5, y: 4.5}
   initialSpawnCountMin: 1
   initialSpawnCountMax: 3
   minSpawnInterval: 5
