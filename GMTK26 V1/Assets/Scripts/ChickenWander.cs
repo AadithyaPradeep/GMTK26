@@ -78,6 +78,7 @@ public class ChickenWander : MonoBehaviour
             float deltaX = next.x - current.x;
             if (deltaX != 0f)
                 spriteRenderer.flipX = deltaX < 0f;
+              GetComponentInChildren<SpriteRenderer>().flipX = deltaX < 0f;
 
             transform.position = next;
             yield return null;
