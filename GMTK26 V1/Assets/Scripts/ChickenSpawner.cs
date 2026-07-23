@@ -1,9 +1,11 @@
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class ChickenSpawner : MonoBehaviour
 {
+    public GameObject spawnps;
     [Header("Prefabs")]
     [SerializeField] public GameObject[] normalChickenPrefabs;
     [SerializeField] public GameObject[] bombChickenPrefabs;
@@ -30,6 +32,7 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private int bombsPerTenChickens = 3;
 
     private readonly List<GameObject> liveChickens = new List<GameObject>();
+    private Vector2 spawnPos;
 
     private void Start()
     {
@@ -68,12 +71,15 @@ public class ChickenSpawner : MonoBehaviour
         if (prefab == null)
             return;
 
-        Vector2 spawnPos = new Vector2(
+        spawnPos = new Vector2(
             Random.Range(spawnAreaMin.x, spawnAreaMax.x),
             Random.Range(spawnAreaMin.y, spawnAreaMax.y)
         );
 
+        StartCoroutine("Spawn");
         GameObject chicken = Instantiate(prefab, spawnPos, Quaternion.identity);
+        
+        
 
         ChickenWander wander = chicken.GetComponent<ChickenWander>();
         if (wander != null)
@@ -194,4 +200,12 @@ public class ChickenSpawner : MonoBehaviour
                 liveChickens.RemoveAt(i);
         }
     }
+    private IEnumerator Spawn()
+    {
+
+        GameObject spawnS = Instantiate(spawnps, spawnPos, Quaternion.identity);
+        yield return new WaitForSeconds(0.7f);
+        Destroy(spawnS);
+    }
+
 }
