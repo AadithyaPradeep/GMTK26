@@ -714,17 +714,18 @@ MonoBehaviour:
   spawnps: {fileID: 4999050520589805456, guid: 97d33ad94dd58c34da7a110f96b5a019, type: 3}
   normalChickenPrefabs:
   - {fileID: 1533770966765506361, guid: 2bbbc67fbaa9dc1459c37c1da7720b60, type: 3}
+  - {fileID: 6175148286897977551, guid: 2bba38cf02f699341a8bae9b4ed02d04, type: 3}
   bombChickenPrefabs:
   - {fileID: 4603569667051958, guid: 1069ebe1a88e5ed489dcbb211fa6e5ed, type: 3}
   farmerTransform: {fileID: 229318277}
   spawnAreaMin: {x: -7.5, y: -4.5}
   spawnAreaMax: {x: 7.5, y: 4.5}
-  initialSpawnCountMin: 4
-  initialSpawnCountMax: 8
-  minSpawnInterval: 1.5
-  maxSpawnInterval: 3.5
-  maxChickenCount: 24
-  bombsPerTenChickens: 6
+  initialSpawnCountMin: 1
+  initialSpawnCountMax: 3
+  minSpawnInterval: 5
+  maxSpawnInterval: 10
+  maxChickenCount: 8
+  bombsPerTenChickens: 5
 --- !u!4 &911303575
 Transform:
   m_ObjectHideFlags: 0
@@ -924,6 +925,63 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!1001 &1260137882250469360
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4406051165671443131, guid: 2bba38cf02f699341a8bae9b4ed02d04, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -4.61
+      objectReference: {fileID: 0}
+    - target: {fileID: 4406051165671443131, guid: 2bba38cf02f699341a8bae9b4ed02d04, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.68
+      objectReference: {fileID: 0}
+    - target: {fileID: 4406051165671443131, guid: 2bba38cf02f699341a8bae9b4ed02d04, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4406051165671443131, guid: 2bba38cf02f699341a8bae9b4ed02d04, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4406051165671443131, guid: 2bba38cf02f699341a8bae9b4ed02d04, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4406051165671443131, guid: 2bba38cf02f699341a8bae9b4ed02d04, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4406051165671443131, guid: 2bba38cf02f699341a8bae9b4ed02d04, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4406051165671443131, guid: 2bba38cf02f699341a8bae9b4ed02d04, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4406051165671443131, guid: 2bba38cf02f699341a8bae9b4ed02d04, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4406051165671443131, guid: 2bba38cf02f699341a8bae9b4ed02d04, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6175148286897977551, guid: 2bba38cf02f699341a8bae9b4ed02d04, type: 3}
+      propertyPath: m_Name
+      value: MindCluck
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 2bba38cf02f699341a8bae9b4ed02d04, type: 3}
 --- !u!1001 &6908203844871190130
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -935,6 +993,10 @@ PrefabInstance:
     - target: {fileID: 4603569667051958, guid: 1069ebe1a88e5ed489dcbb211fa6e5ed, type: 3}
       propertyPath: m_Name
       value: BombCluck
+      objectReference: {fileID: 0}
+    - target: {fileID: 998865193685917064, guid: 1069ebe1a88e5ed489dcbb211fa6e5ed, type: 3}
+      propertyPath: timer
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 4590783399525410767, guid: 1069ebe1a88e5ed489dcbb211fa6e5ed, type: 3}
       propertyPath: m_LocalPosition.x
@@ -978,11 +1040,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6741172420442278162, guid: 1069ebe1a88e5ed489dcbb211fa6e5ed, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0.26
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 6741172420442278162, guid: 1069ebe1a88e5ed489dcbb211fa6e5ed, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 1.94
+      objectReference: {fileID: 0}
+    - target: {fileID: 7549566951778607351, guid: 1069ebe1a88e5ed489dcbb211fa6e5ed, type: 3}
+      propertyPath: m_text
+      value: 5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -999,6 +1065,7 @@ SceneRoots:
   - {fileID: 519420032}
   - {fileID: 619394802}
   - {fileID: 6908203844871190130}
+  - {fileID: 1260137882250469360}
   - {fileID: 229318277}
   - {fileID: 911303575}
   - {fileID: 686521443}
