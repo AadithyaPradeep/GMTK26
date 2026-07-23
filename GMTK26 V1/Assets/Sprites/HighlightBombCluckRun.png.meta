@@ -1,31 +1,31 @@
 fileFormatVersion: 2
-guid: d36443c38da44c34abd445cc5553f87a
+guid: 5461b58405e1da2429ddb9159080063e
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -438407831064127898
-    second: HighlightCluckIdle_0
+      213: -5545175530208784049
+    second: HighlightBombCluckRun_0
   - first:
-      213: -8680021472167874028
-    second: HighlightCluckIdle_1
+      213: 2873010193139331418
+    second: HighlightBombCluckRun_1
   - first:
-      213: 708265206268682403
-    second: HighlightCluckIdle_2
+      213: -8258660529762188663
+    second: HighlightBombCluckRun_2
   - first:
-      213: -401139463462352810
-    second: HighlightCluckIdle_3
+      213: 3286168138312945533
+    second: HighlightBombCluckRun_3
   - first:
-      213: -2124758696915302087
-    second: HighlightCluckIdle_4
+      213: -5118522585918813248
+    second: HighlightBombCluckRun_4
   - first:
-      213: -7186744914246951760
-    second: HighlightCluckIdle_5
+      213: 8738880891553837616
+    second: HighlightBombCluckRun_5
   - first:
-      213: -8542819317393620828
-    second: HighlightCluckIdle_6
+      213: -3040512446992882638
+    second: HighlightBombCluckRun_6
   - first:
-      213: 1597422805044806792
-    second: HighlightCluckIdle_7
+      213: -8219072187877731650
+    second: HighlightBombCluckRun_7
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -134,177 +134,177 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: HighlightCluckIdle_0
+      name: HighlightBombCluckRun_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 32
-        height: 32
+        width: 64
+        height: 64
       alignment: 9
-      pivot: {x: 0.42, y: 0.5}
+      pivot: {x: 0.46, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6665ca286667ae9f0800000000000000
-      internalID: -438407831064127898
+      spriteID: f4197b02c349b03b0800000000000000
+      internalID: -5545175530208784049
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HighlightCluckIdle_1
-      rect:
-        serializedVersion: 2
-        x: 32
-        y: 0
-        width: 32
-        height: 32
-      alignment: 9
-      pivot: {x: 0.42, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 412bba4b57e5a8780800000000000000
-      internalID: -8680021472167874028
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: HighlightCluckIdle_2
+      name: HighlightBombCluckRun_1
       rect:
         serializedVersion: 2
         x: 64
         y: 0
-        width: 32
-        height: 32
+        width: 64
+        height: 64
       alignment: 9
-      pivot: {x: 0.42, y: 0.5}
+      pivot: {x: 0.46, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 3a0e96ad37344d900800000000000000
-      internalID: 708265206268682403
+      spriteID: a51752e7c8bfed720800000000000000
+      internalID: 2873010193139331418
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HighlightCluckIdle_3
-      rect:
-        serializedVersion: 2
-        x: 96
-        y: 0
-        width: 32
-        height: 32
-      alignment: 9
-      pivot: {x: 0.42, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 6588fe688cdde6af0800000000000000
-      internalID: -401139463462352810
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: HighlightCluckIdle_4
+      name: HighlightBombCluckRun_2
       rect:
         serializedVersion: 2
         x: 128
         y: 0
-        width: 32
-        height: 32
+        width: 64
+        height: 64
       alignment: 9
-      pivot: {x: 0.42, y: 0.5}
+      pivot: {x: 0.46, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 93901fcf8375382e0800000000000000
-      internalID: -2124758696915302087
+      spriteID: 9824cf22108536d80800000000000000
+      internalID: -8258660529762188663
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HighlightCluckIdle_5
-      rect:
-        serializedVersion: 2
-        x: 160
-        y: 0
-        width: 32
-        height: 32
-      alignment: 9
-      pivot: {x: 0.42, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 0bc17f6d39d834c90800000000000000
-      internalID: -7186744914246951760
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: HighlightCluckIdle_6
+      name: HighlightBombCluckRun_3
       rect:
         serializedVersion: 2
         x: 192
         y: 0
-        width: 32
-        height: 32
+        width: 64
+        height: 64
       alignment: 9
-      pivot: {x: 0.42, y: 0.5}
+      pivot: {x: 0.46, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4a08866b71fc17980800000000000000
-      internalID: -8542819317393620828
+      spriteID: d7f895cc280da9d20800000000000000
+      internalID: 3286168138312945533
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HighlightCluckIdle_7
+      name: HighlightBombCluckRun_4
       rect:
         serializedVersion: 2
-        x: 224
+        x: 256
         y: 0
-        width: 32
-        height: 32
+        width: 64
+        height: 64
       alignment: 9
-      pivot: {x: 0.42, y: 0.5}
+      pivot: {x: 0.46, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 884cdc2e39f2b2610800000000000000
-      internalID: 1597422805044806792
+      spriteID: 0cbce73c3da57f8b0800000000000000
+      internalID: -5118522585918813248
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HighlightBombCluckRun_5
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 0
+        width: 64
+        height: 64
+      alignment: 9
+      pivot: {x: 0.46, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 032f38bceddb64970800000000000000
+      internalID: 8738880891553837616
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HighlightBombCluckRun_6
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 0
+        width: 64
+        height: 64
+      alignment: 9
+      pivot: {x: 0.46, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 234e5dde90eedc5d0800000000000000
+      internalID: -3040512446992882638
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HighlightBombCluckRun_7
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 0
+        width: 64
+        height: 64
+      alignment: 9
+      pivot: {x: 0.46, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eb25142446dffed80800000000000000
+      internalID: -8219072187877731650
       vertices: []
       indices: 
       edges: []
@@ -313,7 +313,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 42657ea26808c274dabffb87a961e3ff
+    spriteID: 5794b4b24e0419e4fa274ca9cd452325
     internalID: 0
     vertices: []
     indices: 
@@ -323,16 +323,16 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      HighlightCluckIdle_0: -438407831064127898
-      HighlightCluckIdle_1: -8680021472167874028
-      HighlightCluckIdle_2: 708265206268682403
-      HighlightCluckIdle_3: -401139463462352810
-      HighlightCluckIdle_4: -2124758696915302087
-      HighlightCluckIdle_5: -7186744914246951760
-      HighlightCluckIdle_6: -8542819317393620828
-      HighlightCluckIdle_7: 1597422805044806792
+      HighlightBombCluckRun_0: -5545175530208784049
+      HighlightBombCluckRun_1: 2873010193139331418
+      HighlightBombCluckRun_2: -8258660529762188663
+      HighlightBombCluckRun_3: 3286168138312945533
+      HighlightBombCluckRun_4: -5118522585918813248
+      HighlightBombCluckRun_5: 8738880891553837616
+      HighlightBombCluckRun_6: -3040512446992882638
+      HighlightBombCluckRun_7: -8219072187877731650
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
