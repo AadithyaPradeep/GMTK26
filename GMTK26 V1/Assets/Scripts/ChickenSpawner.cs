@@ -2,55 +2,94 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Wave-based chicken spawner.
+/// Timer to the next wave starts when the wave starts.
+/// Normals/minds spawn at wave start.
+/// Wave bomb/electric counts spawn all together; extra mid-wave lethals use a cooldown.
+/// </summary>
 public class ChickenSpawner : MonoBehaviour
 {
-    public GameObject spawnps;
+    [System.Serializable]
+    public class Wave
+    {
+        [Tooltip("Optional label for the Inspector (e.g. Wave 1 - Bomb intro).")]
+        public string name = "Wave";
+
+        [Tooltip("Spawned at the start of the wave only.")]
+        public int normals = 2;
+
+        [Tooltip("Bombs that spawn all together when the mid-wave lethal phase starts.")]
+        public int bombs;
+
+        [Tooltip("Extra bombs during the wave — spawned one-by-one with midLethalGap.")]
+        public int extraBombs;
+
+        [Tooltip("Spawned at the start of the wave only.")]
+        public int minds;
+
+        [Tooltip("Electrics that spawn all together when the mid-wave lethal phase starts.")]
+        public int electrics;
+
+        [Tooltip("Extra electrics during the wave — spawned one-by-one with midLethalGap.")]
+        public int extraElectrics;
+
+        [Tooltip("Length of this wave. Next-wave countdown starts when the wave starts.")]
+        public float breakAfterSeconds = 12f;
+    }
 
     [Header("Prefabs")]
-    [SerializeField] public GameObject[] normalChickenPrefabs;
-    [SerializeField] public GameObject[] bombChickenPrefabs;
-    [SerializeField] public GameObject[] mindChickenPrefabs;
-    [SerializeField] public GameObject[] electricChickenPrefabs;
+    [SerializeField] private GameObject[] normalChickenPrefabs;
+    [SerializeField] private GameObject[] bombChickenPrefabs;
+    [SerializeField] private GameObject[] mindChickenPrefabs;
+    [SerializeField] private GameObject[] electricChickenPrefabs;
+    [SerializeField] private GameObject spawnEffect;
 
-    [Header("Flee Target")]
-    [Tooltip("Assigned to every spawned chicken so clones can flee. Prefabs cannot reference a scene Farmer themselves.")]
-    [SerializeField] public Transform farmerTransform;
+    [Header("References")]
+    [SerializeField] private Transform farmerTransform;
 
     [Header("Spawn Area")]
-    [SerializeField] public Vector2 spawnAreaMin = new Vector2(-7.5f, -4.5f);
-    [SerializeField] public Vector2 spawnAreaMax = new Vector2(7.5f, 4.5f);
+    [SerializeField] private Vector2 spawnAreaMin = new Vector2(-7.5f, -4.5f);
+    [SerializeField] private Vector2 spawnAreaMax = new Vector2(7.5f, 4.5f);
 
-    [Header("Initial Batch")]
-    [SerializeField] public int initialSpawnCountMin = 4;
-    [SerializeField] public int initialSpawnCountMax = 8;
-    [SerializeField] public int maxChickenCount = 24;
+    [Header("Opening")]
+    [SerializeField] private int startingNormals = 3;
+    [SerializeField] private float delayBeforeFirstWave = 5f;
 
-    [Header("Timed Waves")]
-    [Tooltip("Pause after the initial batch before wave 1.")]
-    [SerializeField] private float delayBeforeFirstWave = 2f;
-    [SerializeField] private int baseWaveSpawnMin = 3;
-    [SerializeField] private int baseWaveSpawnMax = 5;
-    [Tooltip("Extra chickens added to each later wave.")]
-    [SerializeField] private int extraSpawnsPerWave = 1;
-    [SerializeField] private float burstSpawnGapMin = 0.25f;
-    [SerializeField] private float burstSpawnGapMax = 0.55f;
-    [SerializeField] private float breakDurationStart = 8f;
-    [SerializeField] private float breakShortenPerWave = 0.5f;
-    [SerializeField] private float minBreakDuration = 3f;
+    [Header("Waves (edit these)")]
+    [SerializeField] private Wave[] waves =
+    {
+        new Wave { name = "1 - Bomb intro", normals = 2, bombs = 1, extraBombs = 0, minds = 0, electrics = 0, extraElectrics = 0, breakAfterSeconds = 14f },
+        new Wave { name = "2 - More bombs", normals = 3, bombs = 2, extraBombs = 0, minds = 0, electrics = 0, extraElectrics = 0, breakAfterSeconds = 13f },
+        new Wave { name = "3 - Mind unlock", normals = 4, bombs = 2, extraBombs = 1, minds = 1, electrics = 0, extraElectrics = 0, breakAfterSeconds = 12f },
+        new Wave { name = "4 - Electric unlock", normals = 4, bombs = 2, extraBombs = 1, minds = 1, electrics = 1, extraElectrics = 0, breakAfterSeconds = 12f },
+        new Wave { name = "5", normals = 5, bombs = 3, extraBombs = 1, minds = 1, electrics = 1, extraElectrics = 1, breakAfterSeconds = 11f },
+        new Wave { name = "6", normals = 6, bombs = 3, extraBombs = 2, minds = 1, electrics = 1, extraElectrics = 1, breakAfterSeconds = 10f },
+    };
 
-    [Header("Spawn Mix")]
-    [Tooltip("Target bombs per 10 chickens on screen.")]
-    [SerializeField] private int bombsPerTenChickens = 6;
-    [Tooltip("Target mind clucks per 10 chickens on screen.")]
-    [SerializeField] private int mindsPerTenChickens = 3;
-    [Tooltip("Target electric chickens per 10 chickens on screen.")]
-    [SerializeField] private int electricsPerTenChickens = 2;
+    [Header("After Last Scripted Wave")]
+    [SerializeField] private int maxBombsPerWave = 4;
+    [SerializeField] private int maxExtraBombsPerWave = 2;
+    [SerializeField] private int maxMindsPerWave = 1;
+    [SerializeField] private int maxElectricsPerWave = 1;
+    [SerializeField] private int maxExtraElectricsPerWave = 1;
+    [SerializeField] private float minBreakSeconds = 8f;
+
+    [Header("Spawn Timing")]
+    [SerializeField] private float openingSpawnGap = 0.4f;
+    [Tooltip("Cooldown between each extra mid-wave lethal spawn.")]
+    [SerializeField] private float midLethalGap = 2.5f;
+    [Tooltip("Pause after normals/minds before the wave bomb/electric burst.")]
+    [SerializeField] private float pauseBeforeMidLethals = 2f;
+    [SerializeField] private int maxChickensOnScreen = 24;
 
     private readonly List<GameObject> liveChickens = new List<GameObject>();
-    private Vector2 spawnPos;
+    private Vector2 lastSpawnPos;
 
-    /// <summary>1-based wave index. 0 before the first wave starts.</summary>
     public int CurrentWave { get; private set; }
+    public bool IsWaitingForNextWave { get; private set; }
+    public float SecondsUntilNextWave { get; private set; }
+    public int NextWaveNumber => CurrentWave + 1;
 
     private void Start()
     {
@@ -59,63 +98,247 @@ public class ChickenSpawner : MonoBehaviour
             GameObject farmer = GameObject.Find("Farmer");
             if (farmer != null)
                 farmerTransform = farmer.transform;
-            else
-                Debug.LogWarning("ChickenSpawner: Farmer Transform is not assigned — chickens will not flee.", this);
         }
 
-        int initialCount = Random.Range(initialSpawnCountMin, initialSpawnCountMax + 1);
-        for (int i = 0; i < initialCount; i++)
-            SpawnChicken();
-
-        StartCoroutine(WaveLoop());
+        StartCoroutine(RunGame());
     }
 
-    private IEnumerator WaveLoop()
+    private IEnumerator RunGame()
     {
         CurrentWave = 0;
 
+        yield return SpawnBatch(BuildOpeningList(startingNormals), openingSpawnGap);
+
         if (delayBeforeFirstWave > 0f)
-            yield return new WaitForSeconds(delayBeforeFirstWave);
+            yield return WaitCountdown(delayBeforeFirstWave);
 
         while (enabled)
         {
             CurrentWave++;
-
-            int toSpawn = Random.Range(baseWaveSpawnMin, baseWaveSpawnMax + 1)
-                          + (CurrentWave - 1) * Mathf.Max(0, extraSpawnsPerWave);
-
-            for (int i = 0; i < toSpawn; i++)
-            {
-                PruneDestroyedChickens();
-                if (liveChickens.Count < maxChickenCount)
-                    SpawnChicken();
-
-                float gap = Random.Range(burstSpawnGapMin, burstSpawnGapMax);
-                if (gap > 0f)
-                    yield return new WaitForSeconds(gap);
-            }
-
-            float breakTime = Mathf.Max(
-                minBreakDuration,
-                breakDurationStart - (CurrentWave - 1) * breakShortenPerWave
-            );
-            yield return new WaitForSeconds(breakTime);
+            yield return RunWave(GetWave(CurrentWave));
         }
     }
 
-    private void SpawnChicken()
+    private IEnumerator RunWave(Wave wave)
     {
-        GameObject prefab = PickPrefab();
+        float duration = Mathf.Max(minBreakSeconds, wave.breakAfterSeconds);
+
+        // Next-wave timer starts as soon as this wave starts.
+        IsWaitingForNextWave = true;
+        SecondsUntilNextWave = duration;
+
+        // Normals + minds at the start (timer already ticking).
+        yield return SpawnBatchWhileTicking(BuildOpeningList(wave.normals, wave.minds), openingSpawnGap);
+
+        // Short pause, then spawn the wave's bomb/electric counts all together.
+        yield return TickForSeconds(pauseBeforeMidLethals);
+        SpawnLethalBurst(wave.bombs, wave.electrics);
+
+        int extraBombsSpawned = 0;
+        int extraElectricsSpawned = 0;
+        float lethalCooldown = midLethalGap;
+
+        while (SecondsUntilNextWave > 0f)
+        {
+            float dt = Time.deltaTime;
+            SecondsUntilNextWave = Mathf.Max(0f, SecondsUntilNextWave - dt);
+            lethalCooldown -= dt;
+
+            Prune();
+
+            bool needExtraBomb = extraBombsSpawned < wave.extraBombs;
+            bool needExtraElectric = extraElectricsSpawned < wave.extraElectrics;
+
+            // Excess mid-wave lethals: one at a time with cooldown.
+            if ((needExtraBomb || needExtraElectric) && lethalCooldown <= 0f &&
+                liveChickens.Count < maxChickensOnScreen)
+            {
+                if (needExtraBomb && TrySpawnFrom(bombChickenPrefabs))
+                    extraBombsSpawned++;
+                else if (needExtraElectric && TrySpawnFrom(electricChickenPrefabs))
+                    extraElectricsSpawned++;
+
+                lethalCooldown = midLethalGap;
+            }
+
+            yield return null;
+        }
+
+        IsWaitingForNextWave = false;
+        SecondsUntilNextWave = 0f;
+    }
+
+    private void SpawnLethalBurst(int bombs, int electrics)
+    {
+        // All wave-count bombs/electrics spawn together (same moment).
+        for (int i = 0; i < bombs; i++)
+        {
+            Prune();
+            if (liveChickens.Count >= maxChickensOnScreen)
+                break;
+            TrySpawnFrom(bombChickenPrefabs);
+        }
+
+        for (int i = 0; i < electrics; i++)
+        {
+            Prune();
+            if (liveChickens.Count >= maxChickensOnScreen)
+                break;
+            TrySpawnFrom(electricChickenPrefabs);
+        }
+    }
+
+    private IEnumerator TickForSeconds(float seconds)
+    {
+        float left = seconds;
+        while (left > 0f && SecondsUntilNextWave > 0f)
+        {
+            float dt = Time.deltaTime;
+            left -= dt;
+            SecondsUntilNextWave = Mathf.Max(0f, SecondsUntilNextWave - dt);
+            yield return null;
+        }
+    }
+
+    private IEnumerator WaitCountdown(float seconds)
+    {
+        IsWaitingForNextWave = true;
+        SecondsUntilNextWave = Mathf.Max(0f, seconds);
+
+        while (SecondsUntilNextWave > 0f)
+        {
+            yield return null;
+            SecondsUntilNextWave = Mathf.Max(0f, SecondsUntilNextWave - Time.deltaTime);
+        }
+
+        IsWaitingForNextWave = false;
+        SecondsUntilNextWave = 0f;
+    }
+
+    private IEnumerator SpawnBatchWhileTicking(List<GameObject> prefabs, float gap)
+    {
+        for (int i = 0; i < prefabs.Count; i++)
+        {
+            Prune();
+            if (liveChickens.Count < maxChickensOnScreen)
+                SpawnOne(prefabs[i]);
+
+            float wait = gap;
+            while (wait > 0f && SecondsUntilNextWave > 0f)
+            {
+                float dt = Time.deltaTime;
+                wait -= dt;
+                SecondsUntilNextWave = Mathf.Max(0f, SecondsUntilNextWave - dt);
+                yield return null;
+            }
+        }
+    }
+
+    private Wave GetWave(int waveNumber)
+    {
+        if (waves != null && waveNumber >= 1 && waveNumber <= waves.Length)
+            return waves[waveNumber - 1];
+
+        Wave last = (waves != null && waves.Length > 0)
+            ? waves[waves.Length - 1]
+            : new Wave { normals = 4, bombs = 2, extraBombs = 1, minds = 1, electrics = 1, extraElectrics = 0, breakAfterSeconds = 12f };
+
+        int extra = waveNumber - Mathf.Max(1, waves != null ? waves.Length : 1);
+
+        return new Wave
+        {
+            name = waveNumber.ToString(),
+            normals = last.normals + extra,
+            bombs = Mathf.Min(maxBombsPerWave, last.bombs + extra / 2),
+            extraBombs = Mathf.Min(maxExtraBombsPerWave, last.extraBombs + extra / 3),
+            minds = Mathf.Min(maxMindsPerWave, Mathf.Max(last.minds, 1)),
+            electrics = Mathf.Min(maxElectricsPerWave, Mathf.Max(last.electrics, 1)),
+            extraElectrics = Mathf.Min(maxExtraElectricsPerWave, last.extraElectrics),
+            breakAfterSeconds = Mathf.Max(minBreakSeconds, last.breakAfterSeconds - extra * 0.25f)
+        };
+    }
+
+    private List<GameObject> BuildOpeningList(int normals, int minds = 0)
+    {
+        var list = new List<GameObject>();
+        Add(list, normalChickenPrefabs, normals);
+        Add(list, mindChickenPrefabs, minds);
+        Shuffle(list);
+        return list;
+    }
+
+    private static void Add(List<GameObject> list, GameObject[] prefabs, int count)
+    {
+        GameObject prefab = FirstValid(prefabs);
+        if (prefab == null || count <= 0)
+            return;
+
+        for (int i = 0; i < count; i++)
+            list.Add(prefab);
+    }
+
+    private static GameObject FirstValid(GameObject[] prefabs)
+    {
+        if (prefabs == null)
+            return null;
+
+        for (int i = 0; i < prefabs.Length; i++)
+        {
+            if (prefabs[i] != null)
+                return prefabs[i];
+        }
+
+        return null;
+    }
+
+    private static void Shuffle(List<GameObject> list)
+    {
+        for (int i = 0; i < list.Count; i++)
+        {
+            int j = Random.Range(i, list.Count);
+            GameObject tmp = list[i];
+            list[i] = list[j];
+            list[j] = tmp;
+        }
+    }
+
+    private IEnumerator SpawnBatch(List<GameObject> prefabs, float gap)
+    {
+        for (int i = 0; i < prefabs.Count; i++)
+        {
+            Prune();
+            if (liveChickens.Count < maxChickensOnScreen)
+                SpawnOne(prefabs[i]);
+
+            if (gap > 0f)
+                yield return new WaitForSeconds(gap);
+        }
+    }
+
+    private bool TrySpawnFrom(GameObject[] prefabs)
+    {
+        GameObject prefab = FirstValid(prefabs);
+        if (prefab == null)
+            return false;
+
+        SpawnOne(prefab);
+        return true;
+    }
+
+    private void SpawnOne(GameObject prefab)
+    {
         if (prefab == null)
             return;
 
-        spawnPos = new Vector2(
+        lastSpawnPos = new Vector2(
             Random.Range(spawnAreaMin.x, spawnAreaMax.x),
             Random.Range(spawnAreaMin.y, spawnAreaMax.y)
         );
 
-        StartCoroutine(Spawn());
-        GameObject chicken = Instantiate(prefab, spawnPos, Quaternion.identity);
+        if (spawnEffect != null)
+            StartCoroutine(PlaySpawnEffect(lastSpawnPos));
+
+        GameObject chicken = Instantiate(prefab, lastSpawnPos, Quaternion.identity);
 
         ChickenWander wander = chicken.GetComponent<ChickenWander>();
         if (wander != null)
@@ -127,155 +350,20 @@ public class ChickenSpawner : MonoBehaviour
         liveChickens.Add(chicken);
     }
 
-    private GameObject PickPrefab()
+    private IEnumerator PlaySpawnEffect(Vector2 pos)
     {
-        bool hasNormal = HasAnyPrefab(normalChickenPrefabs);
-        bool hasBomb = HasAnyPrefab(bombChickenPrefabs);
-        bool hasMind = HasAnyPrefab(mindChickenPrefabs);
-        bool hasElectric = HasAnyPrefab(electricChickenPrefabs);
-
-        if (!hasNormal && !hasBomb && !hasMind && !hasElectric)
-            return null;
-
-        // Special types: bombs, electric, then mind — otherwise normal.
-        if (hasBomb && CanSpawnSpecial(CountLiveBombs(), bombsPerTenChickens) &&
-            RollSpecial(CountLiveBombs(), bombsPerTenChickens))
-            return PickRandomPrefab(bombChickenPrefabs);
-
-        if (hasElectric && CanSpawnSpecial(CountLiveElectrics(), electricsPerTenChickens) &&
-            RollSpecial(CountLiveElectrics(), electricsPerTenChickens))
-            return PickRandomPrefab(electricChickenPrefabs);
-
-        if (hasMind && CanSpawnSpecial(CountLiveMinds(), mindsPerTenChickens) &&
-            RollSpecial(CountLiveMinds(), mindsPerTenChickens))
-            return PickRandomPrefab(mindChickenPrefabs);
-
-        if (hasNormal)
-            return PickRandomPrefab(normalChickenPrefabs);
-        if (hasBomb)
-            return PickRandomPrefab(bombChickenPrefabs);
-        if (hasElectric)
-            return PickRandomPrefab(electricChickenPrefabs);
-        return PickRandomPrefab(mindChickenPrefabs);
+        GameObject fx = Instantiate(spawnEffect, pos, Quaternion.identity);
+        yield return new WaitForSeconds(0.7f);
+        if (fx != null)
+            Destroy(fx);
     }
 
-    private bool CanSpawnSpecial(int currentCount, int perTen)
-    {
-        int total = liveChickens.Count;
-        int targetPerTen = Mathf.Max(0, perTen);
-        return (currentCount + 1) * 10 <= (total + 1) * targetPerTen;
-    }
-
-    private bool RollSpecial(int currentCount, int perTen)
-    {
-        int total = liveChickens.Count;
-        float targetRatio = perTen / 10f;
-
-        float chance = targetRatio;
-        if (total == 0 || (float)currentCount / Mathf.Max(1, total) < targetRatio)
-            chance = Mathf.Min(0.9f, targetRatio + 0.35f);
-
-        return Random.value < chance;
-    }
-
-    private int CountLiveBombs()
-    {
-        return CountLiveMatching(bombChickenPrefabs);
-    }
-
-    private int CountLiveMinds()
-    {
-        return CountLiveMatching(mindChickenPrefabs);
-    }
-
-    private int CountLiveElectrics()
-    {
-        return CountLiveMatching(electricChickenPrefabs);
-    }
-
-    private int CountLiveMatching(GameObject[] prefabs)
-    {
-        int count = 0;
-        for (int i = 0; i < liveChickens.Count; i++)
-        {
-            GameObject chicken = liveChickens[i];
-            if (chicken != null && MatchesPrefabList(chicken, prefabs))
-                count++;
-        }
-        return count;
-    }
-
-    private static bool MatchesPrefabList(GameObject chicken, GameObject[] prefabs)
-    {
-        if (prefabs == null)
-            return false;
-
-        string instanceName = chicken.name;
-        const string cloneSuffix = "(Clone)";
-        if (instanceName.EndsWith(cloneSuffix))
-            instanceName = instanceName.Substring(0, instanceName.Length - cloneSuffix.Length);
-
-        for (int i = 0; i < prefabs.Length; i++)
-        {
-            GameObject prefab = prefabs[i];
-            if (prefab != null && prefab.name == instanceName)
-                return true;
-        }
-
-        return false;
-    }
-
-    private static bool HasAnyPrefab(GameObject[] prefabs)
-    {
-        if (prefabs == null || prefabs.Length == 0)
-            return false;
-
-        for (int i = 0; i < prefabs.Length; i++)
-        {
-            if (prefabs[i] != null)
-                return true;
-        }
-
-        return false;
-    }
-
-    private static GameObject PickRandomPrefab(GameObject[] prefabs)
-    {
-        if (prefabs == null || prefabs.Length == 0)
-            return null;
-
-        for (int attempt = 0; attempt < 8; attempt++)
-        {
-            GameObject prefab = prefabs[Random.Range(0, prefabs.Length)];
-            if (prefab != null)
-                return prefab;
-        }
-
-        for (int i = 0; i < prefabs.Length; i++)
-        {
-            if (prefabs[i] != null)
-                return prefabs[i];
-        }
-
-        return null;
-    }
-
-    private void PruneDestroyedChickens()
+    private void Prune()
     {
         for (int i = liveChickens.Count - 1; i >= 0; i--)
         {
             if (liveChickens[i] == null)
                 liveChickens.RemoveAt(i);
         }
-    }
-
-    private IEnumerator Spawn()
-    {
-        if (spawnps == null)
-            yield break;
-
-        GameObject spawnS = Instantiate(spawnps, spawnPos, Quaternion.identity);
-        yield return new WaitForSeconds(0.7f);
-        Destroy(spawnS);
     }
 }

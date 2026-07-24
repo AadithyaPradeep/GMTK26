@@ -817,6 +817,7 @@ GameObject:
   m_Component:
   - component: {fileID: 911303575}
   - component: {fileID: 911303574}
+  - component: {fileID: 911303576}
   m_Layer: 0
   m_Name: ChickenSpawner
   m_TagString: Untagged
@@ -836,7 +837,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 488eb7f64c11fd5419e021bc43310a4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChickenSpawner
-  spawnps: {fileID: 4999050520589805456, guid: 97d33ad94dd58c34da7a110f96b5a019, type: 3}
   normalChickenPrefabs:
   - {fileID: 1533770966765506361, guid: 2bbbc67fbaa9dc1459c37c1da7720b60, type: 3}
   bombChickenPrefabs:
@@ -845,24 +845,90 @@ MonoBehaviour:
   - {fileID: 6175148286897977551, guid: 2bba38cf02f699341a8bae9b4ed02d04, type: 3}
   electricChickenPrefabs:
   - {fileID: 2479665210511819439, guid: 1929dfaaa3dff22439d3ea7bc1e44650, type: 3}
+  spawnEffect: {fileID: 4999050520589805456, guid: 97d33ad94dd58c34da7a110f96b5a019, type: 3}
   farmerTransform: {fileID: 229318277}
   spawnAreaMin: {x: -7.5, y: -4.5}
   spawnAreaMax: {x: 7.5, y: 4.5}
-  initialSpawnCountMin: 1
-  initialSpawnCountMax: 3
-  maxChickenCount: 20
-  delayBeforeFirstWave: 2
-  baseWaveSpawnMin: 3
-  baseWaveSpawnMax: 5
-  extraSpawnsPerWave: 1
-  burstSpawnGapMin: 0.25
-  burstSpawnGapMax: 0.55
-  breakDurationStart: 8
-  breakShortenPerWave: 0.5
-  minBreakDuration: 3
-  bombsPerTenChickens: 4
-  mindsPerTenChickens: 2
-  electricsPerTenChickens: 1
+  startingNormals: 3
+  delayBeforeFirstWave: 5
+  waves:
+  - name: 1 - Bomb intro
+    normals: 2
+    bombs: 1
+    extraBombs: 0
+    minds: 0
+    electrics: 0
+    extraElectrics: 0
+    breakAfterSeconds: 14
+  - name: 2 - More bombs
+    normals: 3
+    bombs: 2
+    extraBombs: 0
+    minds: 0
+    electrics: 0
+    extraElectrics: 0
+    breakAfterSeconds: 13
+  - name: 3 - Mind unlock
+    normals: 4
+    bombs: 2
+    extraBombs: 1
+    minds: 1
+    electrics: 0
+    extraElectrics: 0
+    breakAfterSeconds: 12
+  - name: 4 - Electric unlock
+    normals: 4
+    bombs: 2
+    extraBombs: 1
+    minds: 1
+    electrics: 1
+    extraElectrics: 0
+    breakAfterSeconds: 12
+  - name: 5
+    normals: 5
+    bombs: 3
+    extraBombs: 1
+    minds: 1
+    electrics: 1
+    extraElectrics: 1
+    breakAfterSeconds: 11
+  - name: 6
+    normals: 6
+    bombs: 3
+    extraBombs: 2
+    minds: 1
+    electrics: 1
+    extraElectrics: 1
+    breakAfterSeconds: 10
+  maxBombsPerWave: 4
+  maxExtraBombsPerWave: 2
+  maxMindsPerWave: 1
+  maxElectricsPerWave: 1
+  maxExtraElectricsPerWave: 1
+  minBreakSeconds: 8
+  openingSpawnGap: 0.4
+  midLethalGap: 2.5
+  pauseBeforeMidLethals: 2
+  maxChickensOnScreen: 24
+--- !u!114 &911303576
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 911303573}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b2c9e4f1a8d4062b3e5c0a9d8f7e6c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WaveTimerUI
+  spawner: {fileID: 911303574}
+  pixelonFont: {fileID: 11400000, guid: 403495a2d9e80fb40b4cf62e4eb077da, type: 2}
+  label: {fileID: 0}
+  fontSize: 42
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  waitingFormat: "NEXT WAVE\n{0}"
+  spawningText: 
 --- !u!4 &911303575
 Transform:
   m_ObjectHideFlags: 0
