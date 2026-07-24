@@ -572,7 +572,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 5.625
+  orthographic size: 13.146413
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -923,6 +923,7 @@ MonoBehaviour:
   - {fileID: 1533770966765506361, guid: 2bbbc67fbaa9dc1459c37c1da7720b60, type: 3}
   bombChickenPrefabs:
   - {fileID: 4603569667051958, guid: 1069ebe1a88e5ed489dcbb211fa6e5ed, type: 3}
+  - {fileID: 2479665210511819439, guid: 1929dfaaa3dff22439d3ea7bc1e44650, type: 3}
   mindChickenPrefabs:
   - {fileID: 6175148286897977551, guid: 2bba38cf02f699341a8bae9b4ed02d04, type: 3}
   farmerTransform: {fileID: 229318277}
@@ -1295,6 +1296,63 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2bba38cf02f699341a8bae9b4ed02d04, type: 3}
+--- !u!1001 &4629600159670480356
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2479665210511819439, guid: 1929dfaaa3dff22439d3ea7bc1e44650, type: 3}
+      propertyPath: m_Name
+      value: ElectricChicken
+      objectReference: {fileID: 0}
+    - target: {fileID: 4564318079180378655, guid: 1929dfaaa3dff22439d3ea7bc1e44650, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -7.23
+      objectReference: {fileID: 0}
+    - target: {fileID: 4564318079180378655, guid: 1929dfaaa3dff22439d3ea7bc1e44650, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -2.18
+      objectReference: {fileID: 0}
+    - target: {fileID: 4564318079180378655, guid: 1929dfaaa3dff22439d3ea7bc1e44650, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4564318079180378655, guid: 1929dfaaa3dff22439d3ea7bc1e44650, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4564318079180378655, guid: 1929dfaaa3dff22439d3ea7bc1e44650, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4564318079180378655, guid: 1929dfaaa3dff22439d3ea7bc1e44650, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4564318079180378655, guid: 1929dfaaa3dff22439d3ea7bc1e44650, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4564318079180378655, guid: 1929dfaaa3dff22439d3ea7bc1e44650, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4564318079180378655, guid: 1929dfaaa3dff22439d3ea7bc1e44650, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4564318079180378655, guid: 1929dfaaa3dff22439d3ea7bc1e44650, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 1929dfaaa3dff22439d3ea7bc1e44650, type: 3}
 --- !u!1001 &6908203844871190130
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1366,6 +1424,7 @@ SceneRoots:
   - {fileID: 519420032}
   - {fileID: 619394802}
   - {fileID: 6908203844871190130}
+  - {fileID: 4629600159670480356}
   - {fileID: 1260137882250469360}
   - {fileID: 229318277}
   - {fileID: 911303575}
