@@ -63,11 +63,20 @@ public class ChickenWander : MonoBehaviour
 
     private void Update()
     {
-        // Priority: flee farmer > mind-cluck attract > wander coroutine.
-        if (TryFleeFromFarmer())
-            return;
+        // While a Mind Cluck pulse can pull this chicken, skip farmer flee.
+        if (MindCluck.TryGetAttracting(transform.position, transform, out _))
+        {
+            if (isFleeing)
+                EndFlee();
 
-        TryAttractToMindCluck();
+            TryAttractToMindCluck();
+            return;
+        }
+
+        if (isAttracted)
+            EndAttract();
+
+        TryFleeFromFarmer();
     }
 
     private bool TryFleeFromFarmer()
