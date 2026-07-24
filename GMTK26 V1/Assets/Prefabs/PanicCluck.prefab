@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 122241907221316153}
   - component: {fileID: 6413838084259062559}
   - component: {fileID: 8551177610707130483}
+  - component: {fileID: 6413838084259062560}
   m_Layer: 6
   m_Name: PanicCluck
   m_TagString: Untagged
@@ -85,7 +86,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2348733234395629504, guid: 9c37d08f23e51df4d9ffb17b32b6e3a6, type: 3}
+  m_Sprite: {fileID: 1064809710334193657, guid: 9aa0529d8be47b44582324a2d0f2f84b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -106,7 +107,7 @@ Animator:
   m_GameObject: {fileID: 1533770966765506361}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 373aedd284821dd469bee2abdfeccdb7, type: 2}
+  m_Controller: {fileID: 9100000, guid: a41aab7125298bd4f8cf7bfc6a665910, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -130,12 +131,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf91c7f3924d4e545ac9838e5dcd12b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChickenWander
-  areaMin: {x: -5, y: -5}
-  areaMax: {x: 5, y: 5}
-  moveSpeed: 1.5
+  areaMin: {x: -12, y: -4.8}
+  areaMax: {x: 6, y: 4.1}
+  moveSpeed: 2.2
   arrivalThreshold: 0.05
-  minIdleTime: 1
-  maxIdleTime: 3
+  minIdleTime: 0
+  maxIdleTime: 0
+  farmerTransform: {fileID: 0}
+  fleeDistance: 3
+  fleeSpeedMultiplier: 1.4
+  attractSpeedMultiplier: 1.25
+  attractStopDistance: 0.35
+  bombMaxDistanceFromNormals: 4
+  bombApproachSpeedMultiplier: 1.35
+  panicSpeedMultiplier: 2.9
 --- !u!61 &8551177610707130483
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -182,6 +191,18 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1.1676214, y: 1.7872807}
   m_EdgeRadius: 0
+--- !u!114 &6413838084259062560
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1533770966765506361}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8e4f1a29b7d4e6f8a0c1d2e3f405162, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PanicChicken
 --- !u!1 &7972764042229509062
 GameObject:
   m_ObjectHideFlags: 0

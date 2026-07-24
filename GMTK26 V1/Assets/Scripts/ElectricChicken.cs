@@ -25,7 +25,7 @@ public class ElectricChicken : MonoBehaviour
 
     private void Start()
     {
-        timer = Random.Range(5, 11);
+        timer = Random.Range(4, 9);
     }
 
     private void Update()
