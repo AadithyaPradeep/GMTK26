@@ -30,6 +30,7 @@ public class ChickenWander : MonoBehaviour
 
     private bool isFleeing;
     private bool isAttracted;
+    private bool isMindCluck;
     private Coroutine wanderCoroutine;
 
     private static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
@@ -44,6 +45,7 @@ public class ChickenWander : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        isMindCluck = GetComponent<MindCluck>() != null;
     }
 
     private void OnEnable()
@@ -63,8 +65,11 @@ public class ChickenWander : MonoBehaviour
 
     private void Update()
     {
+        // Mind Clucks are never attracted — they keep normal flee/wander.
+        bool canBeAttracted = !isMindCluck;
+
         // While a Mind Cluck pulse can pull this chicken, skip farmer flee.
-        if (MindCluck.TryGetAttracting(transform.position, transform, out _))
+        if (canBeAttracted && MindCluck.TryGetAttracting(transform.position, transform, out _))
         {
             if (isFleeing)
                 EndFlee();
@@ -111,6 +116,14 @@ public class ChickenWander : MonoBehaviour
 
     private void TryAttractToMindCluck()
     {
+        // Mind Clucks never get pulled by other Mind Clucks.
+        if (isMindCluck)
+        {
+            if (isAttracted)
+                EndAttract();
+            return;
+        }
+
         // Only pulled while a nearby Mind Cluck is mid-pulse (small radius + short duration).
         if (!MindCluck.TryGetAttracting(transform.position, transform, out MindCluck mind))
         {
