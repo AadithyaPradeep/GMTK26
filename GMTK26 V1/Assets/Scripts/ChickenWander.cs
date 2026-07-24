@@ -24,13 +24,20 @@ public class ChickenWander : MonoBehaviour
     [SerializeField] private float attractSpeedMultiplier = 1.25f;
     [SerializeField] private float attractStopDistance = 0.35f;
 
+    [Header("Bomb Stay Near Normals")]
+    [Tooltip("If a bomb is farther than this from every normal chicken, it moves closer.")]
+    [SerializeField] private float bombMaxDistanceFromNormals = 4f;
+    [SerializeField] private float bombApproachSpeedMultiplier = 1.35f;
+
     private Animator animator;
     private SpriteRenderer spriteRenderer;
     private Vector2 targetPosition;
 
     private bool isFleeing;
     private bool isAttracted;
+    private bool isApproachingNormals;
     private bool isMindCluck;
+    private bool isBomb;
     private Coroutine wanderCoroutine;
 
     private static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
@@ -46,6 +53,7 @@ public class ChickenWander : MonoBehaviour
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         isMindCluck = GetComponent<MindCluck>() != null;
+        isBomb = GetComponent<Bomb>() != null;
     }
 
     private void OnEnable()
@@ -59,6 +67,7 @@ public class ChickenWander : MonoBehaviour
         wanderCoroutine = null;
         isFleeing = false;
         isAttracted = false;
+        isApproachingNormals = false;
         if (animator != null)
             animator.SetBool(IsMovingHash, false);
     }
@@ -73,6 +82,8 @@ public class ChickenWander : MonoBehaviour
         {
             if (isFleeing)
                 EndFlee();
+            if (isApproachingNormals)
+                EndApproachNormals();
 
             TryAttractToMindCluck();
             return;
@@ -81,7 +92,14 @@ public class ChickenWander : MonoBehaviour
         if (isAttracted)
             EndAttract();
 
-        TryFleeFromFarmer();
+        if (TryFleeFromFarmer())
+        {
+            if (isApproachingNormals)
+                EndApproachNormals();
+            return;
+        }
+
+        TryApproachNormals();
     }
 
     private bool TryFleeFromFarmer()
@@ -112,6 +130,67 @@ public class ChickenWander : MonoBehaviour
             EndFlee();
 
         return false;
+    }
+
+    private bool TryApproachNormals()
+    {
+        if (!isBomb)
+            return false;
+
+        if (!TryGetNearestNormal(out Vector2 normalPos, out float dist))
+        {
+            if (isApproachingNormals)
+                EndApproachNormals();
+            return false;
+        }
+
+        // Close enough — resume random wander.
+        if (dist <= bombMaxDistanceFromNormals)
+        {
+            if (isApproachingNormals)
+                EndApproachNormals();
+            return false;
+        }
+
+        if (!isApproachingNormals)
+            BeginApproachNormals();
+
+        MoveToward(normalPos, moveSpeed * bombApproachSpeedMultiplier);
+        return true;
+    }
+
+    private bool TryGetNearestNormal(out Vector2 position, out float distance)
+    {
+        position = default;
+        distance = float.MaxValue;
+
+        ChickenWander[] chickens = FindObjectsByType<ChickenWander>(FindObjectsSortMode.None);
+        bool found = false;
+
+        for (int i = 0; i < chickens.Length; i++)
+        {
+            ChickenWander other = chickens[i];
+            if (other == null || other == this)
+                continue;
+
+            // Only plain normals — not bombs, minds, or electrics.
+            if (other.GetComponent<Bomb>() != null)
+                continue;
+            if (other.GetComponent<MindCluck>() != null)
+                continue;
+            if (other.GetComponent<ElectricChicken>() != null)
+                continue;
+
+            float d = Vector2.Distance(transform.position, other.transform.position);
+            if (d < distance)
+            {
+                distance = d;
+                position = other.transform.position;
+                found = true;
+            }
+        }
+
+        return found;
     }
 
     private void TryAttractToMindCluck()
@@ -171,6 +250,18 @@ public class ChickenWander : MonoBehaviour
     private void EndAttract()
     {
         isAttracted = false;
+        animator.SetBool(IsMovingHash, false);
+    }
+
+    private void BeginApproachNormals()
+    {
+        isApproachingNormals = true;
+        animator.SetBool(IsMovingHash, true);
+    }
+
+    private void EndApproachNormals()
+    {
+        isApproachingNormals = false;
         animator.SetBool(IsMovingHash, false);
     }
 
@@ -291,26 +382,28 @@ public class ChickenWander : MonoBehaviour
         return position;
     }
 
+    private bool IsWanderInterrupted => isFleeing || isAttracted || isApproachingNormals;
+
     private IEnumerator WanderLoop()
     {
         while (enabled)
         {
-            // Pause wander while Update owns movement for flee / attract.
-            while (isFleeing || isAttracted)
+            // Pause wander while Update owns movement for flee / attract / approach.
+            while (IsWanderInterrupted)
                 yield return null;
 
             PickNewTarget();
             yield return MoveToTarget();
 
-            if (isFleeing || isAttracted)
+            if (IsWanderInterrupted)
                 continue;
 
             animator.SetBool(IsMovingHash, false);
 
-            // Interruptible idle: check every frame so flee/attract can start immediately.
+            // Interruptible idle: check every frame so overrides can start immediately.
             float idleDuration = Random.Range(minIdleTime, maxIdleTime);
             float elapsed = 0f;
-            while (elapsed < idleDuration && !isFleeing && !isAttracted)
+            while (elapsed < idleDuration && !IsWanderInterrupted)
             {
                 elapsed += Time.deltaTime;
                 yield return null;
@@ -326,8 +419,18 @@ public class ChickenWander : MonoBehaviour
     {
         animator.SetBool("Highlight", false);
     }
+
     private void PickNewTarget()
     {
+        // Bombs wander randomly near normals so they don't drift away every idle cycle.
+        if (isBomb && TryGetNearestNormal(out Vector2 anchor, out _))
+        {
+            float angle = Random.Range(0f, Mathf.PI * 2f);
+            float radius = Random.Range(0f, bombMaxDistanceFromNormals * 0.85f);
+            targetPosition = ClampToArea(anchor + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius);
+            return;
+        }
+
         targetPosition = new Vector2(
             Random.Range(areaMin.x, areaMax.x),
             Random.Range(areaMin.y, areaMax.y)
@@ -338,7 +441,7 @@ public class ChickenWander : MonoBehaviour
     {
         animator.SetBool(IsMovingHash, true);
 
-        while (!isFleeing && !isAttracted &&
+        while (!IsWanderInterrupted &&
                Vector2.Distance(transform.position, targetPosition) > arrivalThreshold)
         {
             Vector2 current = transform.position;
@@ -350,7 +453,7 @@ public class ChickenWander : MonoBehaviour
             yield return null;
         }
 
-        if (!isFleeing && !isAttracted)
+        if (!IsWanderInterrupted)
             transform.position = targetPosition;
     }
 }

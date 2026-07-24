@@ -850,67 +850,26 @@ MonoBehaviour:
   introBanner: {fileID: 81212988}
   spawnAreaMin: {x: -7.5, y: -4.5}
   spawnAreaMax: {x: 7.5, y: 4.5}
-  startingNormals: 3
-  delayBeforeFirstWave: 5
-  waves:
-  - name: 1 - Bomb intro
-    normals: 2
-    bombs: 1
-    extraBombs: 0
-    minds: 0
-    electrics: 0
-    extraElectrics: 0
-    breakAfterSeconds: 14
-  - name: 2 - More bombs
-    normals: 3
-    bombs: 2
-    extraBombs: 0
-    minds: 0
-    electrics: 0
-    extraElectrics: 0
-    breakAfterSeconds: 13
-  - name: 3 - Mind unlock
-    normals: 4
-    bombs: 2
-    extraBombs: 1
-    minds: 1
-    electrics: 0
-    extraElectrics: 0
-    breakAfterSeconds: 12
-  - name: 4 - Electric unlock
-    normals: 4
-    bombs: 2
-    extraBombs: 1
-    minds: 1
-    electrics: 1
-    extraElectrics: 0
-    breakAfterSeconds: 12
-  - name: 5
-    normals: 5
-    bombs: 3
-    extraBombs: 1
-    minds: 1
-    electrics: 1
-    extraElectrics: 1
-    breakAfterSeconds: 11
-  - name: 6
-    normals: 6
-    bombs: 3
-    extraBombs: 2
-    minds: 1
-    electrics: 1
-    extraElectrics: 1
-    breakAfterSeconds: 10
-  maxBombsPerWave: 4
-  maxExtraBombsPerWave: 2
-  maxMindsPerWave: 1
-  maxElectricsPerWave: 1
-  maxExtraElectricsPerWave: 1
-  minBreakSeconds: 8
-  openingSpawnGap: 0.4
-  midLethalGap: 2.5
-  pauseBeforeMidLethals: 2
-  maxChickensOnScreen: 24
+  startingNormals: 8
+  openingSpawnGap: 0.25
+  delayBeforeFirstWave: 3
+  waveDuration: 30
+  mindUnlockWave: 2
+  electricUnlockWave: 3
+  normalsAfterEachWave: 2
+  bombSpawnPercent: 70
+  mindSpawnPercent: 20
+  electricSpawnPercent: 10
+  startSpawnInterval: 4
+  minSpawnInterval: 1.2
+  intervalDecreasePerWave: 0.3
+  startMaxThreats: 4
+  maxThreatIncreasePerWave: 1
+  hardMaxThreats: 18
+  maxMindsOnScreen: 2
+  startSpawnBurst: 1
+  wavesPerBurstIncrease: 3
+  hardMaxSpawnBurst: 4
 --- !u!114 &911303576
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -927,9 +886,10 @@ MonoBehaviour:
   pixelonFont: {fileID: 11400000, guid: 403495a2d9e80fb40b4cf62e4eb077da, type: 2}
   label: {fileID: 0}
   fontSize: 42
+  gameOverFontSize: 72
   textColor: {r: 1, g: 1, b: 1, a: 1}
-  waitingFormat: "NEXT WAVE\n{0}"
-  spawningText: 
+  waveFormat: "WAVE {0}\n{1}"
+  gameOverText: "GAME OVER\nAll chickens lost"
 --- !u!4 &911303575
 Transform:
   m_ObjectHideFlags: 0

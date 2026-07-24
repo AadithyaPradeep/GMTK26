@@ -143,6 +143,10 @@ MonoBehaviour:
   farmerTransform: {fileID: 0}
   fleeDistance: 3
   fleeSpeedMultiplier: 2
+  attractSpeedMultiplier: 1.25
+  attractStopDistance: 0.35
+  bombMaxDistanceFromNormals: 3
+  bombApproachSpeedMultiplier: 1.2
 --- !u!61 &2605856395733434831
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -206,6 +210,7 @@ MonoBehaviour:
   explosion: {fileID: 4999050520589805456, guid: f5aa5a5a37ecc7c4bbdef3747428bc5c, type: 3}
   source: {fileID: 7024850616175339424}
   explosionRadius: 2.5
+  explosionVfxDuration: 0.7
 --- !u!114 &7024850616175339424
 MonoBehaviour:
   m_ObjectHideFlags: 0

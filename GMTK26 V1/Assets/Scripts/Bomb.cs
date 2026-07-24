@@ -106,6 +106,10 @@ public class Bomb : MonoBehaviour
             if (chicken.gameObject == gameObject)
                 continue;
 
+            // Exploding chickens don't kill other exploding chickens.
+            if (chicken.GetComponent<Bomb>() != null)
+                continue;
+
             // Don't wipe a lightning chicken mid-strike (that used to orphan looping VFX).
             ElectricChicken electric = chicken.GetComponent<ElectricChicken>();
             if (electric != null && electric.IsStriking)
