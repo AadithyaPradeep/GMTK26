@@ -9,53 +9,71 @@ public class Bomb : MonoBehaviour
     public TextMeshPro text;
     public GameObject explosion;
     public CinemachineImpulseSource source;
+
     [Header("Blast")]
     [Tooltip("Kill radius in world units. Explosion sprites are 64px @ 16 PPU (4 units across), so ~2 matches the visible blast.")]
     [SerializeField] private float explosionRadius = 2f;
 
-    private bool dead = false;
+    private bool dead;
 
     private void Update()
     {
-        if (timer > 0)
+        if (dead)
+            return;
+
+        if (timer > 0f)
         {
-            text.text = Mathf.RoundToInt(timer).ToString();
+            if (text != null)
+                text.text = Mathf.RoundToInt(timer).ToString();
             timer -= Time.deltaTime;
         }
 
-        if (timer <= 0 && !dead)
-        {
-            dead = true;
-            StartCoroutine(Spawn());
-
-            // Hide the bomb chicken visuals while the blast plays.
-            foreach (var sr in GetComponentsInChildren<SpriteRenderer>())
-                sr.enabled = false;
-
-            if (text != null)
-                text.gameObject.SetActive(false);
-
-            ChickenWander wander = GetComponent<ChickenWander>();
-            if (wander != null)
-                wander.enabled = false;
-        }
+        if (timer <= 0f)
+            Detonate();
     }
 
-    private IEnumerator Spawn()
+    /// <summary>
+    /// Forces an immediate explosion (timer expiry or external trigger like an electric strike).
+    /// </summary>
+    public void Detonate()
+    {
+        if (dead)
+            return;
+
+        dead = true;
+        StartCoroutine(BlastRoutine());
+
+        foreach (var sr in GetComponentsInChildren<SpriteRenderer>())
+            sr.enabled = false;
+
+        if (text != null)
+            text.gameObject.SetActive(false);
+
+        ChickenWander wander = GetComponent<ChickenWander>();
+        if (wander != null)
+            wander.enabled = false;
+    }
+
+    private IEnumerator BlastRoutine()
     {
         Vector2 origin = transform.position;
-        GameObject spawnS = Instantiate(explosion, origin, Quaternion.identity);
-        source.GenerateImpulse();
+        GameObject spawnS = null;
+        if (explosion != null)
+            spawnS = Instantiate(explosion, origin, Quaternion.identity);
+
+        if (source != null)
+            source.GenerateImpulse();
+
         KillChickensInRadius(origin);
 
         yield return new WaitForSeconds(0.7f);
-        Destroy(spawnS);
+        if (spawnS != null)
+            Destroy(spawnS);
         Destroy(gameObject);
     }
 
     private void KillChickensInRadius(Vector2 origin)
     {
-        // Distance check (not collider overlap) so grabbed chickens with disabled colliders still die.
         ChickenWander[] chickens = FindObjectsByType<ChickenWander>(FindObjectsSortMode.None);
         float radiusSq = explosionRadius * explosionRadius;
 
@@ -65,7 +83,6 @@ public class Bomb : MonoBehaviour
             if (chicken == null)
                 continue;
 
-            // Keep this bomb alive until the VFX finishes, then destroy it in Spawn().
             if (chicken.gameObject == gameObject)
                 continue;
 

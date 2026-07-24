@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 134827489556572887}
   - component: {fileID: 7987218975250509130}
   - component: {fileID: 8840897930045955264}
+  - component: {fileID: 5511223344556677889}
   m_Layer: 6
   m_Name: ElectricChicken
   m_TagString: Untagged
@@ -242,6 +243,25 @@ MonoBehaviour:
     DissipationDistance: 100
     PropagationSpeed: 343
   DefaultVelocity: {x: 0, y: -0.25, z: 0}
+--- !u!114 &5511223344556677889
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2479665210511819439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3c2a14b9d4076a5e1c0d8f2b4a697, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ElectricChicken
+  timer: 5
+  text: {fileID: 6425612243949399713}
+  electricStrike: {fileID: 4010197027570989726, guid: 027ec7a652adb1d4799ea4c3abd819cb, type: 3}
+  source: {fileID: 8840897930045955264}
+  strikeRadius: 4
+  strikeVfxDuration: 0.68
+  damageDelay: 0.55
 --- !u!1 &3170054332628371734
 GameObject:
   m_ObjectHideFlags: 0
