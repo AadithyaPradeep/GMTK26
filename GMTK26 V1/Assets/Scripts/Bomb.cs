@@ -1,13 +1,14 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using Unity.Cinemachine;
 
 public class Bomb : MonoBehaviour
 {
     public float timer;
     public TextMeshPro text;
     public GameObject explosion;
-
+    public CinemachineImpulseSource source;
     [Header("Blast")]
     [Tooltip("Kill radius in world units. Explosion sprites are 64px @ 16 PPU (4 units across), so ~2 matches the visible blast.")]
     [SerializeField] private float explosionRadius = 2f;
@@ -44,7 +45,7 @@ public class Bomb : MonoBehaviour
     {
         Vector2 origin = transform.position;
         GameObject spawnS = Instantiate(explosion, origin, Quaternion.identity);
-
+        source.GenerateImpulse();
         KillChickensInRadius(origin);
 
         yield return new WaitForSeconds(0.7f);
