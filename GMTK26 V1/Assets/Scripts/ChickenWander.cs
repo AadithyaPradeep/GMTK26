@@ -29,6 +29,9 @@ public class ChickenWander : MonoBehaviour
     [SerializeField] private float bombMaxDistanceFromNormals = 4f;
     [SerializeField] private float bombApproachSpeedMultiplier = 1.35f;
 
+    [Header("Panic")]
+    [SerializeField] private float panicSpeedMultiplier = 2.9f;
+
     private Animator animator;
     private SpriteRenderer spriteRenderer;
     private Vector2 targetPosition;
@@ -38,9 +41,12 @@ public class ChickenWander : MonoBehaviour
     private bool isApproachingNormals;
     private bool isMindCluck;
     private bool isBomb;
+    private bool isPanic;
     private Coroutine wanderCoroutine;
 
     private static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
+
+    private float CurrentMoveSpeed => isPanic ? moveSpeed * panicSpeedMultiplier : moveSpeed;
 
     public void SetWanderArea(Vector2 min, Vector2 max)
     {
@@ -54,6 +60,7 @@ public class ChickenWander : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         isMindCluck = GetComponent<MindCluck>() != null;
         isBomb = GetComponent<Bomb>() != null;
+        isPanic = GetComponent<PanicChicken>() != null;
     }
 
     private void OnEnable()
@@ -74,8 +81,8 @@ public class ChickenWander : MonoBehaviour
 
     private void Update()
     {
-        // Mind Clucks are never attracted — they keep normal flee/wander.
-        bool canBeAttracted = !isMindCluck;
+        // Mind / panic chickens are never attracted — they keep fleeing / sprinting.
+        bool canBeAttracted = !isMindCluck && !isPanic;
 
         // While a Mind Cluck pulse can pull this chicken, skip farmer flee.
         if (canBeAttracted && MindCluck.TryGetAttracting(transform.position, transform, out _))
@@ -173,12 +180,14 @@ public class ChickenWander : MonoBehaviour
             if (other == null || other == this)
                 continue;
 
-            // Only plain normals — not bombs, minds, or electrics.
+            // Only plain normals — not bombs, minds, electrics, or panics.
             if (other.GetComponent<Bomb>() != null)
                 continue;
             if (other.GetComponent<MindCluck>() != null)
                 continue;
             if (other.GetComponent<ElectricChicken>() != null)
+                continue;
+            if (other.GetComponent<PanicChicken>() != null)
                 continue;
 
             float d = Vector2.Distance(transform.position, other.transform.position);
@@ -279,7 +288,7 @@ public class ChickenWander : MonoBehaviour
     {
         Vector2 current = transform.position;
         Vector2 farmerPos = farmerTransform.position;
-        float step = moveSpeed * fleeSpeedMultiplier * Time.deltaTime;
+        float step = CurrentMoveSpeed * fleeSpeedMultiplier * Time.deltaTime;
 
         Vector2 next = GetEdgeAwareFleePosition(current, farmerPos, step);
 
@@ -398,6 +407,10 @@ public class ChickenWander : MonoBehaviour
             if (IsWanderInterrupted)
                 continue;
 
+            // Panic chickens never idle — immediately pick the next sprint target.
+            if (isPanic)
+                continue;
+
             animator.SetBool(IsMovingHash, false);
 
             // Interruptible idle: check every frame so overrides can start immediately.
@@ -445,7 +458,7 @@ public class ChickenWander : MonoBehaviour
                Vector2.Distance(transform.position, targetPosition) > arrivalThreshold)
         {
             Vector2 current = transform.position;
-            Vector2 next = Vector2.MoveTowards(current, targetPosition, moveSpeed * Time.deltaTime);
+            Vector2 next = Vector2.MoveTowards(current, targetPosition, CurrentMoveSpeed * Time.deltaTime);
 
             ApplyFacing(current, next);
 

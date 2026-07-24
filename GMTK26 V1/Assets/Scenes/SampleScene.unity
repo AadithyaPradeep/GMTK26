@@ -846,6 +846,8 @@ MonoBehaviour:
   - {fileID: 6175148286897977551, guid: 2bba38cf02f699341a8bae9b4ed02d04, type: 3}
   electricChickenPrefabs:
   - {fileID: 2479665210511819439, guid: 1929dfaaa3dff22439d3ea7bc1e44650, type: 3}
+  panicChickenPrefabs:
+  - {fileID: 1533770966765506361, guid: f44d21017a3d52241ad019263abc0834, type: 3}
   spawnEffect: {fileID: 4999050520589805456, guid: 97d33ad94dd58c34da7a110f96b5a019, type: 3}
   farmerTransform: {fileID: 229318277}
   introBanner: {fileID: 81212988}
@@ -857,10 +859,12 @@ MonoBehaviour:
   waveDuration: 15
   mindUnlockWave: 2
   electricUnlockWave: 3
+  panicUnlockWave: 1
   normalsAfterEachWave: 3
-  bombSpawnPercent: 70
-  mindSpawnPercent: 20
-  electricSpawnPercent: 20
+  bombSpawnPercent: 60
+  mindSpawnPercent: 15
+  electricSpawnPercent: 15
+  panicSpawnPercent: 15
   startSpawnInterval: 4
   minSpawnInterval: 1.2
   intervalDecreasePerWave: 0.3
@@ -868,6 +872,7 @@ MonoBehaviour:
   maxThreatIncreasePerWave: 1
   hardMaxThreats: 18
   maxMindsOnScreen: 2
+  maxPanicsPerWave: 2
   startSpawnBurst: 1
   wavesPerBurstIncrease: 1
   hardMaxSpawnBurst: 4
