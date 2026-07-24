@@ -20,11 +20,16 @@ public class ChickenWander : MonoBehaviour
     public float fleeDistance = 3f;
     public float fleeSpeedMultiplier = 2f;
 
+    [Header("Mind Cluck Attract")]
+    [SerializeField] private float attractSpeedMultiplier = 1.25f;
+    [SerializeField] private float attractStopDistance = 0.35f;
+
     private Animator animator;
     private SpriteRenderer spriteRenderer;
     private Vector2 targetPosition;
 
     private bool isFleeing;
+    private bool isAttracted;
     private Coroutine wanderCoroutine;
 
     private static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
@@ -51,17 +56,27 @@ public class ChickenWander : MonoBehaviour
         StopAllCoroutines();
         wanderCoroutine = null;
         isFleeing = false;
+        isAttracted = false;
         if (animator != null)
             animator.SetBool(IsMovingHash, false);
     }
 
     private void Update()
     {
+        // Priority: flee farmer > mind-cluck attract > wander coroutine.
+        if (TryFleeFromFarmer())
+            return;
+
+        TryAttractToMindCluck();
+    }
+
+    private bool TryFleeFromFarmer()
+    {
         if (farmerTransform == null)
         {
             if (isFleeing)
                 EndFlee();
-            return;
+            return false;
         }
 
         float distance = Vector2.Distance(transform.position, farmerTransform.position);
@@ -69,15 +84,48 @@ public class ChickenWander : MonoBehaviour
 
         if (shouldFlee)
         {
+            if (isAttracted)
+                EndAttract();
+
             if (!isFleeing)
                 BeginFlee();
 
             MoveAwayFromFarmer();
+            return true;
         }
-        else if (isFleeing)
-        {
+
+        if (isFleeing)
             EndFlee();
+
+        return false;
+    }
+
+    private void TryAttractToMindCluck()
+    {
+        // Only pulled while a nearby Mind Cluck is mid-pulse (small radius + short duration).
+        if (!MindCluck.TryGetAttracting(transform.position, transform, out MindCluck mind))
+        {
+            if (isAttracted)
+                EndAttract();
+            return;
         }
+
+        Vector2 mindPos = mind.transform.position;
+        float dist = Vector2.Distance(transform.position, mindPos);
+
+        // Close enough — pause in place for the rest of the pulse, then wander resumes.
+        if (dist <= attractStopDistance)
+        {
+            if (!isAttracted)
+                BeginAttract();
+            animator.SetBool(IsMovingHash, false);
+            return;
+        }
+
+        if (!isAttracted)
+            BeginAttract();
+
+        MoveToward(mindPos, moveSpeed * attractSpeedMultiplier);
     }
 
     private void BeginFlee()
@@ -90,7 +138,28 @@ public class ChickenWander : MonoBehaviour
     {
         isFleeing = false;
         animator.SetBool(IsMovingHash, false);
-        // WanderLoop is still running and will pick a fresh target once isFleeing clears.
+    }
+
+    private void BeginAttract()
+    {
+        isAttracted = true;
+        animator.SetBool(IsMovingHash, true);
+    }
+
+    private void EndAttract()
+    {
+        isAttracted = false;
+        animator.SetBool(IsMovingHash, false);
+    }
+
+    private void MoveToward(Vector2 target, float speed)
+    {
+        Vector2 current = transform.position;
+        Vector2 next = Vector2.MoveTowards(current, target, speed * Time.deltaTime);
+        next = ClampToArea(next);
+
+        ApplyFacing(current, next);
+        transform.position = next;
     }
 
     private void MoveAwayFromFarmer()
@@ -101,6 +170,12 @@ public class ChickenWander : MonoBehaviour
 
         Vector2 next = GetEdgeAwareFleePosition(current, farmerPos, step);
 
+        ApplyFacing(current, next);
+        transform.position = next;
+    }
+
+    private void ApplyFacing(Vector2 current, Vector2 next)
+    {
         float deltaX = next.x - current.x;
         if (deltaX != 0f)
             spriteRenderer.flipX = deltaX < 0f;
@@ -109,8 +184,6 @@ public class ChickenWander : MonoBehaviour
         {
             sr.flipX = spriteRenderer.flipX;
         }
-
-        transform.position = next;
     }
 
     /// <summary>
@@ -200,22 +273,22 @@ public class ChickenWander : MonoBehaviour
     {
         while (enabled)
         {
-            // Pause wander while Update owns movement for fleeing.
-            while (isFleeing)
+            // Pause wander while Update owns movement for flee / attract.
+            while (isFleeing || isAttracted)
                 yield return null;
 
             PickNewTarget();
             yield return MoveToTarget();
 
-            if (isFleeing)
+            if (isFleeing || isAttracted)
                 continue;
 
             animator.SetBool(IsMovingHash, false);
 
-            // Interruptible idle: check every frame so flee can start immediately.
+            // Interruptible idle: check every frame so flee/attract can start immediately.
             float idleDuration = Random.Range(minIdleTime, maxIdleTime);
             float elapsed = 0f;
-            while (elapsed < idleDuration && !isFleeing)
+            while (elapsed < idleDuration && !isFleeing && !isAttracted)
             {
                 elapsed += Time.deltaTime;
                 yield return null;
@@ -243,27 +316,19 @@ public class ChickenWander : MonoBehaviour
     {
         animator.SetBool(IsMovingHash, true);
 
-        while (!isFleeing &&
+        while (!isFleeing && !isAttracted &&
                Vector2.Distance(transform.position, targetPosition) > arrivalThreshold)
         {
             Vector2 current = transform.position;
             Vector2 next = Vector2.MoveTowards(current, targetPosition, moveSpeed * Time.deltaTime);
 
-            float deltaX = next.x - current.x;
-            if (deltaX != 0f)
-                spriteRenderer.flipX = deltaX < 0f;
-
-
-            foreach (var sr in GetComponentsInChildren<SpriteRenderer>())
-            {
-                sr.flipX = spriteRenderer.flipX;
-            }
+            ApplyFacing(current, next);
 
             transform.position = next;
             yield return null;
         }
 
-        if (!isFleeing)
+        if (!isFleeing && !isAttracted)
             transform.position = targetPosition;
     }
 }
