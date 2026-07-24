@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Shows countdown until the next chicken wave using Pixelon SDF.
+/// Wave countdown + game-over text (Pixelon SDF).
 /// </summary>
 public class WaveTimerUI : MonoBehaviour
 {
@@ -11,13 +11,11 @@ public class WaveTimerUI : MonoBehaviour
     [SerializeField] private TMP_FontAsset pixelonFont;
     [SerializeField] private TextMeshProUGUI label;
     [SerializeField] private float fontSize = 42f;
+    [SerializeField] private float gameOverFontSize = 72f;
     [SerializeField] private Color textColor = Color.white;
 
-    [Tooltip("Shown while counting down. {0} = seconds left (ceil).")]
-    [SerializeField] private string waitingFormat = "NEXT WAVE\n{0}";
-
-    [Tooltip("Shown while a wave is currently spawning.")]
-    [SerializeField] private string spawningText = "";
+    [SerializeField] private string waveFormat = "WAVE {0}\n{1}";
+    [SerializeField] private string gameOverText = "GAME OVER\nAll chickens lost";
 
     private void Awake()
     {
@@ -27,7 +25,7 @@ public class WaveTimerUI : MonoBehaviour
         if (label == null)
             label = CreateLabel();
 
-        ApplyFont();
+        ApplyFont(fontSize);
     }
 
     private void Update()
@@ -35,35 +33,37 @@ public class WaveTimerUI : MonoBehaviour
         if (label == null || spawner == null)
             return;
 
+        if (spawner.IsGameOver)
+        {
+            ApplyFont(gameOverFontSize);
+            label.text = gameOverText;
+            label.enabled = true;
+            return;
+        }
+
+        ApplyFont(fontSize);
+
         if (spawner.IsWaitingForNextWave)
         {
             int seconds = Mathf.CeilToInt(spawner.SecondsUntilNextWave);
-            label.text = string.Format(waitingFormat, seconds);
+            label.text = string.Format(waveFormat, spawner.CurrentWave, seconds);
             label.enabled = true;
         }
         else
         {
-            if (string.IsNullOrEmpty(spawningText))
-            {
-                label.text = string.Empty;
-                label.enabled = false;
-            }
-            else
-            {
-                label.enabled = true;
-                label.text = spawningText;
-            }
+            label.text = string.Empty;
+            label.enabled = false;
         }
     }
 
-    private void ApplyFont()
+    private void ApplyFont(float size)
     {
         if (label == null || pixelonFont == null)
             return;
 
         label.font = pixelonFont;
         label.fontSharedMaterial = pixelonFont.material;
-        label.fontSize = fontSize;
+        label.fontSize = size;
         label.color = textColor;
         label.alignment = TextAlignmentOptions.Center;
     }
@@ -93,7 +93,7 @@ public class WaveTimerUI : MonoBehaviour
         rt.anchorMax = new Vector2(0.5f, 1f);
         rt.pivot = new Vector2(0.5f, 1f);
         rt.anchoredPosition = new Vector2(0f, -36f);
-        rt.sizeDelta = new Vector2(800f, 140f);
+        rt.sizeDelta = new Vector2(900f, 180f);
 
         tmp.raycastTarget = false;
         return tmp;
