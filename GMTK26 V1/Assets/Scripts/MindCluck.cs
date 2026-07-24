@@ -17,6 +17,7 @@ public class MindCluck : MonoBehaviour
     [Header("Optional VFX")]
     [Tooltip("If set, enabled only while pulsing (e.g. MC Eff child).")]
     [SerializeField] private GameObject pulseEffect;
+    public GameObject radEff;
 
     private static readonly List<MindCluck> Active = new List<MindCluck>();
 
@@ -28,12 +29,19 @@ public class MindCluck : MonoBehaviour
         if (pulseEffect == null)
         {
             Transform eff = transform.Find("MC Eff");
+            Transform reff = transform.Find("Radius");
             if (eff != null)
+            {
                 pulseEffect = eff.gameObject;
+                radEff = reff.gameObject;
+            }
         }
 
         if (pulseEffect != null)
+        {
             pulseEffect.SetActive(false);
+            radEff.SetActive(false);
+        }
     }
 
     private void OnEnable()
@@ -49,7 +57,10 @@ public class MindCluck : MonoBehaviour
         Active.Remove(this);
         IsPulsing = false;
         if (pulseEffect != null)
+        {
             pulseEffect.SetActive(false);
+            radEff.SetActive(false);
+        }
         StopAllCoroutines();
     }
 
@@ -62,13 +73,19 @@ public class MindCluck : MonoBehaviour
 
             IsPulsing = true;
             if (pulseEffect != null)
+            {
                 pulseEffect.SetActive(true);
+                radEff.SetActive(true);
+            }
 
             yield return new WaitForSeconds(pulseDuration);
 
             IsPulsing = false;
             if (pulseEffect != null)
+            {
                 pulseEffect.SetActive(false);
+                radEff.SetActive(false);
+            }
         }
     }
 
