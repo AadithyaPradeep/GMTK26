@@ -13,6 +13,7 @@ public class Bomb : MonoBehaviour
     [Header("Blast")]
     [Tooltip("Kill radius in world units. Explosion sprites are 64px @ 16 PPU (4 units across), so ~2 matches the visible blast.")]
     [SerializeField] private float explosionRadius = 2f;
+    [SerializeField] private float explosionVfxDuration = 0.7f;
 
     private bool dead;
 
@@ -59,16 +60,18 @@ public class Bomb : MonoBehaviour
         Vector2 origin = transform.position;
         GameObject spawnS = null;
         if (explosion != null)
+        {
             spawnS = Instantiate(explosion, origin, Quaternion.identity);
+            // Survives this bomb being destroyed early in a chain reaction.
+            Destroy(spawnS, explosionVfxDuration);
+        }
 
         if (source != null)
             source.GenerateImpulse();
 
         KillChickensInRadius(origin);
 
-        yield return new WaitForSeconds(0.7f);
-        if (spawnS != null)
-            Destroy(spawnS);
+        yield return new WaitForSeconds(explosionVfxDuration);
         Destroy(gameObject);
     }
 
@@ -84,6 +87,11 @@ public class Bomb : MonoBehaviour
                 continue;
 
             if (chicken.gameObject == gameObject)
+                continue;
+
+            // Don't wipe a lightning chicken mid-strike (that used to orphan looping VFX).
+            ElectricChicken electric = chicken.GetComponent<ElectricChicken>();
+            if (electric != null && electric.IsStriking)
                 continue;
 
             Vector2 toChicken = (Vector2)chicken.transform.position - origin;

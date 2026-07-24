@@ -20,6 +20,9 @@ public class ElectricChicken : MonoBehaviour
 
     private bool dead;
 
+    /// <summary>True once this chicken has started its lightning strike.</summary>
+    public bool IsStriking => dead;
+
     private void Update()
     {
         if (dead)
@@ -60,7 +63,11 @@ public class ElectricChicken : MonoBehaviour
         Vector2 origin = transform.position;
         GameObject vfx = null;
         if (electricStrike != null)
+        {
             vfx = Instantiate(electricStrike, origin, Quaternion.identity);
+            // Independent of this chicken surviving a bomb chain — always cleans up.
+            Destroy(vfx, strikeVfxDuration);
+        }
 
         if (source != null)
             source.GenerateImpulse();
@@ -76,8 +83,6 @@ public class ElectricChicken : MonoBehaviour
         if (remaining > 0f)
             yield return new WaitForSeconds(remaining);
 
-        if (vfx != null)
-            Destroy(vfx);
         Destroy(gameObject);
     }
 
