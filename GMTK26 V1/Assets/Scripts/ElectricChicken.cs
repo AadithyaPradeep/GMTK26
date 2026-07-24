@@ -72,6 +72,9 @@ public class ElectricChicken : MonoBehaviour
         if (source != null)
             source.GenerateImpulse();
 
+        if (GameAudio.Instance != null)
+            GameAudio.Instance.PlayExplosion();
+
         // Wait until the lightning anim is almost finished, then apply damage.
         float delay = Mathf.Clamp(damageDelay, 0f, strikeVfxDuration);
         if (delay > 0f)

@@ -47,6 +47,8 @@ public class ChickenSpawner : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private Transform farmerTransform;
+    [Tooltip("Intro 'Wave 1 / Protect your chickens' banner. Hidden a few seconds after start.")]
+    [SerializeField] private GameObject introBanner;
 
     [Header("Spawn Area")]
     [SerializeField] private Vector2 spawnAreaMin = new Vector2(-7.5f, -4.5f);
@@ -106,6 +108,7 @@ public class ChickenSpawner : MonoBehaviour
     private IEnumerator RunGame()
     {
         CurrentWave = 0;
+        StartCoroutine(HideIntroBannerAfterDelay(2f));
 
         yield return SpawnBatch(BuildOpeningList(startingNormals), openingSpawnGap);
 
@@ -117,6 +120,15 @@ public class ChickenSpawner : MonoBehaviour
             CurrentWave++;
             yield return RunWave(GetWave(CurrentWave));
         }
+    }
+
+    private IEnumerator HideIntroBannerAfterDelay(float seconds)
+    {
+        if (introBanner == null)
+            yield break;
+
+        yield return new WaitForSeconds(seconds);
+        introBanner.SetActive(false);
     }
 
     private IEnumerator RunWave(Wave wave)
