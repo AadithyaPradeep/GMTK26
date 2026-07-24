@@ -16,6 +16,7 @@ public class GrabCluck : MonoBehaviour
     private Transform grabbedCluck;
     public GameObject hand;
     public CinemachineImpulseSource source;
+    public float strength;
  
 
     private void Awake()
@@ -47,7 +48,7 @@ public class GrabCluck : MonoBehaviour
                 grabbedCluck = selected.transform;
                 grabbedCluck.SetParent(transform);
                 Vector3 dif = grabbedCluck.transform.position - transform.position;
-                source.GenerateImpulseWithVelocity(0.2f * dif.normalized);
+                source.GenerateImpulseWithVelocity(strength * dif.normalized);
                 grabbedCluck.localPosition = new Vector3(0, 0.3f, 0);
                 grabbedCluck.GetComponent<BoxCollider2D>().enabled = false;
                 grabbedCluck.GetComponent<ChickenWander>().enabled = false;
