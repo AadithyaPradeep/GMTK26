@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 4806267779491221926}
   - component: {fileID: 2605856395733434831}
   - component: {fileID: 998865193685917064}
+  - component: {fileID: 7024850616175339424}
   m_Layer: 6
   m_Name: BombCluck
   m_TagString: Untagged
@@ -139,6 +140,9 @@ MonoBehaviour:
   arrivalThreshold: 0.05
   minIdleTime: 1
   maxIdleTime: 3
+  farmerTransform: {fileID: 0}
+  fleeDistance: 3
+  fleeSpeedMultiplier: 2
 --- !u!61 &2605856395733434831
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -197,9 +201,64 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9015ab9fed46fd4c9f6b99bfb092461, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bomb
-  timer: 10
+  timer: 5
   text: {fileID: 7549566951778607351}
   explosion: {fileID: 4999050520589805456, guid: f5aa5a5a37ecc7c4bbdef3747428bc5c, type: 3}
+  source: {fileID: 7024850616175339424}
+  explosionRadius: 2.5
+--- !u!114 &7024850616175339424
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4603569667051958}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 180ecf9b41d478f468eb3e9083753217, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineImpulseSource
+  ImpulseDefinition:
+    ImpulseChannel: 1
+    ImpulseShape: 3
+    CustomImpulseShape:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    ImpulseDuration: 0.3
+    ImpulseType: 2
+    DissipationRate: 0.25
+    RawSignal: {fileID: 0}
+    AmplitudeGain: 1
+    FrequencyGain: 1
+    RepeatMode: 0
+    Randomize: 1
+    TimeEnvelope:
+      AttackShape:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      DecayShape:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      AttackTime: 0
+      SustainTime: 0.2
+      DecayTime: 0.7
+      ScaleWithImpact: 1
+      HoldForever: 0
+    ImpactRadius: 100
+    DirectionMode: 0
+    DissipationMode: 2
+    DissipationDistance: 100
+    PropagationSpeed: 343
+  DefaultVelocity: {x: 0, y: -0.25, z: 0}
 --- !u!1 &410549605016831827
 GameObject:
   m_ObjectHideFlags: 0
@@ -234,7 +293,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.2, y: 1.837}
+  m_AnchoredPosition: {x: 0.4, y: 1.94}
   m_SizeDelta: {x: 20, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &3727145343714520522
@@ -306,7 +365,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 10
+  m_text: 5
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 403495a2d9e80fb40b4cf62e4eb077da, type: 2}
   m_sharedMaterial: {fileID: -4082490440140907722, guid: 403495a2d9e80fb40b4cf62e4eb077da, type: 2}

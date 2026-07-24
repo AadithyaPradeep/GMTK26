@@ -2,7 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-
+using Unity.Cinemachine;
 using UnityEngine;
 
 using UnityEngine.InputSystem;
@@ -15,7 +15,8 @@ public class GrabCluck : MonoBehaviour
     public Animator aimAnimator;
     private Transform grabbedCluck;
     public GameObject hand;
-
+    public CinemachineImpulseSource source;
+    public float strength;
  
 
     private void Awake()
@@ -46,6 +47,8 @@ public class GrabCluck : MonoBehaviour
                 if (selected == null) return;
                 grabbedCluck = selected.transform;
                 grabbedCluck.SetParent(transform);
+                Vector3 dif = grabbedCluck.transform.position - transform.position;
+                source.GenerateImpulseWithVelocity(strength * dif.normalized);
                 grabbedCluck.localPosition = new Vector3(0, 0.3f, 0);
                 grabbedCluck.GetComponent<BoxCollider2D>().enabled = false;
                 grabbedCluck.GetComponent<ChickenWander>().enabled = false;
