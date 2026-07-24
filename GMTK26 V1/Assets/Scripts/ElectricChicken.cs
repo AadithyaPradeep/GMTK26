@@ -18,19 +18,19 @@ public class ElectricChicken : MonoBehaviour
     [Tooltip("When damage applies, measured from strike start (near end of the lightning anim).")]
     [SerializeField] private float damageDelay = 0.55f;
 
-    private bool dead;
+    private bool striking;
 
-    /// <summary>True once this chicken has started its lightning strike.</summary>
-    public bool IsStriking => dead;
+    /// <summary>True while this chicken is mid lightning strike.</summary>
+    public bool IsStriking => striking;
 
     private void Start()
     {
-        timer = Random.Range(4, 9);
+        ResetTimer();
     }
 
     private void Update()
     {
-        if (dead)
+        if (striking)
             return;
 
         if (timer > 0f)
@@ -46,31 +46,19 @@ public class ElectricChicken : MonoBehaviour
 
     private void Strike()
     {
-        if (dead)
+        if (striking)
             return;
 
-        dead = true;
+        striking = true;
         StartCoroutine(StrikeRoutine());
-
-        foreach (var sr in GetComponentsInChildren<SpriteRenderer>())
-            sr.enabled = false;
-
-        if (text != null)
-            text.gameObject.SetActive(false);
-
-        ChickenWander wander = GetComponent<ChickenWander>();
-        if (wander != null)
-            wander.enabled = false;
     }
 
     private IEnumerator StrikeRoutine()
     {
         Vector2 origin = transform.position;
-        GameObject vfx = null;
         if (electricStrike != null)
         {
-            vfx = Instantiate(electricStrike, origin, Quaternion.identity);
-            // Independent of this chicken surviving a bomb chain — always cleans up.
+            GameObject vfx = Instantiate(electricStrike, origin, Quaternion.identity);
             Destroy(vfx, strikeVfxDuration);
         }
 
@@ -80,7 +68,6 @@ public class ElectricChicken : MonoBehaviour
         if (GameAudio.Instance != null)
             GameAudio.Instance.PlayExplosion();
 
-        // Wait until the lightning anim is almost finished, then apply damage.
         float delay = Mathf.Clamp(damageDelay, 0f, strikeVfxDuration);
         if (delay > 0f)
             yield return new WaitForSeconds(delay);
@@ -91,7 +78,22 @@ public class ElectricChicken : MonoBehaviour
         if (remaining > 0f)
             yield return new WaitForSeconds(remaining);
 
-        Destroy(gameObject);
+        // Survive and arm the next strike.
+        if (this == null)
+            yield break;
+
+        ResetTimer();
+        striking = false;
+    }
+
+    private void ResetTimer()
+    {
+        timer = Random.Range(4, 9);
+        if (text != null)
+        {
+            text.gameObject.SetActive(true);
+            text.text = Mathf.RoundToInt(timer).ToString();
+        }
     }
 
     private void ApplyStrike(Vector2 origin)
@@ -105,11 +107,8 @@ public class ElectricChicken : MonoBehaviour
             if (chicken == null)
                 continue;
 
+            // Don't kill yourself.
             if (chicken.gameObject == gameObject)
-                continue;
-
-            // Electric chickens are immune to lightning.
-            if (chicken.GetComponent<ElectricChicken>() != null)
                 continue;
 
             Vector2 toChicken = (Vector2)chicken.transform.position - origin;
@@ -119,11 +118,11 @@ public class ElectricChicken : MonoBehaviour
             Bomb bomb = chicken.GetComponent<Bomb>();
             if (bomb != null)
             {
-                // Bomb chickens explode instead of silently dying.
                 bomb.Detonate();
                 continue;
             }
 
+            // Other electrics (and everything else in range) die.
             Destroy(chicken.gameObject);
         }
     }
