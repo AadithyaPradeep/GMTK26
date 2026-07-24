@@ -10,6 +10,7 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] public GameObject[] normalChickenPrefabs;
     [SerializeField] public GameObject[] bombChickenPrefabs;
     [SerializeField] public GameObject[] mindChickenPrefabs;
+    [SerializeField] public GameObject[] electricChickenPrefabs;
 
     [Header("Flee Target")]
     [Tooltip("Assigned to every spawned chicken so clones can flee. Prefabs cannot reference a scene Farmer themselves.")]
@@ -42,6 +43,8 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private int bombsPerTenChickens = 6;
     [Tooltip("Target mind clucks per 10 chickens on screen.")]
     [SerializeField] private int mindsPerTenChickens = 3;
+    [Tooltip("Target electric chickens per 10 chickens on screen.")]
+    [SerializeField] private int electricsPerTenChickens = 2;
 
     private readonly List<GameObject> liveChickens = new List<GameObject>();
     private Vector2 spawnPos;
@@ -129,14 +132,19 @@ public class ChickenSpawner : MonoBehaviour
         bool hasNormal = HasAnyPrefab(normalChickenPrefabs);
         bool hasBomb = HasAnyPrefab(bombChickenPrefabs);
         bool hasMind = HasAnyPrefab(mindChickenPrefabs);
+        bool hasElectric = HasAnyPrefab(electricChickenPrefabs);
 
-        if (!hasNormal && !hasBomb && !hasMind)
+        if (!hasNormal && !hasBomb && !hasMind && !hasElectric)
             return null;
 
-        // Special types first (bombs, then mind), otherwise normal.
+        // Special types: bombs, electric, then mind — otherwise normal.
         if (hasBomb && CanSpawnSpecial(CountLiveBombs(), bombsPerTenChickens) &&
             RollSpecial(CountLiveBombs(), bombsPerTenChickens))
             return PickRandomPrefab(bombChickenPrefabs);
+
+        if (hasElectric && CanSpawnSpecial(CountLiveElectrics(), electricsPerTenChickens) &&
+            RollSpecial(CountLiveElectrics(), electricsPerTenChickens))
+            return PickRandomPrefab(electricChickenPrefabs);
 
         if (hasMind && CanSpawnSpecial(CountLiveMinds(), mindsPerTenChickens) &&
             RollSpecial(CountLiveMinds(), mindsPerTenChickens))
@@ -146,6 +154,8 @@ public class ChickenSpawner : MonoBehaviour
             return PickRandomPrefab(normalChickenPrefabs);
         if (hasBomb)
             return PickRandomPrefab(bombChickenPrefabs);
+        if (hasElectric)
+            return PickRandomPrefab(electricChickenPrefabs);
         return PickRandomPrefab(mindChickenPrefabs);
     }
 
@@ -176,6 +186,11 @@ public class ChickenSpawner : MonoBehaviour
     private int CountLiveMinds()
     {
         return CountLiveMatching(mindChickenPrefabs);
+    }
+
+    private int CountLiveElectrics()
+    {
+        return CountLiveMatching(electricChickenPrefabs);
     }
 
     private int CountLiveMatching(GameObject[] prefabs)
