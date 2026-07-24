@@ -22,11 +22,20 @@ public class ChickenSpawner : MonoBehaviour
     [Header("Initial Batch")]
     [SerializeField] public int initialSpawnCountMin = 4;
     [SerializeField] public int initialSpawnCountMax = 8;
-
-    [Header("Ongoing Spawns")]
-    [SerializeField] public float minSpawnInterval = 1.5f;
-    [SerializeField] public float maxSpawnInterval = 3.5f;
     [SerializeField] public int maxChickenCount = 24;
+
+    [Header("Timed Waves")]
+    [Tooltip("Pause after the initial batch before wave 1.")]
+    [SerializeField] private float delayBeforeFirstWave = 2f;
+    [SerializeField] private int baseWaveSpawnMin = 3;
+    [SerializeField] private int baseWaveSpawnMax = 5;
+    [Tooltip("Extra chickens added to each later wave.")]
+    [SerializeField] private int extraSpawnsPerWave = 1;
+    [SerializeField] private float burstSpawnGapMin = 0.25f;
+    [SerializeField] private float burstSpawnGapMax = 0.55f;
+    [SerializeField] private float breakDurationStart = 8f;
+    [SerializeField] private float breakShortenPerWave = 0.5f;
+    [SerializeField] private float minBreakDuration = 3f;
 
     [Header("Spawn Mix")]
     [Tooltip("Target bombs per 10 chickens on screen.")]
@@ -36,6 +45,9 @@ public class ChickenSpawner : MonoBehaviour
 
     private readonly List<GameObject> liveChickens = new List<GameObject>();
     private Vector2 spawnPos;
+
+    /// <summary>1-based wave index. 0 before the first wave starts.</summary>
+    public int CurrentWave { get; private set; }
 
     private void Start()
     {
@@ -52,19 +64,39 @@ public class ChickenSpawner : MonoBehaviour
         for (int i = 0; i < initialCount; i++)
             SpawnChicken();
 
-        StartCoroutine(SpawnLoop());
+        StartCoroutine(WaveLoop());
     }
 
-    private IEnumerator SpawnLoop()
+    private IEnumerator WaveLoop()
     {
+        CurrentWave = 0;
+
+        if (delayBeforeFirstWave > 0f)
+            yield return new WaitForSeconds(delayBeforeFirstWave);
+
         while (enabled)
         {
-            float waitTime = Random.Range(minSpawnInterval, maxSpawnInterval);
-            yield return new WaitForSeconds(waitTime);
+            CurrentWave++;
 
-            PruneDestroyedChickens();
-            if (liveChickens.Count < maxChickenCount)
-                SpawnChicken();
+            int toSpawn = Random.Range(baseWaveSpawnMin, baseWaveSpawnMax + 1)
+                          + (CurrentWave - 1) * Mathf.Max(0, extraSpawnsPerWave);
+
+            for (int i = 0; i < toSpawn; i++)
+            {
+                PruneDestroyedChickens();
+                if (liveChickens.Count < maxChickenCount)
+                    SpawnChicken();
+
+                float gap = Random.Range(burstSpawnGapMin, burstSpawnGapMax);
+                if (gap > 0f)
+                    yield return new WaitForSeconds(gap);
+            }
+
+            float breakTime = Mathf.Max(
+                minBreakDuration,
+                breakDurationStart - (CurrentWave - 1) * breakShortenPerWave
+            );
+            yield return new WaitForSeconds(breakTime);
         }
     }
 
@@ -79,7 +111,7 @@ public class ChickenSpawner : MonoBehaviour
             Random.Range(spawnAreaMin.y, spawnAreaMax.y)
         );
 
-        StartCoroutine("Spawn");
+        StartCoroutine(Spawn());
         GameObject chicken = Instantiate(prefab, spawnPos, Quaternion.identity);
 
         ChickenWander wander = chicken.GetComponent<ChickenWander>();
@@ -224,6 +256,9 @@ public class ChickenSpawner : MonoBehaviour
 
     private IEnumerator Spawn()
     {
+        if (spawnps == null)
+            yield break;
+
         GameObject spawnS = Instantiate(spawnps, spawnPos, Quaternion.identity);
         yield return new WaitForSeconds(0.7f);
         Destroy(spawnS);
