@@ -23,6 +23,11 @@ public class ElectricChicken : MonoBehaviour
     /// <summary>True once this chicken has started its lightning strike.</summary>
     public bool IsStriking => dead;
 
+    private void Start()
+    {
+        timer = Random.Range(5, 11);
+    }
+
     private void Update()
     {
         if (dead)

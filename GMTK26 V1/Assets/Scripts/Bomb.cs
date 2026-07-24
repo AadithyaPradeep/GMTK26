@@ -20,6 +20,8 @@ public class Bomb : MonoBehaviour
 
     private void Start()
     {
+        timer = Random.Range(5, 11);
+
         if (GameAudio.Instance != null)
             tickSource = GameAudio.Instance.CreateTickSource(gameObject);
     }
