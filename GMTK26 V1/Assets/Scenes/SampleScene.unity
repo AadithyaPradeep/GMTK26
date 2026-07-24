@@ -931,9 +931,16 @@ MonoBehaviour:
   spawnAreaMax: {x: 7.5, y: 4.5}
   initialSpawnCountMin: 1
   initialSpawnCountMax: 3
-  minSpawnInterval: 1
-  maxSpawnInterval: 5
-  maxChickenCount: 8
+  maxChickenCount: 20
+  delayBeforeFirstWave: 2
+  baseWaveSpawnMin: 3
+  baseWaveSpawnMax: 5
+  extraSpawnsPerWave: 1
+  burstSpawnGapMin: 0.25
+  burstSpawnGapMax: 0.55
+  breakDurationStart: 8
+  breakShortenPerWave: 0.5
+  minBreakDuration: 3
   bombsPerTenChickens: 5
   mindsPerTenChickens: 3
 --- !u!4 &911303575
