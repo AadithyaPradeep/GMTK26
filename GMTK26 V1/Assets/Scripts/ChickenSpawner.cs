@@ -5,7 +5,8 @@ using UnityEngine;
 /// <summary>
 /// Starts with protected normals, then endless waves.
 /// Lethals (bombs / electrics) share a threat cap.
-/// Minds and panics are non-lethal with their own caps.
+/// Minds are non-lethal with their own cap.
+/// Panics are flock chickens: they count toward game over when killed.
 /// Spawn chance uses percentages among unlocked types.
 /// </summary>
 public class ChickenSpawner : MonoBehaviour
@@ -167,6 +168,7 @@ public class ChickenSpawner : MonoBehaviour
                     else if (kind == ThreatKind.Panic)
                     {
                         panics.Add(chicken);
+                        protectedNormals.Add(chicken);
                         panicsSpawnedThisWave++;
                     }
                     else
