@@ -105,6 +105,7 @@ GameObject:
   - component: {fileID: 3403281701522356963}
   - component: {fileID: 6694585197911456197}
   - component: {fileID: 6363033087538804137}
+  - component: {fileID: 8822441100112233441}
   m_Layer: 6
   m_Name: MindCluck
   m_TagString: Untagged
@@ -232,6 +233,8 @@ MonoBehaviour:
   farmerTransform: {fileID: 0}
   fleeDistance: 3
   fleeSpeedMultiplier: 2
+  attractSpeedMultiplier: 1.25
+  attractStopDistance: 0.35
 --- !u!61 &6363033087538804137
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -278,6 +281,18 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1.1676214, y: 1.7872807}
   m_EdgeRadius: 0
+--- !u!114 &8822441100112233441
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6175148286897977551}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7e4a1b92f0d4e6a8b3c5d7e9f1a2b3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MindCluck
 --- !u!1 &7810190634830199713
 GameObject:
   m_ObjectHideFlags: 0
