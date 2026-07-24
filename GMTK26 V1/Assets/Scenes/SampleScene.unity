@@ -847,6 +847,7 @@ MonoBehaviour:
   - {fileID: 2479665210511819439, guid: 1929dfaaa3dff22439d3ea7bc1e44650, type: 3}
   spawnEffect: {fileID: 4999050520589805456, guid: 97d33ad94dd58c34da7a110f96b5a019, type: 3}
   farmerTransform: {fileID: 229318277}
+  introBanner: {fileID: 81212988}
   spawnAreaMin: {x: -7.5, y: -4.5}
   spawnAreaMax: {x: 7.5, y: 4.5}
   startingNormals: 3
@@ -10180,6 +10181,64 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2150000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2150000002}
+  - component: {fileID: 2150000003}
+  m_Layer: 0
+  m_Name: GameAudio
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2150000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2150000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2150000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2150000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b2c3d4e5f64789a0b1c2d3e4f50617, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameAudio
+  bgm: {fileID: 8300000, guid: 3298a73b84ea13f4b8bd4eb868e27a4e, type: 3}
+  chickenIdle: {fileID: 8300000, guid: c54e73331759ed74eaccd0a34c4b6ee5, type: 3}
+  explosion: {fileID: 8300000, guid: 20b9edb163ff44e44bf40ded660dde3a, type: 3}
+  bombTick: {fileID: 8300000, guid: 84c8821ac67124d41b7b08e2e2971667, type: 3}
+  grab: {fileID: 8300000, guid: f8a308b4b272fc949808c185f39bff35, type: 3}
+  drop: {fileID: 8300000, guid: 6b436b4a4133fba408aa9e7b60da6463, type: 3}
+  step: {fileID: 8300000, guid: d0205099d0bff70488a9a07171161ad8, type: 3}
+  bgmVolume: 0.35
+  sfxVolume: 0.85
+  idleCluckVolume: 0.45
+  stepVolume: 0.08
+  tickVolume: 0.5
+  idleCluckMinInterval: 2.5
+  idleCluckMaxInterval: 5.5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -10196,3 +10255,4 @@ SceneRoots:
   - {fileID: 1633722459}
   - {fileID: 81212992}
   - {fileID: 2146521508}
+  - {fileID: 2150000002}

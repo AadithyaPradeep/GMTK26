@@ -16,6 +16,13 @@ public class Bomb : MonoBehaviour
     [SerializeField] private float explosionVfxDuration = 0.7f;
 
     private bool dead;
+    private AudioSource tickSource;
+
+    private void Start()
+    {
+        if (GameAudio.Instance != null)
+            tickSource = GameAudio.Instance.CreateTickSource(gameObject);
+    }
 
     private void Update()
     {
@@ -42,6 +49,16 @@ public class Bomb : MonoBehaviour
             return;
 
         dead = true;
+
+        if (tickSource != null)
+        {
+            tickSource.Stop();
+            tickSource = null;
+        }
+
+        if (GameAudio.Instance != null)
+            GameAudio.Instance.PlayExplosion();
+
         StartCoroutine(BlastRoutine());
 
         foreach (var sr in GetComponentsInChildren<SpriteRenderer>())

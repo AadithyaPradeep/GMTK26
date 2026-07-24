@@ -38,8 +38,8 @@ public class GrabCluck : MonoBehaviour
                 grabbedCluck.transform.position = new Vector2(transform.position.x + offset, transform.position.y);
                 grabbedCluck = null;
                 aimAnimator.SetBool("Grabbed",false);
-             
-
+                if (GameAudio.Instance != null)
+                    GameAudio.Instance.PlayDrop();
             }
             else
             {
@@ -54,7 +54,8 @@ public class GrabCluck : MonoBehaviour
                 grabbedCluck.GetComponent<ChickenWander>().enabled = false;
                 aimAnimator = grabbedCluck.GetComponent<Animator>();
                 aimAnimator.SetBool("Grabbed", true);
-
+                if (GameAudio.Instance != null)
+                    GameAudio.Instance.PlayGrab();
             }
             
         }
