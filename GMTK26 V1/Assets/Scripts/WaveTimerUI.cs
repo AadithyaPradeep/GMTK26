@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,10 +13,18 @@ public class WaveTimerUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI label;
     [SerializeField] private float fontSize = 42f;
     [SerializeField] private float gameOverFontSize = 72f;
+    [SerializeField] private float hintFontSize = 36f;
     [SerializeField] private Color textColor = Color.white;
 
     [SerializeField] private string waveFormat = "WAVE {0}\n{1}";
     [SerializeField] private string gameOverText = "GAME OVER\nAll chickens lost";
+    [SerializeField] private string laserLostGameOverText = "GAME OVER\nLaser chicken lost";
+    [SerializeField] private string finishedText = "FINISHED";
+
+    private TextMeshProUGUI hintLabel;
+    private Coroutine hintRoutine;
+    private string activeGameOverText;
+    private bool showingFinished;
 
     private void Awake()
     {
@@ -25,7 +34,8 @@ public class WaveTimerUI : MonoBehaviour
         if (label == null)
             label = CreateLabel();
 
-        ApplyFont(fontSize);
+        activeGameOverText = gameOverText;
+        ApplyFont(label, fontSize);
     }
 
     private void Update()
@@ -35,13 +45,22 @@ public class WaveTimerUI : MonoBehaviour
 
         if (spawner.IsGameOver)
         {
-            ApplyFont(gameOverFontSize);
-            label.text = gameOverText;
+            ApplyFont(label, gameOverFontSize);
+            label.text = string.IsNullOrEmpty(activeGameOverText) ? gameOverText : activeGameOverText;
+            label.enabled = true;
+            ClearHint();
+            return;
+        }
+
+        if (spawner.IsFinished || showingFinished)
+        {
+            ApplyFont(label, gameOverFontSize);
+            label.text = finishedText;
             label.enabled = true;
             return;
         }
 
-        ApplyFont(fontSize);
+        ApplyFont(label, fontSize);
 
         if (spawner.IsWaitingForNextWave)
         {
@@ -56,16 +75,111 @@ public class WaveTimerUI : MonoBehaviour
         }
     }
 
-    private void ApplyFont(float size)
+    public void ShowFinished()
     {
-        if (label == null || pixelonFont == null)
+        showingFinished = true;
+        ClearHint();
+        if (label == null)
             return;
 
-        label.font = pixelonFont;
-        label.fontSharedMaterial = pixelonFont.material;
-        label.fontSize = size;
-        label.color = textColor;
-        label.alignment = TextAlignmentOptions.Center;
+        ApplyFont(label, gameOverFontSize);
+        label.text = finishedText;
+        label.enabled = true;
+    }
+
+    /// <summary>Centered Pixelon hint. Pass durationSeconds &lt; 0 to keep until ClearHint.</summary>
+    public void ShowHint(string message, float durationSeconds = 5f)
+    {
+        EnsureHintLabel();
+        if (hintLabel == null)
+            return;
+
+        if (hintRoutine != null)
+            StopCoroutine(hintRoutine);
+
+        ApplyFont(hintLabel, hintFontSize);
+        hintLabel.text = message;
+        hintLabel.enabled = true;
+
+        // Pin near the top of the screen.
+        RectTransform rt = hintLabel.rectTransform;
+        rt.anchorMin = new Vector2(0.5f, 1f);
+        rt.anchorMax = new Vector2(0.5f, 1f);
+        rt.pivot = new Vector2(0.5f, 1f);
+        rt.anchoredPosition = new Vector2(0f, -100f);
+        rt.sizeDelta = new Vector2(1200f, 120f);
+
+        if (durationSeconds < 0f)
+        {
+            hintRoutine = null;
+            return;
+        }
+
+        hintRoutine = StartCoroutine(HideHintAfter(durationSeconds));
+    }
+
+    public void SetLaserLostGameOver()
+    {
+        activeGameOverText = laserLostGameOverText;
+    }
+
+    public void ClearHint()
+    {
+        if (hintRoutine != null)
+        {
+            StopCoroutine(hintRoutine);
+            hintRoutine = null;
+        }
+
+        if (hintLabel != null)
+        {
+            hintLabel.text = string.Empty;
+            hintLabel.enabled = false;
+        }
+    }
+
+    private IEnumerator HideHintAfter(float seconds)
+    {
+        yield return new WaitForSeconds(seconds);
+        ClearHint();
+    }
+
+    private void ApplyFont(TextMeshProUGUI tmp, float size)
+    {
+        if (tmp == null || pixelonFont == null)
+            return;
+
+        tmp.font = pixelonFont;
+        tmp.fontSharedMaterial = pixelonFont.material;
+        tmp.fontSize = size;
+        tmp.color = textColor;
+        tmp.alignment = TextAlignmentOptions.Center;
+    }
+
+    private void EnsureHintLabel()
+    {
+        if (hintLabel != null)
+            return;
+
+        Transform canvasTf = label != null ? label.transform.parent : null;
+        if (canvasTf == null)
+        {
+            CreateLabel();
+            canvasTf = label.transform.parent;
+        }
+
+        GameObject hintGo = new GameObject("BossHintText");
+        hintGo.transform.SetParent(canvasTf, false);
+
+        hintLabel = hintGo.AddComponent<TextMeshProUGUI>();
+        RectTransform rt = hintLabel.rectTransform;
+        rt.anchorMin = new Vector2(0.5f, 1f);
+        rt.anchorMax = new Vector2(0.5f, 1f);
+        rt.pivot = new Vector2(0.5f, 1f);
+        rt.anchoredPosition = new Vector2(0f, -100f);
+        rt.sizeDelta = new Vector2(1200f, 120f);
+        hintLabel.raycastTarget = false;
+        hintLabel.enabled = false;
     }
 
     private TextMeshProUGUI CreateLabel()

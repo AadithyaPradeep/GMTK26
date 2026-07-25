@@ -2,19 +2,19 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Curving homing rocket that follows a chicken target.
-/// Explodes on contact, lifetime expiry, or laser hit.
+/// Missile that fans out in different directions, then curves toward the player.
+/// Explodes on lifetime, hit, or laser strike.
 /// </summary>
 public class BossMissile : MonoBehaviour
 {
     private static readonly List<BossMissile> Active = new List<BossMissile>();
 
-    [SerializeField] private float speed = 5f;
-    [SerializeField] private float turnRateDegrees = 220f;
+    [SerializeField] private float speed = 2.6f;
+    [SerializeField] private float turnRateDegrees = 140f;
     [SerializeField] private float hitRadius = 0.45f;
-    [SerializeField] private float armDelay = 0.1f;
-    [SerializeField] private float lifetime = 4f;
-    [SerializeField] private float blastRadius = 1.35f;
+    [SerializeField] private float armDelay = 0.12f;
+    [SerializeField] private float lifetime = 5.5f;
+    [SerializeField] private float blastRadius = 1.2f;
     [SerializeField] private float explosionVfxDuration = 0.7f;
     [SerializeField] private GameObject explosionPrefab;
 
@@ -37,45 +37,73 @@ public class BossMissile : MonoBehaviour
         Active.Remove(this);
     }
 
-    public void Launch(Transform targetTransform)
+    /// <summary>
+    /// Starts flying at an angled direction, then homes toward the target.
+    /// </summary>
+    public void LaunchCurving(Transform homeTarget, float initialAngleOffsetDegrees)
     {
-        target = targetTransform;
+        target = homeTarget;
         age = 0f;
         armed = armDelay <= 0f;
         exploded = false;
 
         Vector2 from = transform.position;
-        if (target != null)
-        {
-            Vector2 to = (Vector2)target.position - from;
-            direction = to.sqrMagnitude > 0.0001f ? to.normalized : Vector2.right;
-        }
-        else
-        {
-            direction = Vector2.right;
-        }
+        Vector2 toTarget = target != null
+            ? (Vector2)target.position - from
+            : Vector2.left;
 
+        if (toTarget.sqrMagnitude < 0.0001f)
+            toTarget = Vector2.left;
+
+        float angle = Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg + initialAngleOffsetDegrees;
+        float rad = angle * Mathf.Deg2Rad;
+        direction = new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)).normalized;
         ApplyRotation();
+    }
+
+    public void LaunchStraight(Vector2 aimPoint, float inaccuracyDegrees)
+    {
+        age = 0f;
+        armed = armDelay <= 0f;
+        exploded = false;
+        target = null;
+
+        Vector2 from = transform.position;
+        Vector2 to = aimPoint - from;
+        if (to.sqrMagnitude < 0.0001f)
+            to = Vector2.left;
+
+        float angle = Mathf.Atan2(to.y, to.x) * Mathf.Rad2Deg;
+        angle += Random.Range(-inaccuracyDegrees, inaccuracyDegrees);
+        float rad = angle * Mathf.Deg2Rad;
+        direction = new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)).normalized;
+        ApplyRotation();
+    }
+
+    public void Launch(Transform targetTransform)
+    {
+        LaunchCurving(targetTransform, Random.Range(-40f, 40f));
     }
 
     public void Launch(Vector2 lockedAimPoint)
     {
-        // Fallback: create a dummy aim by flying toward the point without a live target.
-        target = null;
-        age = 0f;
-        armed = armDelay <= 0f;
-        exploded = false;
-
-        Vector2 from = transform.position;
-        Vector2 to = lockedAimPoint - from;
-        direction = to.sqrMagnitude > 0.0001f ? to.normalized : Vector2.right;
-        ApplyRotation();
+        LaunchStraight(lockedAimPoint, 12f);
     }
 
     public void ConfigureExplosion(GameObject prefab)
     {
         if (prefab != null)
             explosionPrefab = prefab;
+    }
+
+    public void ConfigureFlight(float moveSpeed, float life, float turnRate = -1f)
+    {
+        if (moveSpeed > 0f)
+            speed = moveSpeed;
+        if (life > 0f)
+            lifetime = life;
+        if (turnRate > 0f)
+            turnRateDegrees = turnRate;
     }
 
     private void Update()
@@ -93,21 +121,19 @@ public class BossMissile : MonoBehaviour
             return;
         }
 
-        if (target == null)
-        {
-            Explode();
-            return;
-        }
-
         Vector2 pos = transform.position;
-        Vector2 toTarget = (Vector2)target.position - pos;
-        if (toTarget.sqrMagnitude > 0.0001f)
+
+        if (target != null)
         {
-            Vector2 desired = toTarget.normalized;
-            float maxRad = turnRateDegrees * Mathf.Deg2Rad * Time.deltaTime;
-            direction = Vector3.RotateTowards(direction, desired, maxRad, 0f);
-            direction.Normalize();
-            ApplyRotation();
+            Vector2 toTarget = (Vector2)target.position - pos;
+            if (toTarget.sqrMagnitude > 0.0001f)
+            {
+                Vector2 desired = toTarget.normalized;
+                float maxRad = turnRateDegrees * Mathf.Deg2Rad * Time.deltaTime;
+                direction = Vector3.RotateTowards(direction, desired, maxRad, 0f);
+                direction.Normalize();
+                ApplyRotation();
+            }
         }
 
         Vector2 next = pos + direction * (speed * Time.deltaTime);
@@ -116,9 +142,13 @@ public class BossMissile : MonoBehaviour
         if (!armed)
             return;
 
-        if (toTarget.sqrMagnitude <= hitRadius * hitRadius)
+        if (target != null && ((Vector2)target.position - next).sqrMagnitude <= hitRadius * hitRadius)
+        {
             Explode();
-        else if (TryHitChickenNear(next))
+            return;
+        }
+
+        if (TryHitChickenNear(next))
             Explode();
     }
 
@@ -204,7 +234,8 @@ public class BossMissile : MonoBehaviour
             return false;
 
         LaserChicken laser = go.GetComponent<LaserChicken>();
-        if (laser != null && laser.IsImmune)
+        // Held player laser can be destroyed by missiles (protect it!).
+        if (laser != null && laser.IsImmune && !laser.IsHeld)
             return false;
 
         return true;

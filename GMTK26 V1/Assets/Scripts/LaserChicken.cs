@@ -46,10 +46,16 @@ public class LaserChicken : MonoBehaviour
     private bool held;
     private bool immune;
     private bool manualFire;
+    private bool protectFlock;
+    private bool manualFullBeam = true;
+    private float manualCooldown = 2f;
+    private float manualBeamDuration = 0.9f;
     private readonly HashSet<BossChicken> damagedBossesThisShot = new HashSet<BossChicken>();
     private float nextBurstTime;
     private Coroutine burstRoutine;
+    private Coroutine fireRoutine;
     private int gunFireStateHash;
+    private bool timerForced;
 
     public bool IsFiring => firing;
     public bool IsImmune => immune;
@@ -63,6 +69,9 @@ public class LaserChicken : MonoBehaviour
     }
 
     public void SetImmune(bool value) => immune = value;
+
+    /// <summary>When true, the beam still hurts bosses/missiles but never flock chickens.</summary>
+    public void SetProtectFlock(bool value) => protectFlock = value;
 
     public void SetManualFire(bool enabled)
     {
@@ -90,6 +99,18 @@ public class LaserChicken : MonoBehaviour
             ResetTimer();
     }
 
+    /// <summary>Force the next countdown (e.g. story boss laser = 5s).</summary>
+    public void SetNextTimer(float seconds)
+    {
+        timer = Mathf.Max(0.1f, seconds);
+        timerForced = true;
+        if (text != null)
+        {
+            text.gameObject.SetActive(true);
+            text.text = Mathf.CeilToInt(timer).ToString();
+        }
+    }
+
     /// <summary>Called from GrabCluck on Space during boss wave.</summary>
     public static bool TryFireAnyManual()
     {
@@ -107,17 +128,81 @@ public class LaserChicken : MonoBehaviour
         return false;
     }
 
-    /// <summary>Instant burst; call every frame while Space is held for machine-gun fire.</summary>
+    /// <summary>Held story-boss weapon: Space fires a full beam with cooldown.</summary>
+    public void ConfigureHeldBossLaser(float cooldownSeconds, float beamDurationSeconds)
+    {
+        SetImmune(true);
+        SetProtectFlock(true);
+        SetManualFire(true);
+        manualFullBeam = true;
+        manualCooldown = Mathf.Max(0.1f, cooldownSeconds);
+        manualBeamDuration = Mathf.Max(0.1f, beamDurationSeconds);
+        nextBurstTime = 0f;
+        if (text != null)
+        {
+            text.gameObject.SetActive(true);
+            text.text = "SPC";
+        }
+    }
+
+    /// <summary>Boss special: fire a continuous beam for the given duration then optionally destroy.</summary>
+    public void ForceContinuousFire(float duration, bool destroyWhenDone = false)
+    {
+        SetImmune(true);
+        SetManualFire(false);
+        timer = 999f;
+        if (text != null)
+            text.gameObject.SetActive(false);
+
+        if (wander != null)
+            wander.enabled = false;
+
+        if (fireRoutine != null)
+            StopCoroutine(fireRoutine);
+        fireRoutine = StartCoroutine(ForcedFireRoutine(duration, destroyWhenDone));
+    }
+
+    /// <summary>Instant burst; call every frame while Space is held for machine-gun fire.
+    /// For held story laser (full beam), fires once per press with cooldown.</summary>
     public bool TryFireManual()
     {
         if (!manualFire)
             return false;
+        if (firing)
+            return false;
         if (Time.time < nextBurstTime)
             return false;
 
-        nextBurstTime = Time.time + burstInterval;
+        nextBurstTime = Time.time + (manualFullBeam ? manualCooldown : burstInterval);
+
+        if (manualFullBeam)
+        {
+            FireForDuration(manualBeamDuration);
+            return true;
+        }
+
         FireBurst();
         return true;
+    }
+
+    private void FireForDuration(float duration)
+    {
+        if (firing)
+            return;
+
+        firing = true;
+        damagedBossesThisShot.Clear();
+        if (fireRoutine != null)
+            StopCoroutine(fireRoutine);
+        fireRoutine = StartCoroutine(FireRoutine(duration));
+    }
+
+    private IEnumerator ForcedFireRoutine(float duration, bool destroyWhenDone)
+    {
+        yield return FireRoutine(duration);
+        fireRoutine = null;
+        if (destroyWhenDone && this != null)
+            Destroy(gameObject);
     }
 
     private void Awake()
@@ -145,6 +230,7 @@ public class LaserChicken : MonoBehaviour
         gunFireStateHash = Animator.StringToHash(gunFireState);
         SyncGunAnimatorSpeed();
         SetImmune(true);
+        manualFullBeam = false;
         SetManualFire(true);
     }
 
@@ -159,12 +245,17 @@ public class LaserChicken : MonoBehaviour
 
     private void Start()
     {
-        if (!manualFire)
+        if (!manualFire && !timerForced)
             ResetTimer();
-        else if (text != null)
+        else if (manualFire && text != null)
         {
             text.gameObject.SetActive(true);
             text.text = "SPC";
+        }
+        else if (timerForced && text != null)
+        {
+            text.gameObject.SetActive(true);
+            text.text = Mathf.CeilToInt(timer).ToString();
         }
     }
 
@@ -183,6 +274,8 @@ public class LaserChicken : MonoBehaviour
     {
         if (firing)
         {
+            if (held)
+                SyncHeldFacingFromFarmer();
             UpdateBeamFacing();
             return;
         }
@@ -194,10 +287,14 @@ public class LaserChicken : MonoBehaviour
             if (text != null)
             {
                 text.gameObject.SetActive(true);
-                text.text = "SPC";
+                float remaining = nextBurstTime - Time.time;
+                text.text = remaining > 0.05f ? Mathf.CeilToInt(remaining).ToString() : "SPC";
             }
             return;
         }
+
+        if (held)
+            SyncHeldFacingFromFarmer();
 
         if (timer > 0f)
         {
@@ -212,12 +309,7 @@ public class LaserChicken : MonoBehaviour
 
     private void Fire()
     {
-        if (firing)
-            return;
-
-        firing = true;
-        damagedBossesThisShot.Clear();
-        StartCoroutine(FireRoutine());
+        FireForDuration(laserDuration);
     }
 
     private void FireBurst()
@@ -251,7 +343,6 @@ public class LaserChicken : MonoBehaviour
         if (GameAudio.Instance != null)
             GameAudio.Instance.PlayExplosion();
 
-        // Instant hit-scan for this burst.
         ApplyBeamDamageOnce();
 
         float elapsed = 0f;
@@ -303,7 +394,7 @@ public class LaserChicken : MonoBehaviour
         KillAlongBeam(origin, direction);
     }
 
-    private IEnumerator FireRoutine()
+    private IEnumerator FireRoutine(float duration)
     {
         DestroyActiveBeam();
 
@@ -315,7 +406,7 @@ public class LaserChicken : MonoBehaviour
             beamRenderer = activeBeam.GetComponent<SpriteRenderer>();
             UpdateBeamFacing();
 
-            Destroy(activeBeam, laserDuration + 0.05f);
+            Destroy(activeBeam, duration + 0.05f);
         }
 
         if (source != null)
@@ -325,12 +416,14 @@ public class LaserChicken : MonoBehaviour
             GameAudio.Instance.PlayExplosion();
 
         float elapsed = 0f;
-        while (elapsed < laserDuration)
+        while (elapsed < duration)
         {
             if (this == null)
                 yield break;
 
             elapsed += Time.deltaTime;
+            if (held)
+                SyncHeldFacingFromFarmer();
             UpdateBeamFacing();
 
             bool facingLeft = spriteRenderer != null && spriteRenderer.flipX;
@@ -357,12 +450,13 @@ public class LaserChicken : MonoBehaviour
                 text.text = "SPC";
             }
         }
-        else
+        else if (!timerForced)
         {
             ResetTimer();
         }
 
         firing = false;
+        fireRoutine = null;
     }
 
     private void UpdateBeamFacing()
@@ -415,8 +509,8 @@ public class LaserChicken : MonoBehaviour
                 missile.Explode();
         }
 
-        // Boss-wave laser: only hurts bosses (and missiles), never the flock.
-        if (manualFire)
+        // Story / gun boss laser: only hurts bosses (and missiles), never the flock.
+        if (manualFire || protectFlock)
             return;
 
         ChickenWander[] chickens = FindObjectsByType<ChickenWander>();

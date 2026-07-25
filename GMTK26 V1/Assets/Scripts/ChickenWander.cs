@@ -132,13 +132,18 @@ public class ChickenWander : MonoBehaviour
         SetBossLeftHuddleForFlock(enabled);
     }
 
+    public void RefreshTypeFlags()
+    {
+        isMindCluck = GetComponent<MindCluck>() != null;
+        isBomb = GetComponent<Bomb>() != null;
+        isPanic = GetComponent<PanicChicken>() != null || GetComponent<RogueChicken>() != null;
+    }
+
     private void Awake()
     {
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        isMindCluck = GetComponent<MindCluck>() != null;
-        isBomb = GetComponent<Bomb>() != null;
-        isPanic = GetComponent<PanicChicken>() != null;
+        RefreshTypeFlags();
     }
 
     private void OnEnable()
@@ -316,7 +321,8 @@ public class ChickenWander : MonoBehaviour
 
     private bool TryApproachNormals()
     {
-        if (!isBomb)
+        // Regular bombs close on normals; rogue bombs sprint like panics instead.
+        if (!isBomb || isPanic)
             return false;
 
         if (!TryGetNearestNormal(out Vector2 normalPos, out float dist))
@@ -626,8 +632,8 @@ public class ChickenWander : MonoBehaviour
 
     private void PickNewTarget()
     {
-        // Bombs wander randomly near normals so they don't drift away every idle cycle.
-        if (isBomb && TryGetNearestNormal(out Vector2 anchor, out _))
+        // Bombs (not rogues) wander randomly near normals so they don't drift away every idle cycle.
+        if (isBomb && !isPanic && TryGetNearestNormal(out Vector2 anchor, out _))
         {
             float angle = Random.Range(0f, Mathf.PI * 2f);
             float radius = Random.Range(0f, bombMaxDistanceFromNormals * 0.85f);

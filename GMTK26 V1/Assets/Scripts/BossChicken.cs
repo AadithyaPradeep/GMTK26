@@ -3,40 +3,49 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Wave-6 boss: marches from the right toward the left huddle. No missiles.
-/// Multiple bosses can be alive at once.
+/// Story wave-6 boss: missile salvos + occasional dual side-laser special.
 /// </summary>
 public class BossChicken : MonoBehaviour
 {
     private static readonly List<BossChicken> Active = new List<BossChicken>();
 
     [Header("Prefabs")]
+    [SerializeField] private GameObject missilePrefab;
     [SerializeField] private GameObject livesPrefab;
     [SerializeField] private GameObject explosionPrefab;
+    [SerializeField] private GameObject sideLaserPrefab; // LaserCluck — we only steal its beam prefab
+    [SerializeField] private GameObject sideBeamPrefab;  // optional direct Laser beam prefab
 
     [Header("Combat")]
-    [SerializeField] private int maxLives = 2;
-    [SerializeField] private float openingExplosionStagger = 0.06f;
+    [SerializeField] private int maxLives = 10;
+    [SerializeField] private float salvoInterval = 3f;
+    [SerializeField] private int missilesPerSalvo = 7;
+    [SerializeField] private float salvoStagger = 0.05f;
+    [SerializeField] private float missileSpeed = 2.6f;
+    [SerializeField] private float missileLifetime = 5.5f;
+    [SerializeField] private float missileTurnRate = 150f;
+    [SerializeField] private float aimSpreadDegrees = 100f;
+    [SerializeField] private float specialChance = 0.35f;
+    [SerializeField] private float specialLaserDuration = 5f;
     [SerializeField] private Vector3 livesLocalOffset = new Vector3(0f, 1.35f, 0f);
-    [SerializeField] private float contactKillRadius = 0.7f;
 
     [Header("Movement")]
-    [SerializeField] private float moveSpeed = 3.6f;
-    [SerializeField] private float yDriftSpeed = 1.4f;
-    [SerializeField] private float yRetargetTime = 1.1f;
+    [SerializeField] private float moveSpeed = 2.8f;
+    [SerializeField] private float arrivalThreshold = 0.4f;
+    [SerializeField] private float minTargetDistance = 4f;
     [SerializeField] private Vector2 wanderAreaMin = new Vector2(-12f, -4.8f);
     [SerializeField] private Vector2 wanderAreaMax = new Vector2(6f, 4.1f);
 
     private int lives;
     private bool dead;
-    private bool marchActive;
+    private bool combatActive;
     private BossLivesDisplay livesDisplay;
     private SpriteRenderer spriteRenderer;
     private Animator animator;
     private Vector2 areaMin;
     private Vector2 areaMax;
-    private float yTarget;
-    private float yRetargetTimer;
+    private Vector2 moveTarget;
+    private Transform farmerTarget;
     private static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
 
     public static IReadOnlyList<BossChicken> ActiveBosses => Active;
@@ -54,7 +63,6 @@ public class BossChicken : MonoBehaviour
         }
     }
 
-    /// <summary>Kept for older call sites — returns first living boss if any.</summary>
     public static BossChicken Instance
     {
         get
@@ -93,8 +101,7 @@ public class BossChicken : MonoBehaviour
         Active.Remove(this);
     }
 
-    /// <param name="runOpening">Only the first boss should clear enemy mobs.</param>
-    public void Begin(Vector2 spawnAreaMin, Vector2 spawnAreaMax, bool runOpening)
+    public void Begin(Vector2 spawnAreaMin, Vector2 spawnAreaMax, bool runOpening = false)
     {
         areaMin = wanderAreaMin;
         areaMax = wanderAreaMax;
@@ -104,10 +111,15 @@ public class BossChicken : MonoBehaviour
             areaMax = spawnAreaMax;
         }
 
-        yTarget = transform.position.y;
-        yRetargetTimer = 0f;
+        GameObject farmer = GameObject.Find("Farmer");
+        if (farmer != null)
+            farmerTarget = farmer.transform;
+
+        lives = maxLives;
         SpawnLivesUi();
-        StartCoroutine(BossRoutine(runOpening));
+        PickNewTarget(force: true);
+        combatActive = true;
+        StartCoroutine(SalvoRoutine());
     }
 
     public bool TakeDamage(int amount = 1)
@@ -125,14 +137,30 @@ public class BossChicken : MonoBehaviour
             return true;
         }
 
+        PickNewTarget(force: true);
         return true;
     }
 
     public void ConfigurePrefabs(GameObject missile, GameObject lives)
     {
-        // Missile unused in march mode; keep signature for spawner inject.
+        if (missile != null)
+            missilePrefab = missile;
         if (lives != null)
             livesPrefab = lives;
+    }
+
+    public void ConfigureSideLaserPrefab(GameObject laserChickenPrefab)
+    {
+        if (laserChickenPrefab != null)
+            sideLaserPrefab = laserChickenPrefab;
+
+        // Prefer the beam child prefab so specials spawn lasers only (no chicken).
+        if (sideLaserPrefab != null)
+        {
+            LaserChicken sample = sideLaserPrefab.GetComponent<LaserChicken>();
+            if (sample != null && sample.laserPrefab != null)
+                sideBeamPrefab = sample.laserPrefab;
+        }
     }
 
     public void ConfigureExplosion(GameObject explosion)
@@ -159,78 +187,138 @@ public class BossChicken : MonoBehaviour
         livesDisplay.SetRemaining(lives);
     }
 
-    private IEnumerator BossRoutine(bool runOpening)
+    private IEnumerator SalvoRoutine()
     {
-        if (runOpening)
-            yield return OpeningExplosions();
+        yield return new WaitForSeconds(1f);
 
-        marchActive = true;
+        int cycle = 0;
         while (!dead)
-            yield return null;
+        {
+            cycle++;
+            bool doSpecial = cycle > 1 && (cycle % 3 == 0 || Random.value < specialChance);
+
+            if (doSpecial)
+                yield return SpecialSideLasers();
+            else
+                yield return FireSalvo();
+
+            if (dead)
+                yield break;
+
+            yield return new WaitForSeconds(salvoInterval);
+        }
     }
 
-    private IEnumerator OpeningExplosions()
+    private IEnumerator SpecialSideLasers()
     {
-        List<Transform> enemies = CollectEnemyTargets();
-        for (int i = 0; i < enemies.Count; i++)
+        GameObject beamPrefab = sideBeamPrefab;
+        if (beamPrefab == null && sideLaserPrefab != null)
+        {
+            LaserChicken sample = sideLaserPrefab.GetComponent<LaserChicken>();
+            if (sample != null)
+                beamPrefab = sample.laserPrefab;
+        }
+
+        if (beamPrefab == null)
+        {
+            yield return FireSalvo();
+            yield break;
+        }
+
+        float yL1 = Random.Range(areaMin.y, areaMax.y);
+        float yL2 = Random.Range(areaMin.y, areaMax.y);
+        float yR1 = Random.Range(areaMin.y, areaMax.y);
+        float yR2 = Random.Range(areaMin.y, areaMax.y);
+
+        // Beam-only hazards on each side (no chicken sprites).
+        SpawnSideBeam(new Vector2(areaMin.x, yL1), faceLeft: false, beamPrefab);
+        SpawnSideBeam(new Vector2(areaMin.x, yL2), faceLeft: false, beamPrefab);
+        SpawnSideBeam(new Vector2(areaMax.x, yR1), faceLeft: true, beamPrefab);
+        SpawnSideBeam(new Vector2(areaMax.x, yR2), faceLeft: true, beamPrefab);
+
+        yield return new WaitForSeconds(specialLaserDuration + 0.15f);
+    }
+
+    private void SpawnSideBeam(Vector2 pos, bool faceLeft, GameObject beamPrefab)
+    {
+        GameObject host = new GameObject(faceLeft ? "BossSideBeam_R" : "BossSideBeam_L");
+        host.transform.position = pos;
+        BossSideBeam beam = host.AddComponent<BossSideBeam>();
+        beam.Begin(beamPrefab, faceLeft, specialLaserDuration);
+    }
+
+    private void FireOneMissile()
+    {
+        if (missilePrefab == null)
+            return;
+
+        Transform home = farmerTarget;
+        LaserChicken[] lasers = FindObjectsByType<LaserChicken>();
+        for (int i = 0; i < lasers.Length; i++)
+        {
+            if (lasers[i] != null && lasers[i].IsHeld)
+            {
+                home = lasers[i].transform;
+                break;
+            }
+        }
+
+        if (home == null)
+        {
+            GameObject farmer = GameObject.Find("Farmer");
+            if (farmer != null)
+                home = farmer.transform;
+        }
+
+        GameObject missileGo = Instantiate(missilePrefab, transform.position, Quaternion.identity);
+        BossMissile rocket = missileGo.GetComponent<BossMissile>();
+        if (rocket == null)
+            rocket = missileGo.AddComponent<BossMissile>();
+
+        rocket.ConfigureExplosion(explosionPrefab);
+        rocket.ConfigureFlight(missileSpeed, missileLifetime, missileTurnRate);
+
+        // Fan missiles out so each starts in a different direction, then curves in.
+        float t = missilesPerSalvo <= 1 ? 0.5f : (float)salvoIndex / (missilesPerSalvo - 1);
+        float spread = Mathf.Lerp(-aimSpreadDegrees * 0.5f, aimSpreadDegrees * 0.5f, t);
+        rocket.LaunchCurving(home, spread);
+    }
+
+    private int salvoIndex;
+
+    private IEnumerator FireSalvo()
+    {
+        int count = Mathf.Max(1, missilesPerSalvo);
+        for (int i = 0; i < count; i++)
         {
             if (dead)
                 yield break;
 
-            Transform target = enemies[i];
-            if (target == null)
-                continue;
+            salvoIndex = i;
+            FireOneMissile();
 
-            ExplodeEnemyMob(target.gameObject);
-
-            if (openingExplosionStagger > 0f)
-                yield return new WaitForSeconds(openingExplosionStagger);
+            if (salvoStagger > 0f && i < count - 1)
+                yield return new WaitForSeconds(salvoStagger);
         }
-
-        yield return new WaitForSeconds(0.2f);
     }
 
-    private void ExplodeEnemyMob(GameObject enemy)
+    private Transform PickRandomFlockChicken()
     {
-        if (enemy == null)
-            return;
-
-        Vector3 pos = enemy.transform.position;
-
-        Bomb bomb = enemy.GetComponent<Bomb>();
-        if (bomb != null)
-        {
-            bomb.Detonate();
-            return;
-        }
-
-        if (explosionPrefab != null)
-        {
-            GameObject fx = Instantiate(explosionPrefab, pos, Quaternion.identity);
-            Destroy(fx, 0.7f);
-        }
-
-        if (GameAudio.Instance != null)
-            GameAudio.Instance.PlayExplosion();
-
-        Destroy(enemy);
-    }
-
-    private static List<Transform> CollectEnemyTargets()
-    {
-        var list = new List<Transform>();
+        var flock = new List<Transform>();
         ChickenWander[] chickens = FindObjectsByType<ChickenWander>();
         for (int i = 0; i < chickens.Length; i++)
         {
             ChickenWander c = chickens[i];
             if (c == null)
                 continue;
-
-            if (IsEnemyThreat(c.gameObject))
-                list.Add(c.transform);
+            if (!IsFlockTarget(c.gameObject))
+                continue;
+            flock.Add(c.transform);
         }
 
-        return list;
+        if (flock.Count == 0)
+            return null;
+        return flock[Random.Range(0, flock.Count)];
     }
 
     public static bool IsEnemyThreat(GameObject go)
@@ -277,59 +365,56 @@ public class BossChicken : MonoBehaviour
 
     private void Update()
     {
-        if (dead || !marchActive)
+        if (dead || !combatActive)
             return;
 
-        MarchLeft();
-        TryContactKillFlock();
+        WanderStep();
     }
 
-    private void MarchLeft()
+    private void WanderStep()
     {
         Vector2 pos = transform.position;
+        if (Vector2.Distance(pos, moveTarget) <= arrivalThreshold)
+            PickNewTarget(force: false);
 
-        yRetargetTimer -= Time.deltaTime;
-        if (yRetargetTimer <= 0f)
-        {
-            yTarget = Random.Range(areaMin.y, areaMax.y);
-            yRetargetTimer = Random.Range(yRetargetTime * 0.7f, yRetargetTime * 1.4f);
-        }
+        Vector2 next = Vector2.MoveTowards(pos, moveTarget, moveSpeed * Time.deltaTime);
+        transform.position = next;
 
-        float nextX = pos.x - moveSpeed * Time.deltaTime;
-        float nextY = Mathf.MoveTowards(pos.y, yTarget, yDriftSpeed * Time.deltaTime);
-
-        // Stop at left boundary but keep milling vertically.
-        nextX = Mathf.Max(nextX, areaMin.x);
-        nextY = Mathf.Clamp(nextY, areaMin.y, areaMax.y);
-
-        transform.position = new Vector3(nextX, nextY, transform.position.z);
-
-        if (spriteRenderer != null)
-            spriteRenderer.flipX = true; // facing left while marching
+        float dx = next.x - pos.x;
+        if (spriteRenderer != null && Mathf.Abs(dx) > 0.01f)
+            spriteRenderer.flipX = dx < 0f;
 
         if (animator != null)
             animator.SetBool(IsMovingHash, true);
     }
 
-    private void TryContactKillFlock()
+    private void PickNewTarget(bool force)
     {
-        float radiusSq = contactKillRadius * contactKillRadius;
-        Vector2 origin = transform.position;
-        ChickenWander[] chickens = FindObjectsByType<ChickenWander>();
+        Vector2 pos = transform.position;
+        Vector2 best = moveTarget;
+        float bestDist = -1f;
 
-        for (int i = 0; i < chickens.Length; i++)
+        for (int attempt = 0; attempt < 12; attempt++)
         {
-            ChickenWander chicken = chickens[i];
-            if (chicken == null)
-                continue;
-            if (!IsFlockTarget(chicken.gameObject))
-                continue;
+            Vector2 candidate = new Vector2(
+                Random.Range(areaMin.x, areaMax.x),
+                Random.Range(areaMin.y, areaMax.y));
 
-            if (((Vector2)chicken.transform.position - origin).sqrMagnitude > radiusSq)
-                continue;
+            float dist = Vector2.Distance(pos, candidate);
+            if (dist > bestDist)
+            {
+                bestDist = dist;
+                best = candidate;
+            }
 
-            Destroy(chicken.gameObject);
+            if (!force && dist >= minTargetDistance)
+            {
+                moveTarget = candidate;
+                return;
+            }
         }
+
+        moveTarget = best;
     }
 
     private void Die()
@@ -338,7 +423,15 @@ public class BossChicken : MonoBehaviour
             return;
 
         dead = true;
-        marchActive = false;
+        combatActive = false;
+
+        for (int i = BossMissile.ActiveMissiles.Count - 1; i >= 0; i--)
+        {
+            BossMissile m = BossMissile.ActiveMissiles[i];
+            if (m != null)
+                m.Explode();
+        }
+
         Destroy(gameObject);
     }
 }

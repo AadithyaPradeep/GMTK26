@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Starts with protected normals, then endless waves.
-/// Lethals (bombs / electrics / lasers) share a threat cap.
+/// Starts with protected normals, then story/chaos waves.
+/// Lethals (bombs / electrics / lasers / rogues) share a threat cap.
 /// Minds are non-lethal with their own cap.
 /// Panics are flock chickens: they count toward game over when killed.
+/// Rogues are bombs that sprint like panics (max per wave, unlock wave).
 /// Lasers: from unlock wave onward, spawn on a fixed interval.
 /// Spawn chance uses percentages among unlocked types.
 /// </summary>
@@ -17,7 +18,8 @@ public class ChickenSpawner : MonoBehaviour
         Bomb,
         Mind,
         Electric,
-        Panic
+        Panic,
+        Rogue
     }
 
     [Header("Prefabs")]
@@ -26,6 +28,7 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private GameObject[] mindChickenPrefabs;
     [SerializeField] private GameObject[] electricChickenPrefabs;
     [SerializeField] private GameObject[] panicChickenPrefabs;
+    [SerializeField] private GameObject[] rogueChickenPrefabs;
     [SerializeField] private GameObject[] laserChickenPrefabs;
     [SerializeField] private GameObject[] bossChickenPrefabs;
     [SerializeField] private GameObject bossGunPrefab;
@@ -52,9 +55,15 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private int mindUnlockWave = 2;
     [SerializeField] private int electricUnlockWave = 3;
     [SerializeField] private int panicUnlockWave = 1;
+    [SerializeField] private int rogueUnlockWave = 2;
     [SerializeField] private int laserUnlockWave = 4;
     [SerializeField] private float laserSpawnInterval = 3f;
     [SerializeField] private int bossUnlockWave = 6;
+    [Tooltip("Testing: skip straight to story wave 6 boss fight.")]
+    [SerializeField] private bool startAtBossWaveForTesting = false;
+    [SerializeField] private int maxStoryWave = 5;
+    [SerializeField] private int storyBossNormalCount = 8;
+    [SerializeField] private float storyBossLaserTimer = 5f;
     [SerializeField] private int bossWaveNormalCount = 12;
     [SerializeField] private int bossWaveBossCount = 60; // unused total; kept for inspector compat
     [SerializeField] private float bossWaveDuration = 20f;
@@ -71,6 +80,7 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] [Range(0f, 100f)] private float mindSpawnPercent = 15f;
     [SerializeField] [Range(0f, 100f)] private float electricSpawnPercent = 15f;
     [SerializeField] [Range(0f, 100f)] private float panicSpawnPercent = 15f;
+    [SerializeField] [Range(0f, 100f)] private float rogueSpawnPercent = 20f;
 
     [Header("Difficulty")]
     [SerializeField] private float startSpawnInterval = 4f;
@@ -81,6 +91,7 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private int hardMaxThreats = 18;
     [SerializeField] private int maxMindsOnScreen = 2;
     [SerializeField] private int maxPanicsPerWave = 2;
+    [SerializeField] private int maxRoguesPerWave = 2;
     [SerializeField] private int startSpawnBurst = 1;
     [SerializeField] private int wavesPerBurstIncrease = 3;
     [SerializeField] private int hardMaxSpawnBurst = 4;
@@ -91,14 +102,17 @@ public class ChickenSpawner : MonoBehaviour
     private readonly List<GameObject> panics = new List<GameObject>();
     private bool bossWaveNoFlock;
     private GameObject bossGunInstance;
+    private GameObject storyBossLaser;
+    private bool storyBossProtectLaser;
 
     public int CurrentWave { get; private set; }
     public float SecondsUntilNextWave { get; private set; }
     public bool IsWaveActive { get; private set; }
     public bool IsGameOver { get; private set; }
+    public bool IsFinished { get; private set; }
     public int ProtectedAlive => CountAlive(protectedNormals);
 
-    public bool IsWaitingForNextWave => IsWaveActive && !IsGameOver;
+    public bool IsWaitingForNextWave => IsWaveActive && !IsGameOver && !IsFinished;
     public bool HasStarted { get; private set; }
 
     private void Start()
@@ -118,7 +132,7 @@ public class ChickenSpawner : MonoBehaviour
     /// </summary>
     public void StartGame()
     {
-        if (HasStarted || IsGameOver)
+        if (HasStarted || IsGameOver || IsFinished)
             return;
 
         HasStarted = true;
@@ -127,7 +141,23 @@ public class ChickenSpawner : MonoBehaviour
 
     private void Update()
     {
-        if (IsGameOver || bossWaveNoFlock)
+        if (IsGameOver)
+            return;
+
+        // Story boss: losing the held laser chicken ends the run.
+        if (storyBossProtectLaser)
+        {
+            if (storyBossLaser == null)
+            {
+                var lostUi = FindFirstObjectByType<WaveTimerUI>();
+                if (lostUi != null)
+                    lostUi.SetLaserLostGameOver();
+                EndGame();
+                return;
+            }
+        }
+
+        if (bossWaveNoFlock)
             return;
 
         if (protectedNormals.Count == 0)
@@ -142,32 +172,54 @@ public class ChickenSpawner : MonoBehaviour
     {
         StartCoroutine(HideIntroBannerAfterDelay(2f));
 
+        // CHAOS mode: separate home-button mode (bomb rush + gun).
+        if (GameMode.IsChaos)
+        {
+            CurrentWave = 1;
+            yield return RunChaosWave();
+            yield break;
+        }
+
         yield return SpawnProtectedNormals(startingNormals);
 
         if (delayBeforeFirstWave > 0f)
             yield return new WaitForSeconds(delayBeforeFirstWave);
 
-        while (!IsGameOver)
+        while (!IsGameOver && !IsFinished)
         {
             CurrentWave++;
+            if (CurrentWave > maxStoryWave)
+                break;
+
             yield return RunWave(CurrentWave);
 
             if (IsGameOver)
                 yield break;
+
+            if (CurrentWave >= maxStoryWave)
+            {
+                FinishStory();
+                yield break;
+            }
 
             if (normalsAfterEachWave > 0)
                 yield return SpawnProtectedNormals(normalsAfterEachWave);
         }
     }
 
+    private void FinishStory()
+    {
+        IsFinished = true;
+        IsWaveActive = false;
+        SecondsUntilNextWave = 0f;
+
+        var ui = FindFirstObjectByType<WaveTimerUI>();
+        if (ui != null)
+            ui.ShowFinished();
+    }
+
     private IEnumerator RunWave(int wave)
     {
-        if (wave == bossUnlockWave)
-        {
-            yield return RunBossWave();
-            yield break;
-        }
-
         IsWaveActive = true;
         SecondsUntilNextWave = GetWaveDuration(wave);
 
@@ -177,6 +229,7 @@ public class ChickenSpawner : MonoBehaviour
         float spawnCooldown = 0f;
         float laserCooldown = 0f;
         int panicsSpawnedThisWave = 0;
+        int roguesSpawnedThisWave = 0;
         bool lasersUnlocked = wave >= laserUnlockWave && Pick(laserChickenPrefabs) != null;
 
         while (SecondsUntilNextWave > 0f && !IsGameOver)
@@ -204,21 +257,28 @@ public class ChickenSpawner : MonoBehaviour
             bool canLethal = lethals.Count < maxThreats;
             bool canMind = wave >= mindUnlockWave && minds.Count < maxMindsOnScreen;
             bool canPanic = wave >= panicUnlockWave && panicsSpawnedThisWave < maxPanicsPerWave;
+            bool canRogue = wave >= rogueUnlockWave && roguesSpawnedThisWave < maxRoguesPerWave
+                && (Pick(rogueChickenPrefabs) != null || Pick(bombChickenPrefabs) != null);
 
-            if (spawnCooldown <= 0f && (canLethal || canMind || canPanic))
+            if (spawnCooldown <= 0f && (canLethal || canMind || canPanic || canRogue))
             {
                 for (int i = 0; i < burst; i++)
                 {
                     canLethal = lethals.Count < maxThreats;
                     canMind = wave >= mindUnlockWave && minds.Count < maxMindsOnScreen;
                     canPanic = wave >= panicUnlockWave && panicsSpawnedThisWave < maxPanicsPerWave;
-                    if (!canLethal && !canMind && !canPanic)
+                    canRogue = wave >= rogueUnlockWave && roguesSpawnedThisWave < maxRoguesPerWave
+                        && (Pick(rogueChickenPrefabs) != null || Pick(bombChickenPrefabs) != null);
+                    if (!canLethal && !canMind && !canPanic && !canRogue)
                         break;
 
-                    ThreatKind kind = PickThreatKind(wave, canLethal, canMind, canPanic);
+                    ThreatKind kind = PickThreatKind(wave, canLethal, canMind, canPanic, canRogue);
                     GameObject chicken = Spawn(PrefabFor(kind));
                     if (chicken == null)
                         continue;
+
+                    if (kind == ThreatKind.Rogue)
+                        EnsureRogue(chicken);
 
                     if (kind == ThreatKind.Mind)
                         minds.Add(chicken);
@@ -227,6 +287,11 @@ public class ChickenSpawner : MonoBehaviour
                         panics.Add(chicken);
                         protectedNormals.Add(chicken);
                         panicsSpawnedThisWave++;
+                    }
+                    else if (kind == ThreatKind.Rogue)
+                    {
+                        lethals.Add(chicken);
+                        roguesSpawnedThisWave++;
                     }
                     else
                         lethals.Add(chicken);
@@ -242,13 +307,183 @@ public class ChickenSpawner : MonoBehaviour
         SecondsUntilNextWave = 0f;
     }
 
-    private IEnumerator RunBossWave()
+    /// <summary>Story wave 6: wipe field, 5 normals + 1 laser, single boss with missile salvos.</summary>
+    private IEnumerator RunStoryBossWave()
+    {
+        IsWaveActive = true;
+        SecondsUntilNextWave = 999f;
+        bossWaveNoFlock = true;
+        storyBossProtectLaser = false;
+        storyBossLaser = null;
+
+        yield return PrepareStoryBossWave();
+
+        // Only arm laser-death game-over after the held laser actually exists.
+        if (storyBossLaser == null)
+        {
+            bossWaveNoFlock = false;
+            IsWaveActive = false;
+            SecondsUntilNextWave = 0f;
+            yield break;
+        }
+
+        storyBossProtectLaser = true;
+
+        GameObject bossGo = SpawnStoryBoss();
+        if (bossGo == null)
+        {
+            storyBossProtectLaser = false;
+            storyBossLaser = null;
+            bossWaveNoFlock = false;
+            IsWaveActive = false;
+            SecondsUntilNextWave = 0f;
+            yield break;
+        }
+
+        BossChicken boss = bossGo.GetComponent<BossChicken>();
+        while (!IsGameOver && boss != null && !boss.IsDead)
+        {
+            if (storyBossLaser == null)
+            {
+                var lostUi = FindFirstObjectByType<WaveTimerUI>();
+                if (lostUi != null)
+                    lostUi.SetLaserLostGameOver();
+                EndGame();
+                break;
+            }
+
+            Prune(protectedNormals);
+            Prune(lethals);
+            yield return null;
+        }
+
+        for (int i = BossMissile.ActiveMissiles.Count - 1; i >= 0; i--)
+        {
+            BossMissile m = BossMissile.ActiveMissiles[i];
+            if (m != null)
+                m.Explode();
+        }
+
+        var ui = FindFirstObjectByType<WaveTimerUI>();
+        if (ui != null)
+            ui.ClearHint();
+
+        ClearLaserBossBuffs();
+
+        if (farmerTransform != null)
+        {
+            var grab = farmerTransform.GetComponent<GrabCluck>();
+            if (grab != null)
+                grab.ClearBossLaserLock();
+        }
+
+        storyBossProtectLaser = false;
+        storyBossLaser = null;
+        bossWaveNoFlock = false;
+        IsWaveActive = false;
+        SecondsUntilNextWave = 0f;
+    }
+
+    private IEnumerator PrepareStoryBossWave()
+    {
+        Prune(protectedNormals);
+        Prune(lethals);
+        Prune(minds);
+        Prune(panics);
+
+        yield return ExplodeEverything();
+
+        GameObject laserGo = Spawn(Pick(laserChickenPrefabs));
+        if (laserGo != null)
+        {
+            storyBossLaser = laserGo;
+            lethals.Add(laserGo);
+            LaserChicken laser = laserGo.GetComponent<LaserChicken>();
+            if (laser != null)
+                laser.ConfigureHeldBossLaser(cooldownSeconds: 2f, beamDurationSeconds: 0.9f);
+
+            if (farmerTransform != null)
+            {
+                var grab = farmerTransform.GetComponent<GrabCluck>();
+                if (grab != null)
+                    grab.ForceGrab(laserGo.transform, lockAsManualLaser: true);
+            }
+        }
+
+        var ui = FindFirstObjectByType<WaveTimerUI>();
+        if (ui != null)
+            ui.ShowHint("PROTECT THE LASER CHICKEN", durationSeconds: -1f);
+
+        yield return null;
+    }
+
+    private IEnumerator ExplodeEverything()
+    {
+        var toExplode = new List<GameObject>();
+        ChickenWander[] chickens = FindObjectsByType<ChickenWander>();
+        for (int i = 0; i < chickens.Length; i++)
+        {
+            if (chickens[i] == null)
+                continue;
+            if (chickens[i].GetComponent<BossChicken>() != null)
+                continue;
+            toExplode.Add(chickens[i].gameObject);
+        }
+
+        for (int i = 0; i < toExplode.Count; i++)
+        {
+            ExplodeChicken(toExplode[i]);
+            if (openingSpawnGap > 0f)
+                yield return new WaitForSeconds(Mathf.Min(0.08f, openingSpawnGap));
+        }
+
+        protectedNormals.Clear();
+        panics.Clear();
+        minds.Clear();
+        lethals.Clear();
+    }
+
+    private GameObject SpawnStoryBoss()
+    {
+        GameObject prefab = Pick(bossChickenPrefabs);
+        if (prefab == null)
+            return null;
+
+        Vector2 pos = new Vector2(
+            (spawnAreaMin.x + spawnAreaMax.x) * 0.5f,
+            (spawnAreaMin.y + spawnAreaMax.y) * 0.5f);
+
+        if (spawnEffect != null)
+            StartCoroutine(PlaySpawnEffect(pos));
+
+        GameObject bossGo = Instantiate(prefab, pos, Quaternion.identity);
+        BossChicken boss = bossGo.GetComponent<BossChicken>();
+        if (boss == null)
+            boss = bossGo.AddComponent<BossChicken>();
+
+        boss.ConfigurePrefabs(missilePrefab, livesPrefab);
+        boss.ConfigureSideLaserPrefab(Pick(laserChickenPrefabs));
+        GameObject boom = FindExplosionPrefab();
+        if (boom != null)
+            boss.ConfigureExplosion(boom);
+
+        ChickenWander wander = bossGo.GetComponent<ChickenWander>();
+        if (wander != null)
+            wander.enabled = false;
+
+        boss.Begin(spawnAreaMin, spawnAreaMax, runOpening: false);
+        lethals.Add(bossGo);
+        return bossGo;
+    }
+
+    /// <summary>CHAOS mode: short-fuse bombs from the right + gun in farmer hands.</summary>
+    private IEnumerator RunChaosWave()
     {
         IsWaveActive = true;
         SecondsUntilNextWave = bossWaveDuration;
         bossWaveNoFlock = true;
 
-        yield return PrepareBossWave();
+        yield return PrepareChaosWave();
 
         float spawnCooldown = 0f;
 
@@ -259,7 +494,6 @@ public class ChickenSpawner : MonoBehaviour
             spawnCooldown -= dt;
             Prune(lethals);
 
-            // Keep spawning for the full wave — only pause if the screen is packed.
             if (spawnCooldown <= 0f && CountAliveBossBombs() < Mathf.Max(1, bossMaxBombsOnScreen))
             {
                 int burst = Mathf.Max(1, bossSpawnBurst);
@@ -276,7 +510,6 @@ public class ChickenSpawner : MonoBehaviour
             yield return null;
         }
 
-        // Let remaining short fuses finish after the timer.
         while (!IsGameOver && CountAliveBossBombs() > 0)
         {
             Prune(lethals);
@@ -296,14 +529,13 @@ public class ChickenSpawner : MonoBehaviour
         SecondsUntilNextWave = 0f;
     }
 
-    private IEnumerator PrepareBossWave()
+    private IEnumerator PrepareChaosWave()
     {
         Prune(protectedNormals);
         Prune(lethals);
         Prune(minds);
         Prune(panics);
 
-        // Wipe the flock (and leftover threats) with explosions — no normals during boss.
         yield return ExplodeAllExceptLaser();
 
         EnterFarmerBossLane();
@@ -598,6 +830,7 @@ public class ChickenSpawner : MonoBehaviour
                 continue;
             lasers[i].SetImmune(false);
             lasers[i].SetManualFire(false);
+            lasers[i].SetProtectFlock(false);
             lasers[i].SetCooldown(5f, 10f);
         }
     }
@@ -625,7 +858,7 @@ public class ChickenSpawner : MonoBehaviour
         }
     }
 
-    private ThreatKind PickThreatKind(int wave, bool canLethal, bool canMind, bool canPanic)
+    private ThreatKind PickThreatKind(int wave, bool canLethal, bool canMind, bool canPanic, bool canRogue)
     {
         float bombW = canLethal && Pick(bombChickenPrefabs) != null ? bombSpawnPercent : 0f;
         float mindW = canMind && Pick(mindChickenPrefabs) != null ? mindSpawnPercent : 0f;
@@ -633,10 +866,12 @@ public class ChickenSpawner : MonoBehaviour
             ? electricSpawnPercent
             : 0f;
         float panicW = canPanic && Pick(panicChickenPrefabs) != null ? panicSpawnPercent : 0f;
+        float rogueW = canRogue ? rogueSpawnPercent : 0f;
 
-        float total = bombW + mindW + electricW + panicW;
+        float total = bombW + mindW + electricW + panicW + rogueW;
         if (total <= 0f)
         {
+            if (canRogue) return ThreatKind.Rogue;
             if (canLethal) return ThreatKind.Bomb;
             if (canPanic) return ThreatKind.Panic;
             return ThreatKind.Mind;
@@ -648,7 +883,9 @@ public class ChickenSpawner : MonoBehaviour
         if (roll < mindW) return ThreatKind.Mind;
         roll -= mindW;
         if (roll < electricW) return ThreatKind.Electric;
-        return ThreatKind.Panic;
+        roll -= electricW;
+        if (roll < panicW) return ThreatKind.Panic;
+        return ThreatKind.Rogue;
     }
 
     private GameObject PrefabFor(ThreatKind kind)
@@ -658,8 +895,26 @@ public class ChickenSpawner : MonoBehaviour
             case ThreatKind.Mind: return Pick(mindChickenPrefabs);
             case ThreatKind.Electric: return Pick(electricChickenPrefabs);
             case ThreatKind.Panic: return Pick(panicChickenPrefabs);
+            case ThreatKind.Rogue:
+            {
+                GameObject rogue = Pick(rogueChickenPrefabs);
+                return rogue != null ? rogue : Pick(bombChickenPrefabs);
+            }
             default: return Pick(bombChickenPrefabs);
         }
+    }
+
+    private static void EnsureRogue(GameObject chicken)
+    {
+        if (chicken == null)
+            return;
+
+        if (chicken.GetComponent<RogueChicken>() == null)
+            chicken.AddComponent<RogueChicken>();
+
+        ChickenWander wander = chicken.GetComponent<ChickenWander>();
+        if (wander != null)
+            wander.RefreshTypeFlags();
     }
 
     private void OnDestroy()
