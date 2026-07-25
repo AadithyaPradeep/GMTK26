@@ -28,6 +28,7 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private GameObject[] panicChickenPrefabs;
     [SerializeField] private GameObject[] laserChickenPrefabs;
     [SerializeField] private GameObject[] bossChickenPrefabs;
+    [SerializeField] private GameObject bossGunPrefab;
     [SerializeField] private GameObject missilePrefab;
     [SerializeField] private GameObject livesPrefab;
     [SerializeField] private GameObject spawnEffect;
@@ -89,6 +90,7 @@ public class ChickenSpawner : MonoBehaviour
     private readonly List<GameObject> minds = new List<GameObject>();
     private readonly List<GameObject> panics = new List<GameObject>();
     private bool bossWaveNoFlock;
+    private GameObject bossGunInstance;
 
     public int CurrentWave { get; private set; }
     public float SecondsUntilNextWave { get; private set; }
@@ -282,6 +284,7 @@ public class ChickenSpawner : MonoBehaviour
         }
 
         ClearLaserBossBuffs();
+        ClearBossGun();
         RestoreFarmerBossMode();
 
         int refill = Mathf.Max(normalsAfterEachWave, 3);
@@ -304,7 +307,7 @@ public class ChickenSpawner : MonoBehaviour
         yield return ExplodeAllExceptLaser();
 
         EnterFarmerBossLane();
-        EnsureBossLaserInHands();
+        EnsureBossGunInHands();
 
         ChickenWander.SetBossLeftHuddleForFlock(false);
         yield return null;
@@ -469,6 +472,74 @@ public class ChickenSpawner : MonoBehaviour
     private void RestoreFarmerSpeed()
     {
         RestoreFarmerBossMode();
+    }
+
+    private void EnsureBossGunInHands()
+    {
+        // Remove any wave lasers — boss uses the gun instead.
+        LaserChicken[] lasers = FindObjectsByType<LaserChicken>();
+        for (int i = 0; i < lasers.Length; i++)
+        {
+            if (lasers[i] == null)
+                continue;
+            Destroy(lasers[i].gameObject);
+        }
+
+        for (int i = lethals.Count - 1; i >= 0; i--)
+        {
+            GameObject go = lethals[i];
+            if (go == null || go.GetComponent<LaserChicken>() != null)
+                lethals.RemoveAt(i);
+        }
+
+        ClearBossGun();
+
+        GameObject gunPrefab = bossGunPrefab;
+        if (gunPrefab == null)
+        {
+            // Fallback: old laser-chicken-in-hands behaviour.
+            EnsureBossLaserInHands();
+            return;
+        }
+
+        GameObject gunGo = Instantiate(gunPrefab);
+        gunGo.name = "BossGun";
+        bossGunInstance = gunGo;
+
+        LaserChicken weapon = gunGo.GetComponent<LaserChicken>();
+        if (weapon == null)
+            weapon = gunGo.AddComponent<LaserChicken>();
+
+        GameObject beamPrefab = ResolveLaserBeamPrefab();
+        weapon.ConfigureBossGun(beamPrefab, burstRate: 0.07f);
+
+        lethals.Add(gunGo);
+
+        if (farmerTransform != null)
+        {
+            var grab = farmerTransform.GetComponent<GrabCluck>();
+            if (grab != null)
+                grab.ForceGrab(gunGo.transform, lockAsManualLaser: true, holdLocalOverride: new Vector3(0.55f, 0.05f, 0f));
+        }
+    }
+
+    private GameObject ResolveLaserBeamPrefab()
+    {
+        GameObject laserChicken = Pick(laserChickenPrefabs);
+        if (laserChicken == null)
+            return null;
+
+        LaserChicken sample = laserChicken.GetComponent<LaserChicken>();
+        return sample != null ? sample.laserPrefab : null;
+    }
+
+    private void ClearBossGun()
+    {
+        if (bossGunInstance != null)
+        {
+            Destroy(bossGunInstance);
+            bossGunInstance = null;
+        }
     }
 
     private void EnsureBossLaserInHands()

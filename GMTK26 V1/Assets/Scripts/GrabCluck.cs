@@ -61,8 +61,8 @@ public class GrabCluck : MonoBehaviour
         TryGrab();
     }
 
-    /// <summary>Puts a chicken directly into the farmer's hands (boss-wave laser).</summary>
-    public bool ForceGrab(Transform cluck, bool lockAsManualLaser = false)
+    /// <summary>Puts a chicken/gun directly into the farmer's hands (boss-wave weapon).</summary>
+    public bool ForceGrab(Transform cluck, bool lockAsManualLaser = false, Vector3? holdLocalOverride = null)
     {
         if (cluck == null)
             return false;
@@ -89,7 +89,8 @@ public class GrabCluck : MonoBehaviour
             source.GenerateImpulseWithVelocity(strength * dif.normalized);
         }
 
-        cluck.localPosition = holdLocalPosition;
+        cluck.localPosition = holdLocalOverride ?? holdLocalPosition;
+        cluck.localRotation = Quaternion.identity;
 
         if (col != null)
             col.enabled = false;
@@ -98,7 +99,7 @@ public class GrabCluck : MonoBehaviour
             wander.enabled = false;
 
         if (heldAnimator != null)
-            heldAnimator.SetBool("Grabbed", true);
+            TrySetAnimBool(heldAnimator, "Grabbed", true);
 
         if (hc != null)
             hc.ClearSelection();
@@ -142,7 +143,7 @@ public class GrabCluck : MonoBehaviour
         ElectricChicken electric = cluck.GetComponent<ElectricChicken>();
 
         if (heldAnimator != null)
-            heldAnimator.SetBool("Grabbed", false);
+            TrySetAnimBool(heldAnimator, "Grabbed", false);
 
         cluck.SetParent(null);
 
@@ -175,5 +176,20 @@ public class GrabCluck : MonoBehaviour
         grabbedCluck = null;
         heldAnimator = null;
         lockManualLaser = false;
+    }
+
+    private static void TrySetAnimBool(Animator animator, string param, bool value)
+    {
+        if (animator == null || animator.runtimeAnimatorController == null)
+            return;
+
+        for (int i = 0; i < animator.parameterCount; i++)
+        {
+            if (animator.GetParameter(i).name == param)
+            {
+                animator.SetBool(param, value);
+                return;
+            }
+        }
     }
 }

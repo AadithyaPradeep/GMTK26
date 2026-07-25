@@ -979,6 +979,7 @@ MonoBehaviour:
   - {fileID: 1646419433792147411, guid: a51d7401157120647a2ee2f9daed04fb, type: 3}
   bossChickenPrefabs:
   - {fileID: 770011223344556600, guid: a6b7c8d9e0f123445566778899aabbcc, type: 3}
+  bossGunPrefab: {fileID: 2215910319616120880, guid: 21396efd98bbc56488156aacfac637d7, type: 3}
   missilePrefab: {fileID: 880011223344556677, guid: f5a6b7c8d9e01233445566778899aabb, type: 3}
   livesPrefab: {fileID: 6172831998294918993, guid: 25073373ab5eced41b28c8ab79ba4d8d, type: 3}
   spawnEffect: {fileID: 4999050520589805456, guid: 97d33ad94dd58c34da7a110f96b5a019, type: 3}
@@ -996,7 +997,7 @@ MonoBehaviour:
   panicUnlockWave: 2
   laserUnlockWave: 4
   laserSpawnInterval: 3
-  bossUnlockWave: 1
+  bossUnlockWave: 6
   bossWaveNormalCount: 12
   bossWaveLaserCooldown: 3
   normalsAfterEachWave: 3

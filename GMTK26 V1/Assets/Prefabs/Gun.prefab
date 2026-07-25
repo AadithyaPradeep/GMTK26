@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2827150386796015115}
   - component: {fileID: 6790695132697964561}
   - component: {fileID: 6766240070378560319}
+  - component: {fileID: 6766240070378560320}
   m_Layer: 0
   m_Name: Gun
   m_TagString: Untagged
@@ -115,3 +116,30 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &6766240070378560320
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2215910319616120880}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c8b7a6d5e4f3210b1a2c3d4e5f60718, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LaserChicken
+  timer: 5
+  text: {fileID: 0}
+  laserPrefab: {fileID: 2536584085508921882, guid: 52d1c41c63d56254ab3a4843a0925a4e, type: 3}
+  source: {fileID: 0}
+  nativeBeamLength: 8
+  laserHalfThickness: 0.45
+  missileHitHalfThickness: 0.85
+  laserDuration: 5
+  burstDuration: 0.045
+  burstInterval: 0.07
+  gunAnimator: {fileID: 6766240070378560319}
+  gunFireState: GunFire
+  matchGunAnimToBurstRate: 1
+  cooldownMin: 5
+  cooldownMax: 10

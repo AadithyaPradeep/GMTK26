@@ -28,6 +28,12 @@ public class LaserChicken : MonoBehaviour
     [Tooltip("Delay between burst starts while Space is held.")]
     [SerializeField] private float burstInterval = 0.07f;
 
+    [Header("Gun visual (boss wave)")]
+    [SerializeField] private Animator gunAnimator;
+    [SerializeField] private string gunFireState = "GunFire";
+    [Tooltip("If > 0, overrides animator speed so one fire cycle matches burstInterval.")]
+    [SerializeField] private bool matchGunAnimToBurstRate = true;
+
     [Header("Cooldown")]
     [SerializeField] private float cooldownMin = 5f;
     [SerializeField] private float cooldownMax = 10f;
@@ -43,6 +49,7 @@ public class LaserChicken : MonoBehaviour
     private readonly HashSet<BossChicken> damagedBossesThisShot = new HashSet<BossChicken>();
     private float nextBurstTime;
     private Coroutine burstRoutine;
+    private int gunFireStateHash;
 
     public bool IsFiring => firing;
     public bool IsImmune => immune;
@@ -117,6 +124,37 @@ public class LaserChicken : MonoBehaviour
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         wander = GetComponent<ChickenWander>();
+        if (gunAnimator == null)
+            gunAnimator = GetComponent<Animator>();
+        gunFireStateHash = Animator.StringToHash(gunFireState);
+        SyncGunAnimatorSpeed();
+    }
+
+    /// <summary>Boss-wave gun setup: keep laser beam VFX, drive the gun sprite animator.</summary>
+    public void ConfigureBossGun(GameObject beamPrefab, float? burstRate = null)
+    {
+        if (beamPrefab != null)
+            laserPrefab = beamPrefab;
+
+        if (burstRate.HasValue && burstRate.Value > 0.01f)
+            burstInterval = burstRate.Value;
+
+        if (gunAnimator == null)
+            gunAnimator = GetComponent<Animator>();
+
+        gunFireStateHash = Animator.StringToHash(gunFireState);
+        SyncGunAnimatorSpeed();
+        SetImmune(true);
+        SetManualFire(true);
+    }
+
+    private void SyncGunAnimatorSpeed()
+    {
+        if (gunAnimator == null || !matchGunAnimToBurstRate)
+            return;
+
+        // GunFire clip length is typically ~1s; scale so one loop ≈ one burst.
+        gunAnimator.speed = 1f / Mathf.Max(0.05f, burstInterval);
     }
 
     private void Start()
@@ -152,6 +190,7 @@ public class LaserChicken : MonoBehaviour
         // Boss-wave laser: no auto timer — Space triggers fire via GrabCluck.
         if (manualFire)
         {
+            SyncHeldFacingFromFarmer();
             if (text != null)
             {
                 text.gameObject.SetActive(true);
@@ -195,6 +234,7 @@ public class LaserChicken : MonoBehaviour
     private IEnumerator BurstRoutine()
     {
         firing = true;
+        PlayGunFireAnim();
 
         if (laserPrefab != null)
         {
@@ -234,6 +274,25 @@ public class LaserChicken : MonoBehaviour
             text.gameObject.SetActive(true);
             text.text = "SPC";
         }
+    }
+
+    private void PlayGunFireAnim()
+    {
+        if (gunAnimator == null)
+            return;
+
+        SyncGunAnimatorSpeed();
+        gunAnimator.Play(gunFireStateHash, 0, 0f);
+    }
+
+    private void SyncHeldFacingFromFarmer()
+    {
+        if (!held || spriteRenderer == null || transform.parent == null)
+            return;
+
+        SpriteRenderer farmer = transform.parent.GetComponent<SpriteRenderer>();
+        if (farmer != null)
+            spriteRenderer.flipX = farmer.flipX;
     }
 
     private void ApplyBeamDamageOnce()
