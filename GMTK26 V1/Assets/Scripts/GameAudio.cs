@@ -119,6 +119,10 @@ public class GameAudio : MonoBehaviour
             if (chickenIdle == null)
                 continue;
 
+            ChickenSpawner spawner = FindAnyObjectByType<ChickenSpawner>();
+            if (spawner != null && !spawner.HasStarted)
+                continue;
+
             // Soft ambient cluck so the farm feels alive.
             PlayChickenIdle();
         }

@@ -78,6 +78,7 @@ public class ChickenSpawner : MonoBehaviour
     public int ProtectedAlive => CountAlive(protectedNormals);
 
     public bool IsWaitingForNextWave => IsWaveActive && !IsGameOver;
+    public bool HasStarted { get; private set; }
 
     private void Start()
     {
@@ -88,6 +89,18 @@ public class ChickenSpawner : MonoBehaviour
                 farmerTransform = farmer.transform;
         }
 
+        StartGame();
+    }
+
+    /// <summary>
+    /// Begins spawning / waves. Safe to call once.
+    /// </summary>
+    public void StartGame()
+    {
+        if (HasStarted || IsGameOver)
+            return;
+
+        HasStarted = true;
         StartCoroutine(RunGame());
     }
 

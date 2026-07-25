@@ -171,7 +171,7 @@ public class ChickenWander : MonoBehaviour
         position = default;
         distance = float.MaxValue;
 
-        ChickenWander[] chickens = FindObjectsByType<ChickenWander>(FindObjectsSortMode.None);
+        ChickenWander[] chickens = FindObjectsByType<ChickenWander>();
         bool found = false;
 
         for (int i = 0; i < chickens.Length; i++)

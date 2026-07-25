@@ -96,7 +96,7 @@ public class Bomb : MonoBehaviour
 
     private void KillChickensInRadius(Vector2 origin)
     {
-        ChickenWander[] chickens = FindObjectsByType<ChickenWander>(FindObjectsSortMode.None);
+        ChickenWander[] chickens = FindObjectsByType<ChickenWander>();
         float radiusSq = explosionRadius * explosionRadius;
 
         for (int i = 0; i < chickens.Length; i++)

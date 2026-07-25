@@ -98,7 +98,7 @@ public class ElectricChicken : MonoBehaviour
 
     private void ApplyStrike(Vector2 origin)
     {
-        ChickenWander[] chickens = FindObjectsByType<ChickenWander>(FindObjectsSortMode.None);
+        ChickenWander[] chickens = FindObjectsByType<ChickenWander>();
         float radiusSq = strikeRadius * strikeRadius;
 
         for (int i = 0; i < chickens.Length; i++)
