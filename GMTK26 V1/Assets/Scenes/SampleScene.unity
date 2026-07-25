@@ -998,6 +998,10 @@ MonoBehaviour:
   laserUnlockWave: 4
   laserSpawnInterval: 3
   bossUnlockWave: 6
+  startAtBossWaveForTesting: 0
+  maxStoryWave: 5
+  storyBossNormalCount: 8
+  storyBossLaserTimer: 5
   bossWaveNormalCount: 12
   bossWaveLaserCooldown: 3
   normalsAfterEachWave: 3

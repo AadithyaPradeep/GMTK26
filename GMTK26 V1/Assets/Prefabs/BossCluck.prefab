@@ -179,13 +179,21 @@ MonoBehaviour:
   missilePrefab: {fileID: 880011223344556677, guid: f5a6b7c8d9e01233445566778899aabb, type: 3}
   livesPrefab: {fileID: 6172831998294918993, guid: 25073373ab5eced41b28c8ab79ba4d8d, type: 3}
   explosionPrefab: {fileID: 4999050520589805456, guid: f5aa5a5a37ecc7c4bbdef3747428bc5c, type: 3}
-  maxLives: 2
-  openingExplosionStagger: 0.06
+  sideLaserPrefab: {fileID: 0}
+  maxLives: 10
+  salvoInterval: 3
+  missilesPerSalvo: 7
+  salvoStagger: 0.05
+  missileSpeed: 2.6
+  missileLifetime: 5.5
+  aimSpreadDegrees: 100
+  specialChance: 0.35
+  specialLaserDuration: 5
+  missileTurnRate: 150
   livesLocalOffset: {x: 0, y: 1.35, z: 0}
-  contactKillRadius: 0.7
-  moveSpeed: 3.6
-  yDriftSpeed: 1.4
-  yRetargetTime: 1.1
+  moveSpeed: 2.8
+  arrivalThreshold: 0.4
+  minTargetDistance: 4
   wanderAreaMin: {x: -12, y: -4.8}
   wanderAreaMax: {x: 6, y: 4.1}
 --- !u!1 &3278493116826041525
