@@ -27,6 +27,9 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private GameObject[] electricChickenPrefabs;
     [SerializeField] private GameObject[] panicChickenPrefabs;
     [SerializeField] private GameObject[] laserChickenPrefabs;
+    [SerializeField] private GameObject[] bossChickenPrefabs;
+    [SerializeField] private GameObject missilePrefab;
+    [SerializeField] private GameObject livesPrefab;
     [SerializeField] private GameObject spawnEffect;
 
     [Header("References")]
@@ -50,6 +53,16 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private int panicUnlockWave = 1;
     [SerializeField] private int laserUnlockWave = 4;
     [SerializeField] private float laserSpawnInterval = 3f;
+    [SerializeField] private int bossUnlockWave = 6;
+    [SerializeField] private int bossWaveNormalCount = 12;
+    [SerializeField] private int bossWaveBossCount = 60; // unused total; kept for inspector compat
+    [SerializeField] private float bossWaveDuration = 20f;
+    [SerializeField] private float bossSpawnInterval = 0.25f;
+    [SerializeField] private int bossSpawnBurst = 2;
+    [SerializeField] private int bossMaxBombsOnScreen = 18;
+    [SerializeField] private float bossBombFuseMin = 1f;
+    [SerializeField] private float bossBombFuseMax = 3f;
+    [SerializeField] private float bossWaveLaserCooldown = 3f;
     [SerializeField] private int normalsAfterEachWave = 2;
 
     [Header("Spawn Chances %")]
@@ -75,6 +88,7 @@ public class ChickenSpawner : MonoBehaviour
     private readonly List<GameObject> lethals = new List<GameObject>();
     private readonly List<GameObject> minds = new List<GameObject>();
     private readonly List<GameObject> panics = new List<GameObject>();
+    private bool bossWaveNoFlock;
 
     public int CurrentWave { get; private set; }
     public float SecondsUntilNextWave { get; private set; }
@@ -111,7 +125,10 @@ public class ChickenSpawner : MonoBehaviour
 
     private void Update()
     {
-        if (IsGameOver || protectedNormals.Count == 0)
+        if (IsGameOver || bossWaveNoFlock)
+            return;
+
+        if (protectedNormals.Count == 0)
             return;
 
         Prune(protectedNormals);
@@ -143,6 +160,12 @@ public class ChickenSpawner : MonoBehaviour
 
     private IEnumerator RunWave(int wave)
     {
+        if (wave == bossUnlockWave)
+        {
+            yield return RunBossWave();
+            yield break;
+        }
+
         IsWaveActive = true;
         SecondsUntilNextWave = GetWaveDuration(wave);
 
@@ -215,6 +238,297 @@ public class ChickenSpawner : MonoBehaviour
 
         IsWaveActive = false;
         SecondsUntilNextWave = 0f;
+    }
+
+    private IEnumerator RunBossWave()
+    {
+        IsWaveActive = true;
+        SecondsUntilNextWave = bossWaveDuration;
+        bossWaveNoFlock = true;
+
+        yield return PrepareBossWave();
+
+        float spawnCooldown = 0f;
+
+        while (SecondsUntilNextWave > 0f && !IsGameOver)
+        {
+            float dt = Time.deltaTime;
+            SecondsUntilNextWave = Mathf.Max(0f, SecondsUntilNextWave - dt);
+            spawnCooldown -= dt;
+            Prune(lethals);
+
+            // Keep spawning for the full wave — only pause if the screen is packed.
+            if (spawnCooldown <= 0f && CountAliveBossBombs() < Mathf.Max(1, bossMaxBombsOnScreen))
+            {
+                int burst = Mathf.Max(1, bossSpawnBurst);
+                int alive = CountAliveBossBombs();
+                int room = Mathf.Max(0, bossMaxBombsOnScreen - alive);
+                int toSpawn = Mathf.Min(burst, room);
+
+                for (int i = 0; i < toSpawn; i++)
+                    SpawnBossBomb();
+
+                spawnCooldown = Mathf.Max(0.05f, bossSpawnInterval);
+            }
+
+            yield return null;
+        }
+
+        // Let remaining short fuses finish after the timer.
+        while (!IsGameOver && CountAliveBossBombs() > 0)
+        {
+            Prune(lethals);
+            yield return null;
+        }
+
+        ClearLaserBossBuffs();
+        RestoreFarmerBossMode();
+
+        int refill = Mathf.Max(normalsAfterEachWave, 3);
+        if (refill > 0)
+            yield return SpawnProtectedNormals(refill);
+
+        bossWaveNoFlock = false;
+        IsWaveActive = false;
+        SecondsUntilNextWave = 0f;
+    }
+
+    private IEnumerator PrepareBossWave()
+    {
+        Prune(protectedNormals);
+        Prune(lethals);
+        Prune(minds);
+        Prune(panics);
+
+        // Wipe the flock (and leftover threats) with explosions — no normals during boss.
+        yield return ExplodeAllExceptLaser();
+
+        EnterFarmerBossLane();
+        EnsureBossLaserInHands();
+
+        ChickenWander.SetBossLeftHuddleForFlock(false);
+        yield return null;
+    }
+
+    private IEnumerator ExplodeAllExceptLaser()
+    {
+        var toExplode = new List<GameObject>();
+
+        ChickenWander[] chickens = FindObjectsByType<ChickenWander>();
+        for (int i = 0; i < chickens.Length; i++)
+        {
+            ChickenWander c = chickens[i];
+            if (c == null)
+                continue;
+
+            LaserChicken laser = c.GetComponent<LaserChicken>();
+            if (laser != null)
+                continue;
+
+            toExplode.Add(c.gameObject);
+        }
+
+        for (int i = 0; i < toExplode.Count; i++)
+        {
+            ExplodeChicken(toExplode[i]);
+            if (openingSpawnGap > 0f)
+                yield return new WaitForSeconds(Mathf.Min(0.08f, openingSpawnGap));
+        }
+
+        protectedNormals.Clear();
+        panics.Clear();
+        minds.Clear();
+
+        // Drop non-laser lethals from tracking (destroyed above).
+        for (int i = lethals.Count - 1; i >= 0; i--)
+        {
+            GameObject go = lethals[i];
+            if (go == null || go.GetComponent<LaserChicken>() == null)
+                lethals.RemoveAt(i);
+        }
+    }
+
+    private void ExplodeChicken(GameObject go)
+    {
+        if (go == null)
+            return;
+
+        Bomb bomb = go.GetComponent<Bomb>();
+        if (bomb != null)
+        {
+            bomb.Detonate();
+            return;
+        }
+
+        Vector3 pos = go.transform.position;
+        GameObject fxPrefab = FindExplosionPrefab();
+        if (fxPrefab != null)
+        {
+            GameObject fx = Instantiate(fxPrefab, pos, Quaternion.identity);
+            Destroy(fx, 0.7f);
+        }
+
+        if (GameAudio.Instance != null)
+            GameAudio.Instance.PlayExplosion();
+
+        Destroy(go);
+    }
+
+    private GameObject FindExplosionPrefab()
+    {
+        GameObject bombPrefab = Pick(bombChickenPrefabs);
+        if (bombPrefab == null)
+            return null;
+        Bomb bomb = bombPrefab.GetComponent<Bomb>();
+        return bomb != null ? bomb.explosion : null;
+    }
+
+    private GameObject SpawnBossBomb()
+    {
+        GameObject prefab = Pick(bombChickenPrefabs);
+        if (prefab == null)
+            return null;
+
+        // Spawn on the far right edge, random height.
+        Vector2 pos = new Vector2(
+            spawnAreaMax.x,
+            Random.Range(spawnAreaMin.y, spawnAreaMax.y));
+
+        if (spawnEffect != null)
+            StartCoroutine(PlaySpawnEffect(pos));
+
+        GameObject bombGo = Instantiate(prefab, pos, Quaternion.identity);
+        if (bombGo == null)
+            return null;
+
+        ChickenWander wander = bombGo.GetComponent<ChickenWander>();
+        if (wander != null)
+        {
+            wander.SetWanderArea(spawnAreaMin, spawnAreaMax);
+            wander.farmerTransform = farmerTransform;
+            wander.SetBossMarchLeft(true);
+        }
+
+        Bomb bomb = bombGo.GetComponent<Bomb>();
+        if (bomb != null)
+            bomb.SetFuseRandom(bossBombFuseMin, bossBombFuseMax);
+
+        lethals.Add(bombGo);
+        return bombGo;
+    }
+
+    private int CountAliveBossBombs()
+    {
+        int n = 0;
+        for (int i = 0; i < lethals.Count; i++)
+        {
+            GameObject go = lethals[i];
+            if (go == null)
+                continue;
+            if (go.GetComponent<Bomb>() != null)
+                n++;
+        }
+        return n;
+    }
+
+    private void EnterFarmerBossLane()
+    {
+        if (farmerTransform == null)
+            return;
+
+        var move = farmerTransform.GetComponent<PlayerMovement>();
+        if (move == null)
+            return;
+
+        move.SetSpeedMultiplier(1.45f);
+        move.SetBossLaneMode(true, spawnAreaMin.x, spawnAreaMin.y, spawnAreaMax.y);
+    }
+
+    private void RestoreFarmerBossMode()
+    {
+        if (farmerTransform == null)
+            return;
+
+        var move = farmerTransform.GetComponent<PlayerMovement>();
+        if (move != null)
+        {
+            move.SetSpeedMultiplier(1f);
+            move.SetBossLaneMode(false, 0f, 0f, 0f);
+        }
+
+        var grab = farmerTransform.GetComponent<GrabCluck>();
+        if (grab != null)
+            grab.ClearBossLaserLock();
+    }
+
+    private void BoostFarmerSpeed()
+    {
+        EnterFarmerBossLane();
+    }
+
+    private void RestoreFarmerSpeed()
+    {
+        RestoreFarmerBossMode();
+    }
+
+    private void EnsureBossLaserInHands()
+    {
+        LaserChicken kept = null;
+
+        LaserChicken[] lasers = FindObjectsByType<LaserChicken>();
+        for (int i = 0; i < lasers.Length; i++)
+        {
+            if (lasers[i] == null)
+                continue;
+
+            if (kept == null)
+            {
+                kept = lasers[i];
+                continue;
+            }
+
+            Destroy(lasers[i].gameObject);
+        }
+
+        if (kept == null)
+        {
+            GameObject laserGo = Spawn(Pick(laserChickenPrefabs));
+            if (laserGo != null)
+            {
+                lethals.Add(laserGo);
+                kept = laserGo.GetComponent<LaserChicken>();
+            }
+        }
+        else if (!lethals.Contains(kept.gameObject))
+        {
+            lethals.Add(kept.gameObject);
+        }
+
+        if (kept == null)
+            return;
+
+        kept.SetImmune(true);
+        kept.SetManualFire(true);
+
+        if (farmerTransform != null)
+        {
+            var grab = farmerTransform.GetComponent<GrabCluck>();
+            if (grab != null)
+                grab.ForceGrab(kept.transform, lockAsManualLaser: true);
+        }
+    }
+
+    private void ClearLaserBossBuffs()
+    {
+        LaserChicken[] lasers = FindObjectsByType<LaserChicken>();
+        for (int i = 0; i < lasers.Length; i++)
+        {
+            if (lasers[i] == null)
+                continue;
+            lasers[i].SetImmune(false);
+            lasers[i].SetManualFire(false);
+            lasers[i].SetCooldown(5f, 10f);
+        }
     }
 
     private float GetWaveDuration(int wave)
