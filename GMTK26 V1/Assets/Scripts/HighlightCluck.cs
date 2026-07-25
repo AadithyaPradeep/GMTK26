@@ -26,16 +26,27 @@ public class HighlightCluck : MonoBehaviour
 
         if (collider != null)
         {
-            if (lastObject != null) lastObject.NoHighlight();
-            lastObject = collider.transform.GetComponentInParent<ChickenWander>();
-            lastObject.Highlight();
-
+            ChickenWander cluck = collider.transform.GetComponentInParent<ChickenWander>();
+            if (cluck == null)
+            {
+                if (lastObject != null)
+                {
+                    lastObject.NoHighlight();
+                    lastObject = null;
+                }
+            }
+            else if (cluck != lastObject)
+            {
+                if (lastObject != null)
+                    lastObject.NoHighlight();
+                lastObject = cluck;
+                lastObject.Highlight();
+            }
         }
         else if (lastObject != null)
         {
             lastObject.NoHighlight();
             lastObject = null;
-
         }
     }
 
@@ -50,5 +61,13 @@ public class HighlightCluck : MonoBehaviour
         return lastObject != null ? lastObject : null;
     }
 
+    public void ClearSelection()
+    {
+        if (lastObject != null)
+        {
+            lastObject.NoHighlight();
+            lastObject = null;
+        }
+    }
 
 }

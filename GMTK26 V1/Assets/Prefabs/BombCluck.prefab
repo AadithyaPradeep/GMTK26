@@ -136,7 +136,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChickenWander
   areaMin: {x: -5, y: -5}
   areaMax: {x: 5, y: 5}
-  moveSpeed: 1.5
+  moveSpeed: 1.75
   arrivalThreshold: 0.05
   minIdleTime: 1
   maxIdleTime: 3

@@ -136,7 +136,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChickenWander
   areaMin: {x: -5, y: -5}
   areaMax: {x: 5, y: 5}
-  moveSpeed: 1.5
+  moveSpeed: 2.1
   arrivalThreshold: 0.05
   minIdleTime: 1
   maxIdleTime: 3
@@ -203,15 +203,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 1646419433792147411}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9015ab9fed46fd4c9f6b99bfb092461, type: 3}
+  m_Script: {fileID: 11500000, guid: 9c8b7a6d5e4f3210b1a2c3d4e5f60718, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Bomb
+  m_EditorClassIdentifier: Assembly-CSharp::LaserChicken
   timer: 5
   text: {fileID: 6762649250829181944}
-  explosion: {fileID: 4999050520589805456, guid: f5aa5a5a37ecc7c4bbdef3747428bc5c, type: 3}
+  laserPrefab: {fileID: 2536584085508921882, guid: 52d1c41c63d56254ab3a4843a0925a4e, type: 3}
   source: {fileID: 5417191281546641854}
-  explosionRadius: 2.5
-  explosionVfxDuration: 0.7
+  eyeOffset: {x: 0.35, y: 0.25}
+  beamSpawnForward: 0.12
+  laserLength: 12
+  nativeBeamLength: 8
+  laserHalfThickness: 0.45
+  laserDuration: 0.7
+  beamLinger: 0.35
+  damageStartDelay: 0.05
 --- !u!114 &5417191281546641854
 MonoBehaviour:
   m_ObjectHideFlags: 0
