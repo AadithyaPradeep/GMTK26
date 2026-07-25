@@ -27,7 +27,7 @@ public class GrabCluck : MonoBehaviour
 
     private void Update()
     {
-        if(Keyboard.current.eKey.wasPressedThisFrame)
+        if(Keyboard.current.spaceKey.wasPressedThisFrame)
         {
             if(grabbedCluck != null)
             {
