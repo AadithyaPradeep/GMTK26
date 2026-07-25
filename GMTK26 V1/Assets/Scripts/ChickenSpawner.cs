@@ -70,8 +70,8 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private float bossSpawnInterval = 0.25f;
     [SerializeField] private int bossSpawnBurst = 2;
     [SerializeField] private int bossMaxBombsOnScreen = 18;
-    [SerializeField] private float bossBombFuseMin = 1f;
-    [SerializeField] private float bossBombFuseMax = 3f;
+    [SerializeField] private float bossBombFuseMin = 10f;
+    [SerializeField] private float bossBombFuseMax = 10f;
     [SerializeField] private float bossWaveLaserCooldown = 3f;
     [SerializeField] private int normalsAfterEachWave = 2;
 
