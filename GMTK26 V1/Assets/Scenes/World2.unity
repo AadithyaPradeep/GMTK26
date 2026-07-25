@@ -338,7 +338,7 @@ Transform:
   m_GameObject: {fileID: 229318274}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.21, y: -0.99, z: 0}
+  m_LocalPosition: {x: -3, y: -0.35, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -968,22 +968,21 @@ MonoBehaviour:
   normalChickenPrefabs:
   - {fileID: 1533770966765506361, guid: 2bbbc67fbaa9dc1459c37c1da7720b60, type: 3}
   bombChickenPrefabs:
-  - {fileID: 4603569667051958, guid: 1069ebe1a88e5ed489dcbb211fa6e5ed, type: 3}
-  mindChickenPrefabs:
-  - {fileID: 6175148286897977551, guid: 2bba38cf02f699341a8bae9b4ed02d04, type: 3}
-  electricChickenPrefabs:
-  - {fileID: 2479665210511819439, guid: 1929dfaaa3dff22439d3ea7bc1e44650, type: 3}
+  - {fileID: 740304301570221861, guid: 5c3fb3821b96ba64082a9f3f1e8fcb04, type: 3}
+  mindChickenPrefabs: []
+  electricChickenPrefabs: []
   panicChickenPrefabs:
   - {fileID: 1533770966765506361, guid: f44d21017a3d52241ad019263abc0834, type: 3}
   rogueChickenPrefabs: []
-  laserChickenPrefabs:
-  - {fileID: 1646419433792147411, guid: a51d7401157120647a2ee2f9daed04fb, type: 3}
-  bossChickenPrefabs:
-  - {fileID: 770011223344556600, guid: a6b7c8d9e0f123445566778899aabbcc, type: 3}
-  bossGunPrefab: {fileID: 2215910319616120880, guid: 21396efd98bbc56488156aacfac637d7, type: 3}
-  missilePrefab: {fileID: 880011223344556677, guid: f5a6b7c8d9e01233445566778899aabb, type: 3}
-  livesPrefab: {fileID: 6172831998294918993, guid: 25073373ab5eced41b28c8ab79ba4d8d, type: 3}
+  laserChickenPrefabs: []
+  bossChickenPrefabs: []
+  bossGunPrefab: {fileID: 0}
+  missilePrefab: {fileID: 0}
+  livesPrefab: {fileID: 0}
   spawnEffect: {fileID: 4999050520589805456, guid: 97d33ad94dd58c34da7a110f96b5a019, type: 3}
+  levelPortalPrefab: {fileID: 0}
+  centerFarmerOnStart: 1
+  spawnPortalOnFinish: 0
   farmerTransform: {fileID: 229318277}
   introBanner: {fileID: 81212988}
   spawnAreaMin: {x: -12, y: -4.8}
@@ -993,13 +992,14 @@ MonoBehaviour:
   delayBeforeFirstWave: 3
   waveDuration: 15
   wave4Duration: 20
-  mindUnlockWave: 2
-  electricUnlockWave: 3
+  mindUnlockWave: 99
+  electricUnlockWave: 99
   panicUnlockWave: 2
   rogueUnlockWave: 2
-  laserUnlockWave: 4
+  laserUnlockWave: 99
   laserSpawnInterval: 3
-  bossUnlockWave: 6
+  bossUnlockWave: 99
+  startAtWaveForTesting: 0
   startAtBossWaveForTesting: 0
   maxStoryWave: 5
   storyBossNormalCount: 8
@@ -1010,13 +1010,13 @@ MonoBehaviour:
   bossSpawnInterval: 0.25
   bossSpawnBurst: 2
   bossMaxBombsOnScreen: 18
-  bossBombFuseMin: 1
-  bossBombFuseMax: 3
+  bossBombFuseMin: 10
+  bossBombFuseMax: 10
   bossWaveLaserCooldown: 3
   normalsAfterEachWave: 3
   bombSpawnPercent: 60
-  mindSpawnPercent: 15
-  electricSpawnPercent: 25
+  mindSpawnPercent: 0
+  electricSpawnPercent: 0
   panicSpawnPercent: 15
   rogueSpawnPercent: 20
   startSpawnInterval: 4
@@ -1071,10 +1071,7 @@ MonoBehaviour:
   gameOverText: 'GAME OVER
 
     All chickens lost'
-  laserLostGameOverText: 'GAME OVER
-
-    Laser chicken lost'
-  finishedText: FINISHED
+  finishedText: LEVEL 2 DONE!!
 --- !u!1 &966039093
 GameObject:
   m_ObjectHideFlags: 0
@@ -1170,7 +1167,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!95 &1000758951
 Animator:
   serializedVersion: 7

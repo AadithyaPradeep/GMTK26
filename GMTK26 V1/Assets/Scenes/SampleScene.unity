@@ -984,6 +984,9 @@ MonoBehaviour:
   missilePrefab: {fileID: 880011223344556677, guid: f5a6b7c8d9e01233445566778899aabb, type: 3}
   livesPrefab: {fileID: 6172831998294918993, guid: 25073373ab5eced41b28c8ab79ba4d8d, type: 3}
   spawnEffect: {fileID: 4999050520589805456, guid: 97d33ad94dd58c34da7a110f96b5a019, type: 3}
+  levelPortalPrefab: {fileID: 1000758950, guid: b2c3d4e5f60718293a4b5c6d7e8f901a, type: 3}
+  centerFarmerOnStart: 0
+  spawnPortalOnFinish: 1
   farmerTransform: {fileID: 229318277}
   introBanner: {fileID: 81212988}
   spawnAreaMin: {x: -12, y: -4.8}
@@ -1000,6 +1003,7 @@ MonoBehaviour:
   laserUnlockWave: 4
   laserSpawnInterval: 3
   bossUnlockWave: 6
+  startAtWaveForTesting: 5
   startAtBossWaveForTesting: 0
   maxStoryWave: 5
   storyBossNormalCount: 8
@@ -1165,7 +1169,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!95 &1000758951
 Animator:
   serializedVersion: 7

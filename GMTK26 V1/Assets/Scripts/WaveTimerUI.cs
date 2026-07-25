@@ -19,7 +19,7 @@ public class WaveTimerUI : MonoBehaviour
     [SerializeField] private string waveFormat = "WAVE {0}\n{1}";
     [SerializeField] private string gameOverText = "GAME OVER\nAll chickens lost";
     [SerializeField] private string laserLostGameOverText = "GAME OVER\nLaser chicken lost";
-    [SerializeField] private string finishedText = "FINISHED";
+    [SerializeField] private string finishedText = "LEVEL 1 DONE!!";
 
     private TextMeshProUGUI hintLabel;
     private Coroutine hintRoutine;
