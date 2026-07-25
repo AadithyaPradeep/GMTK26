@@ -130,8 +130,8 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 9
-      pivot: {x: 0, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: -0.01, y: 0.5}
+      border: {x: 27, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
@@ -152,8 +152,8 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 9
-      pivot: {x: 0, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: -0.01, y: 0.5}
+      border: {x: 27, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
@@ -174,8 +174,8 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 9
-      pivot: {x: 0, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: -0.01, y: 0.5}
+      border: {x: 27, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
@@ -196,8 +196,8 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 9
-      pivot: {x: 0, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: -0.01, y: 0.5}
+      border: {x: 27, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
@@ -218,8 +218,8 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 9
-      pivot: {x: 0, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: -0.01, y: 0.5}
+      border: {x: 27, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
@@ -240,8 +240,8 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 9
-      pivot: {x: 0, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: -0.01, y: 0.5}
+      border: {x: 27, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
@@ -262,8 +262,8 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 9
-      pivot: {x: 0, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: -0.01, y: 0.5}
+      border: {x: 27, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
@@ -284,8 +284,8 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 9
-      pivot: {x: 0, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: -0.01, y: 0.5}
+      border: {x: 27, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
@@ -311,7 +311,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":128.0,"y":128.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.0,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":9,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":128.0,"y":128.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":-0.009999999776482582,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":9,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       LaserSpawn_0: -8363613288188403069
       LaserSpawn_1: 1990702487344101324
