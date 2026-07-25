@@ -377,6 +377,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6348983831187366334}
+  - component: {fileID: 6348983831187366335}
   m_Layer: 0
   m_Name: Lives
   m_TagString: Untagged
@@ -404,6 +405,20 @@ Transform:
   - {fileID: 1742673952636555947}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6348983831187366335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6172831998294918993}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3e4f5a6b7c809203344556677889900, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BossLivesDisplay
+  aliveColor: {r: 1, g: 1, b: 1, a: 1}
+  deadColor: {r: 0.35, g: 0.35, b: 0.35, a: 1}
 --- !u!1 &8168772331833912402
 GameObject:
   m_ObjectHideFlags: 0

@@ -17,10 +17,28 @@ public class Bomb : MonoBehaviour
 
     private bool dead;
     private AudioSource tickSource;
+    private bool fuseConfigured;
+
+    /// <summary>Override the default 5–10s fuse (e.g. boss wave short timers).</summary>
+    public void SetFuse(float seconds)
+    {
+        timer = Mathf.Max(0.05f, seconds);
+        fuseConfigured = true;
+        if (text != null)
+            text.text = Mathf.CeilToInt(timer).ToString();
+    }
+
+    public void SetFuseRandom(float minSeconds, float maxSeconds)
+    {
+        float min = Mathf.Max(0.05f, Mathf.Min(minSeconds, maxSeconds));
+        float max = Mathf.Max(min, maxSeconds);
+        SetFuse(Random.Range(min, max));
+    }
 
     private void Start()
     {
-        timer = Random.Range(5, 11);
+        if (!fuseConfigured)
+            timer = Random.Range(5, 11);
 
         if (GameAudio.Instance != null)
             tickSource = GameAudio.Instance.CreateTickSource(gameObject);
@@ -115,6 +133,13 @@ public class Bomb : MonoBehaviour
             // Don't wipe a lightning chicken mid-strike (that used to orphan looping VFX).
             ElectricChicken electric = chicken.GetComponent<ElectricChicken>();
             if (electric != null && electric.IsStriking)
+                continue;
+
+            LaserChicken laser = chicken.GetComponent<LaserChicken>();
+            if (laser != null && laser.IsImmune)
+                continue;
+
+            if (chicken.GetComponent<BossChicken>() != null)
                 continue;
 
             Vector2 toChicken = (Vector2)chicken.transform.position - origin;

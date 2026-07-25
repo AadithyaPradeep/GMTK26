@@ -1,11 +1,12 @@
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using Unity.Cinemachine;
 
 /// <summary>
 /// Countdown chicken that fires a continuous eye laser for several seconds.
-/// The beam is parented to the chicken so it follows movement / facing.
+/// On the boss wave it switches to manual Space-bar fire (no timer).
 /// </summary>
 public class LaserChicken : MonoBehaviour
 {
@@ -18,7 +19,18 @@ public class LaserChicken : MonoBehaviour
     [Tooltip("Native LaserBeam sprite width in world units (128px @ 16 PPU).")]
     [SerializeField] private float nativeBeamLength = 8f;
     [SerializeField] private float laserHalfThickness = 0.45f;
+    [SerializeField] private float missileHitHalfThickness = 0.85f;
     [SerializeField] private float laserDuration = 5f;
+
+    [Header("Manual / Boss burst")]
+    [Tooltip("How long each machine-gun burst beam is visible.")]
+    [SerializeField] private float burstDuration = 0.045f;
+    [Tooltip("Delay between burst starts while Space is held.")]
+    [SerializeField] private float burstInterval = 0.07f;
+
+    [Header("Cooldown")]
+    [SerializeField] private float cooldownMin = 5f;
+    [SerializeField] private float cooldownMax = 10f;
 
     private SpriteRenderer spriteRenderer;
     private ChickenWander wander;
@@ -26,14 +38,79 @@ public class LaserChicken : MonoBehaviour
     private SpriteRenderer beamRenderer;
     private bool firing;
     private bool held;
+    private bool immune;
+    private bool manualFire;
+    private readonly HashSet<BossChicken> damagedBossesThisShot = new HashSet<BossChicken>();
+    private float nextBurstTime;
+    private Coroutine burstRoutine;
 
     public bool IsFiring => firing;
+    public bool IsImmune => immune;
+    public bool IsManualFire => manualFire;
 
     /// <summary>GrabCluck sets this so we don't re-enable wander while carried.</summary>
     public bool IsHeld
     {
         get => held;
         set => held = value;
+    }
+
+    public void SetImmune(bool value) => immune = value;
+
+    public void SetManualFire(bool enabled)
+    {
+        manualFire = enabled;
+        if (manualFire)
+        {
+            timer = 0f;
+            if (text != null)
+            {
+                text.gameObject.SetActive(true);
+                text.text = "SPC";
+            }
+        }
+        else if (!firing)
+        {
+            ResetTimer();
+        }
+    }
+
+    public void SetCooldown(float min, float max)
+    {
+        cooldownMin = Mathf.Max(0.1f, min);
+        cooldownMax = Mathf.Max(cooldownMin, max);
+        if (!firing && !manualFire)
+            ResetTimer();
+    }
+
+    /// <summary>Called from GrabCluck on Space during boss wave.</summary>
+    public static bool TryFireAnyManual()
+    {
+        LaserChicken[] lasers = FindObjectsByType<LaserChicken>();
+        for (int i = 0; i < lasers.Length; i++)
+        {
+            LaserChicken laser = lasers[i];
+            if (laser == null || !laser.manualFire)
+                continue;
+
+            if (laser.TryFireManual())
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>Instant burst; call every frame while Space is held for machine-gun fire.</summary>
+    public bool TryFireManual()
+    {
+        if (!manualFire)
+            return false;
+        if (Time.time < nextBurstTime)
+            return false;
+
+        nextBurstTime = Time.time + burstInterval;
+        FireBurst();
+        return true;
     }
 
     private void Awake()
@@ -44,7 +121,13 @@ public class LaserChicken : MonoBehaviour
 
     private void Start()
     {
-        ResetTimer();
+        if (!manualFire)
+            ResetTimer();
+        else if (text != null)
+        {
+            text.gameObject.SetActive(true);
+            text.text = "SPC";
+        }
     }
 
     private void OnDestroy()
@@ -66,6 +149,17 @@ public class LaserChicken : MonoBehaviour
             return;
         }
 
+        // Boss-wave laser: no auto timer — Space triggers fire via GrabCluck.
+        if (manualFire)
+        {
+            if (text != null)
+            {
+                text.gameObject.SetActive(true);
+                text.text = "SPC";
+            }
+            return;
+        }
+
         if (timer > 0f)
         {
             if (text != null)
@@ -83,7 +177,71 @@ public class LaserChicken : MonoBehaviour
             return;
 
         firing = true;
+        damagedBossesThisShot.Clear();
         StartCoroutine(FireRoutine());
+    }
+
+    private void FireBurst()
+    {
+        // Don't stack burst coroutines; drop the previous flash and fire again.
+        if (burstRoutine != null)
+            StopCoroutine(burstRoutine);
+
+        DestroyActiveBeam();
+        damagedBossesThisShot.Clear();
+        burstRoutine = StartCoroutine(BurstRoutine());
+    }
+
+    private IEnumerator BurstRoutine()
+    {
+        firing = true;
+
+        if (laserPrefab != null)
+        {
+            activeBeam = Instantiate(laserPrefab, transform);
+            activeBeam.transform.localPosition = Vector3.zero;
+            activeBeam.transform.localRotation = Quaternion.identity;
+            beamRenderer = activeBeam.GetComponent<SpriteRenderer>();
+            UpdateBeamFacing();
+        }
+
+        if (source != null)
+            source.GenerateImpulse();
+
+        if (GameAudio.Instance != null)
+            GameAudio.Instance.PlayExplosion();
+
+        // Instant hit-scan for this burst.
+        ApplyBeamDamageOnce();
+
+        float elapsed = 0f;
+        while (elapsed < burstDuration)
+        {
+            if (this == null)
+                yield break;
+
+            elapsed += Time.deltaTime;
+            UpdateBeamFacing();
+            yield return null;
+        }
+
+        DestroyActiveBeam();
+        firing = false;
+        burstRoutine = null;
+
+        if (text != null)
+        {
+            text.gameObject.SetActive(true);
+            text.text = "SPC";
+        }
+    }
+
+    private void ApplyBeamDamageOnce()
+    {
+        bool facingLeft = spriteRenderer != null && spriteRenderer.flipX;
+        Vector2 origin = transform.position;
+        Vector2 direction = facingLeft ? Vector2.left : Vector2.right;
+        KillAlongBeam(origin, direction);
     }
 
     private IEnumerator FireRoutine()
@@ -95,7 +253,6 @@ public class LaserChicken : MonoBehaviour
             activeBeam = Instantiate(laserPrefab, transform);
             activeBeam.transform.localPosition = Vector3.zero;
             activeBeam.transform.localRotation = Quaternion.identity;
-            // Leave prefab scale untouched.
             beamRenderer = activeBeam.GetComponent<SpriteRenderer>();
             UpdateBeamFacing();
 
@@ -133,7 +290,19 @@ public class LaserChicken : MonoBehaviour
         if (wander != null && !held)
             wander.enabled = true;
 
-        ResetTimer();
+        if (manualFire)
+        {
+            if (text != null)
+            {
+                text.gameObject.SetActive(true);
+                text.text = "SPC";
+            }
+        }
+        else
+        {
+            ResetTimer();
+        }
+
         firing = false;
     }
 
@@ -145,7 +314,6 @@ public class LaserChicken : MonoBehaviour
         activeBeam.transform.localPosition = Vector3.zero;
         activeBeam.transform.localRotation = Quaternion.identity;
 
-        // Flip the sprite only — never touch localScale.
         if (beamRenderer != null && spriteRenderer != null)
             beamRenderer.flipX = spriteRenderer.flipX;
     }
@@ -162,6 +330,36 @@ public class LaserChicken : MonoBehaviour
 
     private void KillAlongBeam(Vector2 origin, Vector2 direction)
     {
+        IReadOnlyList<BossChicken> bosses = BossChicken.ActiveBosses;
+        for (int i = 0; i < bosses.Count; i++)
+        {
+            BossChicken boss = bosses[i];
+            if (boss == null || boss.IsDead)
+                continue;
+            if (damagedBossesThisShot.Contains(boss))
+                continue;
+            if (!IsInBeam(origin, direction, boss.transform.position, laserHalfThickness))
+                continue;
+
+            if (boss.TakeDamage(1))
+                damagedBossesThisShot.Add(boss);
+        }
+
+        // Laser detonates boss missiles in the beam (slightly wider hit for rockets).
+        IReadOnlyList<BossMissile> missiles = BossMissile.ActiveMissiles;
+        for (int i = missiles.Count - 1; i >= 0; i--)
+        {
+            BossMissile missile = missiles[i];
+            if (missile == null)
+                continue;
+            if (IsInBeam(origin, direction, missile.transform.position, missileHitHalfThickness))
+                missile.Explode();
+        }
+
+        // Boss-wave laser: only hurts bosses (and missiles), never the flock.
+        if (manualFire)
+            return;
+
         ChickenWander[] chickens = FindObjectsByType<ChickenWander>();
 
         for (int i = 0; i < chickens.Length; i++)
@@ -173,7 +371,14 @@ public class LaserChicken : MonoBehaviour
             if (chicken.gameObject == gameObject)
                 continue;
 
-            if (!IsInBeam(origin, direction, chicken.transform.position))
+            if (chicken.GetComponent<BossChicken>() != null)
+                continue;
+
+            LaserChicken otherLaser = chicken.GetComponent<LaserChicken>();
+            if (otherLaser != null && otherLaser.IsImmune)
+                continue;
+
+            if (!IsInBeam(origin, direction, chicken.transform.position, laserHalfThickness))
                 continue;
 
             Bomb bomb = chicken.GetComponent<Bomb>();
@@ -187,7 +392,7 @@ public class LaserChicken : MonoBehaviour
         }
     }
 
-    private bool IsInBeam(Vector2 origin, Vector2 direction, Vector2 point)
+    private bool IsInBeam(Vector2 origin, Vector2 direction, Vector2 point, float halfThickness)
     {
         Vector2 toPoint = point - origin;
         float along = Vector2.Dot(toPoint, direction);
@@ -196,12 +401,12 @@ public class LaserChicken : MonoBehaviour
 
         Vector2 perp = new Vector2(-direction.y, direction.x);
         float across = Mathf.Abs(Vector2.Dot(toPoint, perp));
-        return across <= laserHalfThickness;
+        return across <= halfThickness;
     }
 
     private void ResetTimer()
     {
-        timer = Random.Range(5, 10);
+        timer = Random.Range(cooldownMin, cooldownMax);
         if (text != null)
         {
             text.gameObject.SetActive(true);

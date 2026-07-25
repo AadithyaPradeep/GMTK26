@@ -111,6 +111,13 @@ public class ElectricChicken : MonoBehaviour
             if (chicken.gameObject == gameObject)
                 continue;
 
+            LaserChicken laser = chicken.GetComponent<LaserChicken>();
+            if (laser != null && laser.IsImmune)
+                continue;
+
+            if (chicken.GetComponent<BossChicken>() != null)
+                continue;
+
             Vector2 toChicken = (Vector2)chicken.transform.position - origin;
             if (toChicken.sqrMagnitude > radiusSq)
                 continue;

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ChickenWander : MonoBehaviour
@@ -32,6 +33,16 @@ public class ChickenWander : MonoBehaviour
     [Header("Panic")]
     [SerializeField] private float panicSpeedMultiplier = 2.9f;
 
+    [Header("Boss Panic")]
+    [SerializeField] private float bossPanicSpeedMultiplier = 2.2f;
+    [SerializeField] private float bossHuddleRetargetTime = 0.7f;
+    [SerializeField] private float leftHuddleWidth = 2.8f;
+
+    [Header("Boss March")]
+    [SerializeField] private float bossMarchSpeedMultiplier = 2.4f;
+    [SerializeField] private float bossMarchYDrift = 1.6f;
+    [SerializeField] private float bossMarchYRetargetTime = 0.9f;
+
     private Animator animator;
     private SpriteRenderer spriteRenderer;
     private Vector2 targetPosition;
@@ -42,16 +53,83 @@ public class ChickenWander : MonoBehaviour
     private bool isMindCluck;
     private bool isBomb;
     private bool isPanic;
+    private bool bossPanic;
+    private bool bossMarchLeft;
+    private Transform bossTransform;
+    private float bossHuddleTimer;
+    private float marchYTarget;
+    private float marchYTimer;
     private Coroutine wanderCoroutine;
 
     private static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
+    private static readonly List<ChickenWander> All = new List<ChickenWander>();
 
-    private float CurrentMoveSpeed => isPanic ? moveSpeed * panicSpeedMultiplier : moveSpeed;
+    private float CurrentMoveSpeed
+    {
+        get
+        {
+            if (bossPanic)
+            {
+                float mult = isPanic
+                    ? Mathf.Max(bossPanicSpeedMultiplier, panicSpeedMultiplier)
+                    : bossPanicSpeedMultiplier;
+                return moveSpeed * mult;
+            }
+            if (isPanic)
+                return moveSpeed * panicSpeedMultiplier;
+            return moveSpeed;
+        }
+    }
 
     public void SetWanderArea(Vector2 min, Vector2 max)
     {
         areaMin = min;
         areaMax = max;
+    }
+
+    public void SetBossPanic(bool enabled, Transform boss)
+    {
+        bossPanic = enabled;
+        bossTransform = boss;
+        bossHuddleTimer = 0f;
+        if (!enabled && isFleeing)
+            EndFlee();
+    }
+
+    public bool IsBossHuddling => bossPanic;
+
+    /// <summary>Wave 6: flock chickens gather and stay on the far left.</summary>
+    public static void SetBossLeftHuddleForFlock(bool enabled)
+    {
+        for (int i = All.Count - 1; i >= 0; i--)
+        {
+            ChickenWander c = All[i];
+            if (c == null)
+            {
+                All.RemoveAt(i);
+                continue;
+            }
+
+            if (!BossChicken.IsFlockTarget(c.gameObject))
+                continue;
+
+            bool already = c.bossPanic;
+            c.SetBossPanic(enabled, null);
+            // Snap only on first enter so we don't teleport every frame.
+            if (enabled && !already)
+                c.SnapToLeftHuddle();
+        }
+    }
+
+    public static void SetBossScrambleForFlock(bool enabled, Transform boss)
+    {
+        SetBossLeftHuddleForFlock(enabled);
+    }
+
+    /// <summary>Legacy name — same as left huddle for flock.</summary>
+    public static void SetBossPanicForAllNormals(bool enabled, Transform boss)
+    {
+        SetBossLeftHuddleForFlock(enabled);
     }
 
     private void Awake()
@@ -65,11 +143,14 @@ public class ChickenWander : MonoBehaviour
 
     private void OnEnable()
     {
+        if (!All.Contains(this))
+            All.Add(this);
         wanderCoroutine = StartCoroutine(WanderLoop());
     }
 
     private void OnDisable()
     {
+        All.Remove(this);
         StopAllCoroutines();
         wanderCoroutine = null;
         isFleeing = false;
@@ -79,8 +160,41 @@ public class ChickenWander : MonoBehaviour
             animator.SetBool(IsMovingHash, false);
     }
 
+    public void SetBossMarchLeft(bool enabled)
+    {
+        bossMarchLeft = enabled;
+        if (enabled)
+        {
+            if (isFleeing)
+                EndFlee();
+            if (isAttracted)
+                EndAttract();
+            if (isApproachingNormals)
+                EndApproachNormals();
+
+            marchYTarget = transform.position.y;
+            marchYTimer = 0f;
+        }
+    }
+
     private void Update()
     {
+        if (bossMarchLeft)
+        {
+            UpdateBossMarchLeft();
+            return;
+        }
+
+        if (bossPanic)
+        {
+            if (isAttracted)
+                EndAttract();
+            if (isApproachingNormals)
+                EndApproachNormals();
+            UpdateBossPanicMovement();
+            return;
+        }
+
         // Mind / panic chickens are never attracted — they keep fleeing / sprinting.
         bool canBeAttracted = !isMindCluck && !isPanic;
 
@@ -107,6 +221,67 @@ public class ChickenWander : MonoBehaviour
         }
 
         TryApproachNormals();
+    }
+
+    private void UpdateBossMarchLeft()
+    {
+        Vector2 pos = transform.position;
+
+        marchYTimer -= Time.deltaTime;
+        if (marchYTimer <= 0f)
+        {
+            marchYTarget = Random.Range(areaMin.y, areaMax.y);
+            marchYTimer = Random.Range(bossMarchYRetargetTime * 0.7f, bossMarchYRetargetTime * 1.35f);
+        }
+
+        float speed = moveSpeed * bossMarchSpeedMultiplier;
+        float nextX = pos.x - speed * Time.deltaTime;
+        float nextY = Mathf.MoveTowards(pos.y, marchYTarget, bossMarchYDrift * Time.deltaTime);
+
+        nextX = Mathf.Max(nextX, areaMin.x);
+        nextY = Mathf.Clamp(nextY, areaMin.y, areaMax.y);
+        transform.position = new Vector3(nextX, nextY, transform.position.z);
+
+        if (spriteRenderer != null)
+            spriteRenderer.flipX = true;
+
+        if (animator != null)
+            animator.SetBool(IsMovingHash, true);
+    }
+
+    private void UpdateBossPanicMovement()
+    {
+        Vector2 current = transform.position;
+
+        // Stay packed on the far left of the playable area.
+        bossHuddleTimer -= Time.deltaTime;
+        if (bossHuddleTimer <= 0f || Vector2.Distance(current, targetPosition) <= arrivalThreshold)
+        {
+            PickLeftHuddleTarget();
+            bossHuddleTimer = Random.Range(bossHuddleRetargetTime * 0.6f, bossHuddleRetargetTime * 1.3f);
+        }
+
+        if (!isFleeing)
+            BeginFlee();
+        MoveToward(targetPosition, CurrentMoveSpeed);
+    }
+
+    private void PickLeftHuddleTarget()
+    {
+        float maxX = areaMin.x + Mathf.Max(0.5f, leftHuddleWidth);
+        targetPosition = new Vector2(
+            Random.Range(areaMin.x, maxX),
+            Random.Range(areaMin.y, areaMax.y));
+    }
+
+    /// <summary>Instantly teleport into the left huddle zone.</summary>
+    private void SnapToLeftHuddle()
+    {
+        PickLeftHuddleTarget();
+        transform.position = new Vector3(targetPosition.x, targetPosition.y, transform.position.z);
+        bossHuddleTimer = Random.Range(bossHuddleRetargetTime * 0.6f, bossHuddleRetargetTime * 1.3f);
+        if (animator != null)
+            animator.SetBool(IsMovingHash, false);
     }
 
     private bool TryFleeFromFarmer()
@@ -391,7 +566,7 @@ public class ChickenWander : MonoBehaviour
         return position;
     }
 
-    private bool IsWanderInterrupted => isFleeing || isAttracted || isApproachingNormals;
+    private bool IsWanderInterrupted => isFleeing || isAttracted || isApproachingNormals || bossPanic || bossMarchLeft;
 
     private IEnumerator WanderLoop()
     {
@@ -408,7 +583,7 @@ public class ChickenWander : MonoBehaviour
                 continue;
 
             // Panic chickens never idle — immediately pick the next sprint target.
-            if (isPanic)
+            if (isPanic || bossPanic)
                 continue;
 
             animator.SetBool(IsMovingHash, false);
@@ -426,11 +601,27 @@ public class ChickenWander : MonoBehaviour
 
     public void Highlight()
     {
-        animator.SetBool("Highlight", true);
+        SetAnimBool("Highlight", true);
     }
+
     public void NoHighlight()
     {
-        animator.SetBool("Highlight", false);
+        SetAnimBool("Highlight", false);
+    }
+
+    private void SetAnimBool(string param, bool value)
+    {
+        if (animator == null || animator.runtimeAnimatorController == null)
+            return;
+
+        for (int i = 0; i < animator.parameterCount; i++)
+        {
+            if (animator.GetParameter(i).name == param)
+            {
+                animator.SetBool(param, value);
+                return;
+            }
+        }
     }
 
     private void PickNewTarget()
