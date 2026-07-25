@@ -37,7 +37,8 @@ public class GrabCluck : MonoBehaviour
             LaserChicken heldLaser = grabbedCluck.GetComponent<LaserChicken>();
             if (heldLaser != null && heldLaser.IsManualFire)
             {
-                if (Keyboard.current.spaceKey.isPressed)
+                // One shot per press (story laser cooldown) or hold for gun bursts.
+                if (Keyboard.current.spaceKey.wasPressedThisFrame || Keyboard.current.spaceKey.isPressed)
                     heldLaser.TryFireManual();
                 return;
             }

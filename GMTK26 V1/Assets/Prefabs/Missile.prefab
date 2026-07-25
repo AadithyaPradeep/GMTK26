@@ -127,11 +127,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2d3e4f5a6b708192233445566778899, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossMissile
-  speed: 5
-  turnRateDegrees: 220
+  speed: 2.6
+  turnRateDegrees: 150
   hitRadius: 0.45
-  armDelay: 0.1
-  lifetime: 4
-  blastRadius: 1.35
+  armDelay: 0.12
+  lifetime: 5.5
+  blastRadius: 1.2
   explosionVfxDuration: 0.7
   explosionPrefab: {fileID: 4999050520589805456, guid: f5aa5a5a37ecc7c4bbdef3747428bc5c, type: 3}

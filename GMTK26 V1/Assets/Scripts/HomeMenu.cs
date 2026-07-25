@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-/// Title / home scene UI. Play loads the game scene.
+/// Title / home scene UI. Play = story mode, Chaos = bomb-rush gun mode.
 /// </summary>
 public class HomeMenu : MonoBehaviour
 {
@@ -12,6 +12,7 @@ public class HomeMenu : MonoBehaviour
     [SerializeField] private TMP_FontAsset font;
     [SerializeField] private string titleText = "EXPLODING CHICKENS";
     [SerializeField] private string playButtonText = "PLAY";
+    [SerializeField] private string chaosButtonText = "CHAOS";
 
     private bool loading;
 
@@ -23,10 +24,25 @@ public class HomeMenu : MonoBehaviour
 
     public void OnPlayPressed()
     {
+        StartGame(chaos: false);
+    }
+
+    public void OnChaosPressed()
+    {
+        StartGame(chaos: true);
+    }
+
+    private void StartGame(bool chaos)
+    {
         if (loading)
             return;
 
         loading = true;
+        if (chaos)
+            GameMode.SetChaos();
+        else
+            GameMode.SetStory();
+
         SceneManager.LoadScene(gameSceneName);
     }
 
@@ -70,34 +86,63 @@ public class HomeMenu : MonoBehaviour
         title.raycastTarget = false;
         ApplyFont(title);
 
-        GameObject buttonGo = new GameObject("PlayButton", typeof(RectTransform));
-        buttonGo.transform.SetParent(root.transform, false);
+        // PLAY (left) + CHAOS (right)
+        CreateMenuButton(
+            root.transform,
+            "PlayButton",
+            playButtonText,
+            new Vector2(-180f, 0f),
+            new Color(0.92f, 0.82f, 0.28f, 1f),
+            new Color(0.12f, 0.1f, 0.05f, 1f),
+            OnPlayPressed);
+
+        CreateMenuButton(
+            root.transform,
+            "ChaosButton",
+            chaosButtonText,
+            new Vector2(180f, 0f),
+            new Color(0.85f, 0.28f, 0.22f, 1f),
+            Color.white,
+            OnChaosPressed);
+    }
+
+    private void CreateMenuButton(
+        Transform parent,
+        string name,
+        string labelText,
+        Vector2 anchoredPos,
+        Color bgColor,
+        Color labelColor,
+        UnityEngine.Events.UnityAction onClick)
+    {
+        GameObject buttonGo = new GameObject(name, typeof(RectTransform));
+        buttonGo.transform.SetParent(parent, false);
         RectTransform buttonRt = buttonGo.GetComponent<RectTransform>();
         buttonRt.anchorMin = new Vector2(0.5f, 0.32f);
         buttonRt.anchorMax = new Vector2(0.5f, 0.32f);
         buttonRt.pivot = new Vector2(0.5f, 0.5f);
-        buttonRt.anchoredPosition = Vector2.zero;
-        buttonRt.sizeDelta = new Vector2(320f, 96f);
+        buttonRt.anchoredPosition = anchoredPos;
+        buttonRt.sizeDelta = new Vector2(300f, 96f);
 
         Image buttonImage = buttonGo.AddComponent<Image>();
-        buttonImage.color = new Color(0.92f, 0.82f, 0.28f, 1f);
+        buttonImage.color = bgColor;
 
         Button button = buttonGo.AddComponent<Button>();
         ColorBlock colors = button.colors;
-        colors.highlightedColor = new Color(1f, 0.92f, 0.45f, 1f);
-        colors.pressedColor = new Color(0.75f, 0.65f, 0.18f, 1f);
+        colors.highlightedColor = Color.Lerp(bgColor, Color.white, 0.25f);
+        colors.pressedColor = Color.Lerp(bgColor, Color.black, 0.25f);
         button.colors = colors;
-        button.onClick.AddListener(OnPlayPressed);
+        button.onClick.AddListener(onClick);
 
         GameObject labelGo = new GameObject("Label", typeof(RectTransform));
         labelGo.transform.SetParent(buttonGo.transform, false);
         StretchFull(labelGo.GetComponent<RectTransform>());
 
         TextMeshProUGUI label = labelGo.AddComponent<TextMeshProUGUI>();
-        label.text = playButtonText;
+        label.text = labelText;
         label.fontSize = 48f;
         label.alignment = TextAlignmentOptions.Center;
-        label.color = new Color(0.12f, 0.1f, 0.05f, 1f);
+        label.color = labelColor;
         label.raycastTarget = false;
         ApplyFont(label);
     }
