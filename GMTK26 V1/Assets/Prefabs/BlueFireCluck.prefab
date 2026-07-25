@@ -213,10 +213,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Bomb
   timer: 5
   text: {fileID: 3675327506906909809}
-  explosion: {fileID: 4999050520589805456, guid: f5aa5a5a37ecc7c4bbdef3747428bc5c, type: 3}
+  explosion: {fileID: 880011223344556700, guid: 7b1e7ebdc3bf37e499088867846d936f, type: 3}
   source: {fileID: 2661755715182859605}
   explosionRadius: 2.5
-  explosionVfxDuration: 0.7
+  explosionVfxDuration: 0.75
 --- !u!114 &2661755715182859605
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -477,8 +477,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190277
-  m_fontColor: {r: 0.7735849, g: 0, b: 0, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
