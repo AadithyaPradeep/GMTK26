@@ -83,6 +83,10 @@ public class GrabCluck : MonoBehaviour
         if (laser != null)
             laser.IsHeld = true;
 
+        FireChicken fire = cluck.GetComponent<FireChicken>();
+        if (fire != null)
+            fire.IsHeld = true;
+
         cluck.SetParent(transform);
         if (source != null)
         {
@@ -142,6 +146,7 @@ public class GrabCluck : MonoBehaviour
         BoxCollider2D col = cluck.GetComponent<BoxCollider2D>();
         LaserChicken laser = cluck.GetComponent<LaserChicken>();
         ElectricChicken electric = cluck.GetComponent<ElectricChicken>();
+        FireChicken fire = cluck.GetComponent<FireChicken>();
 
         if (heldAnimator != null)
             TrySetAnimBool(heldAnimator, "Grabbed", false);
@@ -156,13 +161,17 @@ public class GrabCluck : MonoBehaviour
             col.enabled = true;
 
         bool keepLocked = (laser != null && laser.IsFiring)
-            || (electric != null && electric.IsStriking);
+            || (electric != null && electric.IsStriking)
+            || (fire != null && fire.IsFiring);
 
         if (wander != null && !keepLocked)
             wander.enabled = true;
 
         if (laser != null)
             laser.IsHeld = false;
+
+        if (fire != null)
+            fire.IsHeld = false;
 
         if (GameAudio.Instance != null)
             GameAudio.Instance.PlayDrop();
