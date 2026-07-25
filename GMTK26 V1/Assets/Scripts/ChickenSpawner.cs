@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Starts with protected normals, then endless waves.
-/// Lethals (bombs / electrics / lasers) share a threat cap.
+/// Starts with protected normals, then story/chaos waves.
+/// Lethals (bombs / electrics / lasers / rogues) share a threat cap.
 /// Minds are non-lethal with their own cap.
 /// Panics are flock chickens: they count toward game over when killed.
+/// Rogues are bombs that sprint like panics (max per wave, unlock wave).
 /// Lasers: from unlock wave onward, spawn on a fixed interval.
 /// Spawn chance uses percentages among unlocked types.
 /// </summary>
@@ -17,7 +18,8 @@ public class ChickenSpawner : MonoBehaviour
         Bomb,
         Mind,
         Electric,
-        Panic
+        Panic,
+        Rogue
     }
 
     [Header("Prefabs")]
@@ -26,6 +28,7 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private GameObject[] mindChickenPrefabs;
     [SerializeField] private GameObject[] electricChickenPrefabs;
     [SerializeField] private GameObject[] panicChickenPrefabs;
+    [SerializeField] private GameObject[] rogueChickenPrefabs;
     [SerializeField] private GameObject[] laserChickenPrefabs;
     [SerializeField] private GameObject[] bossChickenPrefabs;
     [SerializeField] private GameObject bossGunPrefab;
@@ -52,6 +55,7 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private int mindUnlockWave = 2;
     [SerializeField] private int electricUnlockWave = 3;
     [SerializeField] private int panicUnlockWave = 1;
+    [SerializeField] private int rogueUnlockWave = 2;
     [SerializeField] private int laserUnlockWave = 4;
     [SerializeField] private float laserSpawnInterval = 3f;
     [SerializeField] private int bossUnlockWave = 6;
@@ -76,6 +80,7 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] [Range(0f, 100f)] private float mindSpawnPercent = 15f;
     [SerializeField] [Range(0f, 100f)] private float electricSpawnPercent = 15f;
     [SerializeField] [Range(0f, 100f)] private float panicSpawnPercent = 15f;
+    [SerializeField] [Range(0f, 100f)] private float rogueSpawnPercent = 20f;
 
     [Header("Difficulty")]
     [SerializeField] private float startSpawnInterval = 4f;
@@ -86,6 +91,7 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private int hardMaxThreats = 18;
     [SerializeField] private int maxMindsOnScreen = 2;
     [SerializeField] private int maxPanicsPerWave = 2;
+    [SerializeField] private int maxRoguesPerWave = 2;
     [SerializeField] private int startSpawnBurst = 1;
     [SerializeField] private int wavesPerBurstIncrease = 3;
     [SerializeField] private int hardMaxSpawnBurst = 4;
@@ -223,6 +229,7 @@ public class ChickenSpawner : MonoBehaviour
         float spawnCooldown = 0f;
         float laserCooldown = 0f;
         int panicsSpawnedThisWave = 0;
+        int roguesSpawnedThisWave = 0;
         bool lasersUnlocked = wave >= laserUnlockWave && Pick(laserChickenPrefabs) != null;
 
         while (SecondsUntilNextWave > 0f && !IsGameOver)
@@ -250,21 +257,28 @@ public class ChickenSpawner : MonoBehaviour
             bool canLethal = lethals.Count < maxThreats;
             bool canMind = wave >= mindUnlockWave && minds.Count < maxMindsOnScreen;
             bool canPanic = wave >= panicUnlockWave && panicsSpawnedThisWave < maxPanicsPerWave;
+            bool canRogue = wave >= rogueUnlockWave && roguesSpawnedThisWave < maxRoguesPerWave
+                && (Pick(rogueChickenPrefabs) != null || Pick(bombChickenPrefabs) != null);
 
-            if (spawnCooldown <= 0f && (canLethal || canMind || canPanic))
+            if (spawnCooldown <= 0f && (canLethal || canMind || canPanic || canRogue))
             {
                 for (int i = 0; i < burst; i++)
                 {
                     canLethal = lethals.Count < maxThreats;
                     canMind = wave >= mindUnlockWave && minds.Count < maxMindsOnScreen;
                     canPanic = wave >= panicUnlockWave && panicsSpawnedThisWave < maxPanicsPerWave;
-                    if (!canLethal && !canMind && !canPanic)
+                    canRogue = wave >= rogueUnlockWave && roguesSpawnedThisWave < maxRoguesPerWave
+                        && (Pick(rogueChickenPrefabs) != null || Pick(bombChickenPrefabs) != null);
+                    if (!canLethal && !canMind && !canPanic && !canRogue)
                         break;
 
-                    ThreatKind kind = PickThreatKind(wave, canLethal, canMind, canPanic);
+                    ThreatKind kind = PickThreatKind(wave, canLethal, canMind, canPanic, canRogue);
                     GameObject chicken = Spawn(PrefabFor(kind));
                     if (chicken == null)
                         continue;
+
+                    if (kind == ThreatKind.Rogue)
+                        EnsureRogue(chicken);
 
                     if (kind == ThreatKind.Mind)
                         minds.Add(chicken);
@@ -273,6 +287,11 @@ public class ChickenSpawner : MonoBehaviour
                         panics.Add(chicken);
                         protectedNormals.Add(chicken);
                         panicsSpawnedThisWave++;
+                    }
+                    else if (kind == ThreatKind.Rogue)
+                    {
+                        lethals.Add(chicken);
+                        roguesSpawnedThisWave++;
                     }
                     else
                         lethals.Add(chicken);
@@ -839,7 +858,7 @@ public class ChickenSpawner : MonoBehaviour
         }
     }
 
-    private ThreatKind PickThreatKind(int wave, bool canLethal, bool canMind, bool canPanic)
+    private ThreatKind PickThreatKind(int wave, bool canLethal, bool canMind, bool canPanic, bool canRogue)
     {
         float bombW = canLethal && Pick(bombChickenPrefabs) != null ? bombSpawnPercent : 0f;
         float mindW = canMind && Pick(mindChickenPrefabs) != null ? mindSpawnPercent : 0f;
@@ -847,10 +866,12 @@ public class ChickenSpawner : MonoBehaviour
             ? electricSpawnPercent
             : 0f;
         float panicW = canPanic && Pick(panicChickenPrefabs) != null ? panicSpawnPercent : 0f;
+        float rogueW = canRogue ? rogueSpawnPercent : 0f;
 
-        float total = bombW + mindW + electricW + panicW;
+        float total = bombW + mindW + electricW + panicW + rogueW;
         if (total <= 0f)
         {
+            if (canRogue) return ThreatKind.Rogue;
             if (canLethal) return ThreatKind.Bomb;
             if (canPanic) return ThreatKind.Panic;
             return ThreatKind.Mind;
@@ -862,7 +883,9 @@ public class ChickenSpawner : MonoBehaviour
         if (roll < mindW) return ThreatKind.Mind;
         roll -= mindW;
         if (roll < electricW) return ThreatKind.Electric;
-        return ThreatKind.Panic;
+        roll -= electricW;
+        if (roll < panicW) return ThreatKind.Panic;
+        return ThreatKind.Rogue;
     }
 
     private GameObject PrefabFor(ThreatKind kind)
@@ -872,8 +895,26 @@ public class ChickenSpawner : MonoBehaviour
             case ThreatKind.Mind: return Pick(mindChickenPrefabs);
             case ThreatKind.Electric: return Pick(electricChickenPrefabs);
             case ThreatKind.Panic: return Pick(panicChickenPrefabs);
+            case ThreatKind.Rogue:
+            {
+                GameObject rogue = Pick(rogueChickenPrefabs);
+                return rogue != null ? rogue : Pick(bombChickenPrefabs);
+            }
             default: return Pick(bombChickenPrefabs);
         }
+    }
+
+    private static void EnsureRogue(GameObject chicken)
+    {
+        if (chicken == null)
+            return;
+
+        if (chicken.GetComponent<RogueChicken>() == null)
+            chicken.AddComponent<RogueChicken>();
+
+        ChickenWander wander = chicken.GetComponent<ChickenWander>();
+        if (wander != null)
+            wander.RefreshTypeFlags();
     }
 
     private void OnDestroy()
