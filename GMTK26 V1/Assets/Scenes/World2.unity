@@ -1063,6 +1063,7 @@ MonoBehaviour:
   label: {fileID: 0}
   fontSize: 42
   gameOverFontSize: 72
+  hintFontSize: 36
   textColor: {r: 1, g: 1, b: 1, a: 1}
   waveFormat: 'WAVE {0}
 
