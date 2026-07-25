@@ -970,7 +970,8 @@ MonoBehaviour:
   bombChickenPrefabs:
   - {fileID: 740304301570221861, guid: 5c3fb3821b96ba64082a9f3f1e8fcb04, type: 3}
   mindChickenPrefabs: []
-  electricChickenPrefabs: []
+  electricChickenPrefabs:
+  - {fileID: 7256149043055931299, guid: f5959a892d2968e4e96d1817b3a1a8bf, type: 3}
   panicChickenPrefabs:
   - {fileID: 1533770966765506361, guid: f44d21017a3d52241ad019263abc0834, type: 3}
   rogueChickenPrefabs: []
@@ -993,7 +994,8 @@ MonoBehaviour:
   waveDuration: 15
   wave4Duration: 20
   mindUnlockWave: 99
-  electricUnlockWave: 99
+  electricUnlockWave: 3
+  electricMaxWave: 5
   panicUnlockWave: 2
   rogueUnlockWave: 2
   laserUnlockWave: 99
@@ -1016,7 +1018,7 @@ MonoBehaviour:
   normalsAfterEachWave: 3
   bombSpawnPercent: 60
   mindSpawnPercent: 0
-  electricSpawnPercent: 0
+  electricSpawnPercent: 25
   panicSpawnPercent: 15
   rogueSpawnPercent: 20
   startSpawnInterval: 4

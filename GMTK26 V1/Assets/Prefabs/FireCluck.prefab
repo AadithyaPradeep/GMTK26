@@ -207,8 +207,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190277
-  m_fontColor: {r: 0.7735849, g: 0, b: 0, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -408,7 +408,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChickenWander
   areaMin: {x: -5, y: -5}
   areaMax: {x: 5, y: 5}
-  moveSpeed: 1.75
+  moveSpeed: 2.25
   arrivalThreshold: 0.05
   minIdleTime: 1
   maxIdleTime: 3
@@ -481,15 +481,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 7256149043055931299}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9015ab9fed46fd4c9f6b99bfb092461, type: 3}
+  m_Script: {fileID: 11500000, guid: f1a2b3c4d5e60718293a4b5c6d7e8f90, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Bomb
+  m_EditorClassIdentifier: Assembly-CSharp::FireChicken
   timer: 5
   text: {fileID: 9165430449509530505}
-  explosion: {fileID: 4999050520589805456, guid: f5aa5a5a37ecc7c4bbdef3747428bc5c, type: 3}
+  fireballPrefab: {fileID: 126482106822710659, guid: ebc32caf265bd794292e42944cc9e16a, type: 3}
+  explosionPrefab: {fileID: 4999050520589805456, guid: f5aa5a5a37ecc7c4bbdef3747428bc5c, type: 3}
   source: {fileID: 6945542097089782553}
+  fireballSpeed: 18
+  mapTravelFraction: 0.6
   explosionRadius: 2.5
   explosionVfxDuration: 0.7
+  bodyHitRadius: 0.35
+  cooldownMin: 5
+  cooldownMax: 10
 --- !u!114 &6945542097089782553
 MonoBehaviour:
   m_ObjectHideFlags: 0

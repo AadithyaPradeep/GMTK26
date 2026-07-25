@@ -998,6 +998,7 @@ MonoBehaviour:
   wave4Duration: 20
   mindUnlockWave: 2
   electricUnlockWave: 3
+  electricMaxWave: 0
   panicUnlockWave: 2
   rogueUnlockWave: 2
   laserUnlockWave: 4

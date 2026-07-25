@@ -59,6 +59,8 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private float wave4Duration = 20f;
     [SerializeField] private int mindUnlockWave = 2;
     [SerializeField] private int electricUnlockWave = 3;
+    [Tooltip("Last wave electrics/fire can spawn (0 = no upper limit).")]
+    [SerializeField] private int electricMaxWave = 0;
     [SerializeField] private int panicUnlockWave = 1;
     [SerializeField] private int rogueUnlockWave = 2;
     [SerializeField] private int laserUnlockWave = 4;
@@ -117,6 +119,7 @@ public class ChickenSpawner : MonoBehaviour
     public bool IsGameOver { get; private set; }
     public bool IsFinished { get; private set; }
     public int ProtectedAlive => CountAlive(protectedNormals);
+    public float MapWidth => Mathf.Abs(spawnAreaMax.x - spawnAreaMin.x);
 
     public bool IsWaitingForNextWave => IsWaveActive && !IsGameOver && !IsFinished;
     public bool HasStarted { get; private set; }
@@ -966,7 +969,7 @@ public class ChickenSpawner : MonoBehaviour
     {
         float bombW = canLethal && Pick(bombChickenPrefabs) != null ? bombSpawnPercent : 0f;
         float mindW = canMind && Pick(mindChickenPrefabs) != null ? mindSpawnPercent : 0f;
-        float electricW = canLethal && wave >= electricUnlockWave && Pick(electricChickenPrefabs) != null
+        float electricW = canLethal && IsElectricWave(wave) && Pick(electricChickenPrefabs) != null
             ? electricSpawnPercent
             : 0f;
         float panicW = canPanic && Pick(panicChickenPrefabs) != null ? panicSpawnPercent : 0f;
@@ -990,6 +993,15 @@ public class ChickenSpawner : MonoBehaviour
         roll -= electricW;
         if (roll < panicW) return ThreatKind.Panic;
         return ThreatKind.Rogue;
+    }
+
+    private bool IsElectricWave(int wave)
+    {
+        if (wave < electricUnlockWave)
+            return false;
+        if (electricMaxWave > 0 && wave > electricMaxWave)
+            return false;
+        return true;
     }
 
     private GameObject PrefabFor(ThreatKind kind)
