@@ -7,7 +7,7 @@ using UnityEngine;
 /// Lethals (bombs / electrics / lasers) share a threat cap.
 /// Minds are non-lethal with their own cap.
 /// Panics are flock chickens: they count toward game over when killed.
-/// Lasers: exactly one per wave from unlock wave onward.
+/// Lasers: from unlock wave onward, spawn on a fixed interval.
 /// Spawn chance uses percentages among unlocked types.
 /// </summary>
 public class ChickenSpawner : MonoBehaviour
@@ -44,10 +44,12 @@ public class ChickenSpawner : MonoBehaviour
 
     [Header("Waves")]
     [SerializeField] private float waveDuration = 30f;
+    [SerializeField] private float wave4Duration = 20f;
     [SerializeField] private int mindUnlockWave = 2;
     [SerializeField] private int electricUnlockWave = 3;
     [SerializeField] private int panicUnlockWave = 1;
-    [SerializeField] private int laserUnlockWave = 3;
+    [SerializeField] private int laserUnlockWave = 4;
+    [SerializeField] private float laserSpawnInterval = 3f;
     [SerializeField] private int normalsAfterEachWave = 2;
 
     [Header("Spawn Chances %")]
@@ -142,21 +144,15 @@ public class ChickenSpawner : MonoBehaviour
     private IEnumerator RunWave(int wave)
     {
         IsWaveActive = true;
-        SecondsUntilNextWave = waveDuration;
+        SecondsUntilNextWave = GetWaveDuration(wave);
 
         float interval = Mathf.Max(minSpawnInterval, startSpawnInterval - (wave - 1) * intervalDecreasePerWave);
         int maxThreats = Mathf.Min(hardMaxThreats, startMaxThreats + (wave - 1) * maxThreatIncreasePerWave);
         int burst = Mathf.Min(hardMaxSpawnBurst, startSpawnBurst + (wave - 1) / Mathf.Max(1, wavesPerBurstIncrease));
         float spawnCooldown = 0f;
+        float laserCooldown = 0f;
         int panicsSpawnedThisWave = 0;
-
-        // Exactly one laser chicken per unlocked wave.
-        if (wave >= laserUnlockWave)
-        {
-            GameObject laser = Spawn(Pick(laserChickenPrefabs));
-            if (laser != null)
-                lethals.Add(laser);
-        }
+        bool lasersUnlocked = wave >= laserUnlockWave && Pick(laserChickenPrefabs) != null;
 
         while (SecondsUntilNextWave > 0f && !IsGameOver)
         {
@@ -167,6 +163,18 @@ public class ChickenSpawner : MonoBehaviour
             Prune(lethals);
             Prune(minds);
             Prune(panics);
+
+            if (lasersUnlocked)
+            {
+                laserCooldown -= dt;
+                if (laserCooldown <= 0f)
+                {
+                    GameObject laser = Spawn(Pick(laserChickenPrefabs));
+                    if (laser != null)
+                        lethals.Add(laser);
+                    laserCooldown = laserSpawnInterval;
+                }
+            }
 
             bool canLethal = lethals.Count < maxThreats;
             bool canMind = wave >= mindUnlockWave && minds.Count < maxMindsOnScreen;
@@ -207,6 +215,13 @@ public class ChickenSpawner : MonoBehaviour
 
         IsWaveActive = false;
         SecondsUntilNextWave = 0f;
+    }
+
+    private float GetWaveDuration(int wave)
+    {
+        if (wave == 4)
+            return wave4Duration;
+        return waveDuration;
     }
 
     private IEnumerator SpawnProtectedNormals(int count)

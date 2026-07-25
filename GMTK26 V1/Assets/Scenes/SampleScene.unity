@@ -986,10 +986,12 @@ MonoBehaviour:
   openingSpawnGap: 0.25
   delayBeforeFirstWave: 3
   waveDuration: 15
+  wave4Duration: 20
   mindUnlockWave: 2
   electricUnlockWave: 3
   panicUnlockWave: 2
-  laserUnlockWave: 1
+  laserUnlockWave: 4
+  laserSpawnInterval: 3
   normalsAfterEachWave: 3
   bombSpawnPercent: 60
   mindSpawnPercent: 15
