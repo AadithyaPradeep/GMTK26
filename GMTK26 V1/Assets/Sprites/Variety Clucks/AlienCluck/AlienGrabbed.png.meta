@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: af2763bb5eb384641aa70158bc7288a3
+guid: 6abd8e28979caae4f8c86e1ecc412452
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6787594126519555746
-    second: PanicGrabbed_0
+      213: -1942078978673689596
+    second: AlienGrabbed_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: PanicGrabbed_0
+      name: AlienGrabbed_0
       rect:
         serializedVersion: 2
         x: 8
         y: 3
         width: 14
-        height: 29
+        height: 27
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e592649aa1f9dc1a0800000000000000
-      internalID: -6787594126519555746
+      spriteID: 40cb66e55795c05e0800000000000000
+      internalID: -1942078978673689596
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      PanicGrabbed_0: -6787594126519555746
+      AlienGrabbed_0: -1942078978673689596
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
