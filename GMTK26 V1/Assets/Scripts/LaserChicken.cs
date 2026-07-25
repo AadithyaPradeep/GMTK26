@@ -18,7 +18,7 @@ public class LaserChicken : MonoBehaviour
     [Header("Beam")]
     [Tooltip("Native LaserBeam sprite width in world units (128px @ 16 PPU).")]
     [SerializeField] private float nativeBeamLength = 8f;
-    [SerializeField] private float laserHalfThickness = 0.45f;
+    [SerializeField] private float laserHalfThickness = 0.7f;
     [SerializeField] private float missileHitHalfThickness = 0.85f;
     [SerializeField] private float laserDuration = 5f;
 
@@ -491,7 +491,7 @@ public class LaserChicken : MonoBehaviour
                 continue;
             if (damagedBossesThisShot.Contains(boss))
                 continue;
-            if (!IsInBeam(origin, direction, boss.transform.position, laserHalfThickness))
+            if (!IsBodyInBeam(origin, direction, boss.gameObject, laserHalfThickness))
                 continue;
 
             if (boss.TakeDamage(1))
@@ -505,13 +505,9 @@ public class LaserChicken : MonoBehaviour
             BossMissile missile = missiles[i];
             if (missile == null)
                 continue;
-            if (IsInBeam(origin, direction, missile.transform.position, missileHitHalfThickness))
+            if (IsBodyInBeam(origin, direction, missile.gameObject, missileHitHalfThickness))
                 missile.Explode();
         }
-
-        // Story / gun boss laser: only hurts bosses (and missiles), never the flock.
-        if (manualFire || protectFlock)
-            return;
 
         ChickenWander[] chickens = FindObjectsByType<ChickenWander>();
 
@@ -531,7 +527,7 @@ public class LaserChicken : MonoBehaviour
             if (otherLaser != null && otherLaser.IsImmune)
                 continue;
 
-            if (!IsInBeam(origin, direction, chicken.transform.position, laserHalfThickness))
+            if (!IsBodyInBeam(origin, direction, chicken.gameObject, laserHalfThickness))
                 continue;
 
             Bomb bomb = chicken.GetComponent<Bomb>();
@@ -541,8 +537,59 @@ public class LaserChicken : MonoBehaviour
                 continue;
             }
 
+            // Held gun / protected story laser: detonate bombs, never wipe the flock.
+            if (manualFire || protectFlock)
+                continue;
+
             Destroy(chicken.gameObject);
         }
+    }
+
+    /// <summary>
+    /// True if the beam strip overlaps the target's collider (or sprite bounds).
+    /// Uses closest point on the body so any part of the sprite can be hit.
+    /// </summary>
+    private bool IsBodyInBeam(Vector2 origin, Vector2 direction, GameObject target, float halfThickness)
+    {
+        if (target == null)
+            return false;
+
+        Vector2 sample = GetBodySamplePoint(origin, direction, target);
+        return IsInBeam(origin, direction, sample, halfThickness);
+    }
+
+    private Vector2 GetBodySamplePoint(Vector2 origin, Vector2 direction, GameObject target)
+    {
+        // Point on the beam nearest the body's center, then snap to the body surface.
+        Vector2 center = target.transform.position;
+        Collider2D col = target.GetComponent<Collider2D>();
+        if (col != null && col.enabled)
+            center = col.bounds.center;
+        else
+        {
+            SpriteRenderer sr = target.GetComponent<SpriteRenderer>();
+            if (sr != null)
+                center = sr.bounds.center;
+        }
+
+        float along = Mathf.Clamp(Vector2.Dot(center - origin, direction), 0f, nativeBeamLength);
+        Vector2 onBeam = origin + direction * along;
+
+        if (col != null && col.enabled)
+            return col.ClosestPoint(onBeam);
+
+        SpriteRenderer sprite = target.GetComponent<SpriteRenderer>();
+        if (sprite != null)
+            return ClosestPointOnBounds(sprite.bounds, onBeam);
+
+        return center;
+    }
+
+    private static Vector2 ClosestPointOnBounds(Bounds bounds, Vector2 point)
+    {
+        return new Vector2(
+            Mathf.Clamp(point.x, bounds.min.x, bounds.max.x),
+            Mathf.Clamp(point.y, bounds.min.y, bounds.max.y));
     }
 
     private bool IsInBeam(Vector2 origin, Vector2 direction, Vector2 point, float halfThickness)
