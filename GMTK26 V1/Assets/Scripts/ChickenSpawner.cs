@@ -35,6 +35,9 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private GameObject missilePrefab;
     [SerializeField] private GameObject livesPrefab;
     [SerializeField] private GameObject spawnEffect;
+    [SerializeField] private GameObject levelPortalPrefab;
+    [Tooltip("If true, places the farmer at the center of spawnArea on Start (World2).")]
+    [SerializeField] private bool centerFarmerOnStart;
 
     [Header("References")]
     [SerializeField] private Transform farmerTransform;
@@ -59,7 +62,8 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private int laserUnlockWave = 4;
     [SerializeField] private float laserSpawnInterval = 3f;
     [SerializeField] private int bossUnlockWave = 6;
-    [Tooltip("Testing: skip straight to story wave 6 boss fight.")]
+    [Tooltip("Testing: start story at this wave (0 = normal from wave 1).")]
+    [SerializeField] private int startAtWaveForTesting = 5;
     [SerializeField] private bool startAtBossWaveForTesting = false;
     [SerializeField] private int maxStoryWave = 5;
     [SerializeField] private int storyBossNormalCount = 8;
@@ -124,7 +128,21 @@ public class ChickenSpawner : MonoBehaviour
                 farmerTransform = farmer.transform;
         }
 
+        if (centerFarmerOnStart)
+            PlaceFarmerAtAreaCenter();
+
         StartGame();
+    }
+
+    private void PlaceFarmerAtAreaCenter()
+    {
+        if (farmerTransform == null)
+            return;
+
+        Vector3 pos = farmerTransform.position;
+        pos.x = (spawnAreaMin.x + spawnAreaMax.x) * 0.5f;
+        pos.y = (spawnAreaMin.y + spawnAreaMax.y) * 0.5f;
+        farmerTransform.position = pos;
     }
 
     /// <summary>
@@ -141,7 +159,7 @@ public class ChickenSpawner : MonoBehaviour
 
     private void Update()
     {
-        if (IsGameOver)
+        if (IsGameOver || IsFinished)
             return;
 
         // Story boss: losing the held laser chicken ends the run.
@@ -185,6 +203,10 @@ public class ChickenSpawner : MonoBehaviour
         if (delayBeforeFirstWave > 0f)
             yield return new WaitForSeconds(delayBeforeFirstWave);
 
+        // Testing shortcut: jump into a later wave (CurrentWave++ happens in the loop).
+        if (startAtWaveForTesting > 0)
+            CurrentWave = Mathf.Clamp(startAtWaveForTesting, 1, maxStoryWave) - 1;
+
         while (!IsGameOver && !IsFinished)
         {
             CurrentWave++;
@@ -198,7 +220,7 @@ public class ChickenSpawner : MonoBehaviour
 
             if (CurrentWave >= maxStoryWave)
             {
-                FinishStory();
+                yield return FinishLevel1();
                 yield break;
             }
 
@@ -207,15 +229,94 @@ public class ChickenSpawner : MonoBehaviour
         }
     }
 
-    private void FinishStory()
+    /// <summary>Wave 5 clear: wipe remaining mobs, banner, open portal to World2.</summary>
+    private IEnumerator FinishLevel1()
     {
         IsFinished = true;
         IsWaveActive = false;
         SecondsUntilNextWave = 0f;
 
+        yield return ExplodeAllRemainingMobs();
+
         var ui = FindFirstObjectByType<WaveTimerUI>();
         if (ui != null)
             ui.ShowFinished();
+
+        OpenLevelPortal();
+    }
+
+    private IEnumerator ExplodeAllRemainingMobs()
+    {
+        var toExplode = new List<GameObject>();
+
+        ChickenWander[] chickens = FindObjectsByType<ChickenWander>();
+        for (int i = 0; i < chickens.Length; i++)
+        {
+            ChickenWander c = chickens[i];
+            if (c == null)
+                continue;
+            toExplode.Add(c.gameObject);
+        }
+
+        for (int i = 0; i < toExplode.Count; i++)
+        {
+            ExplodeChicken(toExplode[i]);
+            if (openingSpawnGap > 0f)
+                yield return new WaitForSeconds(Mathf.Min(0.06f, openingSpawnGap));
+        }
+
+        protectedNormals.Clear();
+        panics.Clear();
+        minds.Clear();
+        lethals.Clear();
+    }
+
+    private void OpenLevelPortal()
+    {
+        Vector3 pos = new Vector3(
+            spawnAreaMax.x,
+            (spawnAreaMin.y + spawnAreaMax.y) * 0.5f,
+            0f);
+
+        GameObject portal = null;
+        if (levelPortalPrefab != null)
+        {
+            portal = Instantiate(levelPortalPrefab, pos, Quaternion.identity);
+            portal.name = "Gate";
+        }
+        else
+        {
+            GameObject existing = GameObject.Find("Gate");
+            if (existing != null)
+            {
+                portal = existing;
+                portal.transform.position = pos;
+                portal.SetActive(true);
+            }
+        }
+
+        if (portal == null)
+            return;
+
+        if (portal.GetComponent<LevelPortal>() == null)
+            portal.AddComponent<LevelPortal>();
+
+        Collider2D col = portal.GetComponent<Collider2D>();
+        if (col == null)
+        {
+            var box = portal.AddComponent<BoxCollider2D>();
+            box.isTrigger = true;
+            box.size = new Vector2(1.2f, 1.8f);
+            col = box;
+        }
+        else
+        {
+            col.isTrigger = true;
+        }
+
+        Animator anim = portal.GetComponent<Animator>();
+        if (anim != null)
+            anim.Play(0, 0, 0f);
     }
 
     private IEnumerator RunWave(int wave)
