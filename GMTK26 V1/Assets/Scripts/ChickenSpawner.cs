@@ -38,6 +38,8 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private GameObject levelPortalPrefab;
     [Tooltip("If true, places the farmer at the center of spawnArea on Start (World2).")]
     [SerializeField] private bool centerFarmerOnStart;
+    [Tooltip("After final story wave: explode mobs, show finished text, open portal.")]
+    [SerializeField] private bool spawnPortalOnFinish = true;
 
     [Header("References")]
     [SerializeField] private Transform farmerTransform;
@@ -242,7 +244,8 @@ public class ChickenSpawner : MonoBehaviour
         if (ui != null)
             ui.ShowFinished();
 
-        OpenLevelPortal();
+        if (spawnPortalOnFinish)
+            OpenLevelPortal();
     }
 
     private IEnumerator ExplodeAllRemainingMobs()
