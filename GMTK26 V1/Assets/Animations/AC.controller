@@ -128,7 +128,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 526f2c599006296439ff3c37fae539f8, type: 2}
+  m_Motion: {fileID: 7400000, guid: ae4c2bf877bcff44b82b43c40f31d408, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -209,7 +209,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 0842b3db6f074da47985789315690c5a, type: 2}
+  m_Motion: {fileID: 7400000, guid: bf5c4ce4fa29d4541804c8ca2ae42195, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -265,7 +265,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 704e84fdfcc48d8459b3928215f680c7, type: 2}
+  m_Motion: {fileID: 7400000, guid: 83d9f6bf96e48084e92cb6079797cfac, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -497,7 +497,7 @@ AnimatorController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: FireCluck
+  m_Name: AC
   serializedVersion: 6
   m_AnimatorParameters:
   - m_Name: IsMoving
@@ -556,9 +556,6 @@ AnimatorStateMachine:
   - serializedVersion: 1
     m_State: {fileID: 3262639437965764686}
     m_Position: {x: 210, y: -50, z: 0}
-  - serializedVersion: 1
-    m_State: {fileID: 5868946613014835285}
-    m_Position: {x: 245, y: 15, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions:
   - {fileID: -8936564636473670324}
@@ -672,33 +669,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: b91ecb8b191914e45ad5ce17ad1b9652, type: 2}
-  m_Tag: 
-  m_SpeedParameter: 
-  m_MirrorParameter: 
-  m_CycleOffsetParameter: 
-  m_TimeParameter: 
---- !u!1102 &5868946613014835285
-AnimatorState:
-  serializedVersion: 6
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: FireCluckAlienGrabbed
-  m_Speed: 1
-  m_CycleOffset: 0
-  m_Transitions: []
-  m_StateMachineBehaviours: []
-  m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
-  m_WriteDefaultValues: 1
-  m_Mirror: 0
-  m_SpeedParameterActive: 0
-  m_MirrorParameterActive: 0
-  m_CycleOffsetParameterActive: 0
-  m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: b590d1be96145c449a958c74fcf63a29, type: 2}
+  m_Motion: {fileID: 7400000, guid: fc00297d6f449b04b87e9de4ac8978a5, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -726,7 +697,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 8d850df8eefdbf84894b1e51f260ba89, type: 2}
+  m_Motion: {fileID: 7400000, guid: ca82547268fb2764488db96d2ccb7b17, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 

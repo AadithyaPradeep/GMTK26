@@ -1,10 +1,19 @@
 fileFormatVersion: 2
-guid: af2763bb5eb384641aa70158bc7288a3
+guid: 84d12d44f664f7b42a93cfa5e89ede44
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6787594126519555746
-    second: PanicGrabbed_0
+      213: -6774391860527003597
+    second: FireChickenAGrabbed_0
+  - first:
+      213: 2974372367825416838
+    second: FireChickenAGrabbed_1
+  - first:
+      213: 3601176865399660702
+    second: FireChickenAGrabbed_2
+  - first:
+      213: -4763019484666746468
+    second: FireChickenAGrabbed_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,11 +55,11 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
-  alignment: 9
-  spritePivot: {x: 0.1, y: 0.5}
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 16
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
@@ -113,23 +122,89 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: PanicGrabbed_0
+      name: FireChickenAGrabbed_0
       rect:
         serializedVersion: 2
-        x: 8
-        y: 3
-        width: 14
-        height: 29
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 0
+        width: 64
+        height: 64
+      alignment: 9
+      pivot: {x: 0.46, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e592649aa1f9dc1a0800000000000000
-      internalID: -6787594126519555746
+      spriteID: 3388dffbe768cf1a0800000000000000
+      internalID: -6774391860527003597
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireChickenAGrabbed_1
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 0
+        width: 64
+        height: 64
+      alignment: 9
+      pivot: {x: 0.46, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 682b8fdd8e7174920800000000000000
+      internalID: 2974372367825416838
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireChickenAGrabbed_2
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 0
+        width: 64
+        height: 64
+      alignment: 9
+      pivot: {x: 0.46, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e90608b7743f9f130800000000000000
+      internalID: 3601176865399660702
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireChickenAGrabbed_3
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 0
+        width: 64
+        height: 64
+      alignment: 9
+      pivot: {x: 0.46, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c99ac26a30b56edb0800000000000000
+      internalID: -4763019484666746468
       vertices: []
       indices: 
       edges: []
@@ -138,7 +213,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 30be88fa86a461e43926bc9d3e5ea2c6
     internalID: 0
     vertices: []
     indices: 
@@ -146,9 +221,14 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.46000000834465029,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":9,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      PanicGrabbed_0: -6787594126519555746
+      FireChickenAGrabbed_0: -6774391860527003597
+      FireChickenAGrabbed_1: 2974372367825416838
+      FireChickenAGrabbed_2: 3601176865399660702
+      FireChickenAGrabbed_3: -4763019484666746468
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
