@@ -408,6 +408,8 @@ MonoBehaviour:
   hand: {fileID: 1425583984}
   source: {fileID: 229318282}
   strength: -0.3
+  dropOffsetX: 1.25
+  holdLocalPosition: {x: 0, y: 0.3, z: 0}
 --- !u!114 &229318281
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -987,7 +989,7 @@ MonoBehaviour:
   mindUnlockWave: 2
   electricUnlockWave: 3
   panicUnlockWave: 2
-  laserUnlockWave: 3
+  laserUnlockWave: 1
   normalsAfterEachWave: 3
   bombSpawnPercent: 60
   mindSpawnPercent: 15
