@@ -4,8 +4,8 @@ using UnityEngine;
 using Unity.Cinemachine;
 
 /// <summary>
-/// Countdown chicken that fires an eye laser and kills anything in the beam path.
-/// Survives the shot and re-arms (like Electric).
+/// Countdown chicken that fires a continuous eye laser for several seconds.
+/// The beam is parented to the chicken so it follows movement / facing.
 /// </summary>
 public class LaserChicken : MonoBehaviour
 {
@@ -15,23 +15,15 @@ public class LaserChicken : MonoBehaviour
     public CinemachineImpulseSource source;
 
     [Header("Beam")]
-    [Tooltip("Local eye offset when facing right (x is mirrored when flipX).")]
-    [SerializeField] private Vector2 eyeOffset = new Vector2(0.35f, 0.25f);
-    [Tooltip("Extra push in front of the eyes along facing direction.")]
-    [SerializeField] private float beamSpawnForward = 0.12f;
-    [Tooltip("World-unit length of the damaging beam.")]
-    [SerializeField] private float laserLength = 12f;
     [Tooltip("Native LaserBeam sprite width in world units (128px @ 16 PPU).")]
     [SerializeField] private float nativeBeamLength = 8f;
     [SerializeField] private float laserHalfThickness = 0.45f;
-    [SerializeField] private float laserDuration = 0.7f;
-    [Tooltip("Extra time the beam stays visible after damage stops.")]
-    [SerializeField] private float beamLinger = 0.35f;
-    [SerializeField] private float damageStartDelay = 0.05f;
+    [SerializeField] private float laserDuration = 5f;
 
     private SpriteRenderer spriteRenderer;
     private ChickenWander wander;
     private GameObject activeBeam;
+    private SpriteRenderer beamRenderer;
     private bool firing;
     private bool held;
 
@@ -62,7 +54,6 @@ public class LaserChicken : MonoBehaviour
 
     private void OnDisable()
     {
-        // If this chicken dies / is disabled mid-shot, clear the beam.
         DestroyActiveBeam();
         firing = false;
     }
@@ -70,9 +61,11 @@ public class LaserChicken : MonoBehaviour
     private void Update()
     {
         if (firing)
+        {
+            UpdateBeamFacing();
             return;
+        }
 
-        // Timer keeps counting while held (same idea as bombs).
         if (timer > 0f)
         {
             if (text != null)
@@ -95,30 +88,18 @@ public class LaserChicken : MonoBehaviour
 
     private IEnumerator FireRoutine()
     {
-        if (wander != null)
-            wander.enabled = false;
-
-        bool facingLeft = spriteRenderer != null && spriteRenderer.flipX;
-        Vector2 direction = facingLeft ? Vector2.left : Vector2.right;
-        Vector2 origin = (Vector2)transform.position
-            + new Vector2(facingLeft ? -eyeOffset.x : eyeOffset.x, eyeOffset.y)
-            + direction * beamSpawnForward;
-
         DestroyActiveBeam();
-
-        float totalBeamLife = laserDuration + Mathf.Max(0f, beamLinger);
 
         if (laserPrefab != null)
         {
-            activeBeam = Instantiate(laserPrefab, origin, Quaternion.identity);
-            float lengthScale = laserLength / Mathf.Max(0.01f, nativeBeamLength);
-            activeBeam.transform.localScale = new Vector3(
-                facingLeft ? -lengthScale : lengthScale,
-                1f,
-                1f);
+            activeBeam = Instantiate(laserPrefab, transform);
+            activeBeam.transform.localPosition = Vector3.zero;
+            activeBeam.transform.localRotation = Quaternion.identity;
+            // Leave prefab scale untouched.
+            beamRenderer = activeBeam.GetComponent<SpriteRenderer>();
+            UpdateBeamFacing();
 
-            // Hard lifetime so looping LaserBeam anim can never stick around.
-            Destroy(activeBeam, totalBeamLife);
+            Destroy(activeBeam, laserDuration + 0.05f);
         }
 
         if (source != null)
@@ -128,27 +109,21 @@ public class LaserChicken : MonoBehaviour
             GameAudio.Instance.PlayExplosion();
 
         float elapsed = 0f;
-        bool damageStarted = damageStartDelay <= 0f;
-
         while (elapsed < laserDuration)
         {
             if (this == null)
                 yield break;
 
             elapsed += Time.deltaTime;
+            UpdateBeamFacing();
 
-            if (!damageStarted && elapsed >= damageStartDelay)
-                damageStarted = true;
-
-            if (damageStarted)
-                KillAlongBeam(origin, direction);
+            bool facingLeft = spriteRenderer != null && spriteRenderer.flipX;
+            Vector2 origin = transform.position;
+            Vector2 direction = facingLeft ? Vector2.left : Vector2.right;
+            KillAlongBeam(origin, direction);
 
             yield return null;
         }
-
-        // Keep the beam visible a moment after damage ends.
-        if (beamLinger > 0f)
-            yield return new WaitForSeconds(beamLinger);
 
         DestroyActiveBeam();
 
@@ -162,6 +137,19 @@ public class LaserChicken : MonoBehaviour
         firing = false;
     }
 
+    private void UpdateBeamFacing()
+    {
+        if (activeBeam == null)
+            return;
+
+        activeBeam.transform.localPosition = Vector3.zero;
+        activeBeam.transform.localRotation = Quaternion.identity;
+
+        // Flip the sprite only — never touch localScale.
+        if (beamRenderer != null && spriteRenderer != null)
+            beamRenderer.flipX = spriteRenderer.flipX;
+    }
+
     private void DestroyActiveBeam()
     {
         if (activeBeam == null)
@@ -169,6 +157,7 @@ public class LaserChicken : MonoBehaviour
 
         Destroy(activeBeam);
         activeBeam = null;
+        beamRenderer = null;
     }
 
     private void KillAlongBeam(Vector2 origin, Vector2 direction)
@@ -202,7 +191,7 @@ public class LaserChicken : MonoBehaviour
     {
         Vector2 toPoint = point - origin;
         float along = Vector2.Dot(toPoint, direction);
-        if (along < 0f || along > laserLength)
+        if (along < 0f || along > nativeBeamLength)
             return false;
 
         Vector2 perp = new Vector2(-direction.y, direction.x);
@@ -226,10 +215,8 @@ public class LaserChicken : MonoBehaviour
         SpriteRenderer sr = spriteRenderer != null ? spriteRenderer : GetComponent<SpriteRenderer>();
         bool facingLeft = sr != null && sr.flipX;
         Vector2 direction = facingLeft ? Vector2.left : Vector2.right;
-        Vector2 origin = (Vector2)transform.position
-            + new Vector2(facingLeft ? -eyeOffset.x : eyeOffset.x, eyeOffset.y)
-            + direction * beamSpawnForward;
-        Vector2 end = origin + direction * laserLength;
+        Vector2 origin = transform.position;
+        Vector2 end = origin + direction * nativeBeamLength;
 
         Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.85f);
         Gizmos.DrawLine(origin, end);

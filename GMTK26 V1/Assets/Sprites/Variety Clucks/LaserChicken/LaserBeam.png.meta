@@ -63,7 +63,7 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 16
@@ -136,8 +136,8 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 9
-      pivot: {x: 0, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: -0.01, y: 0.5}
+      border: {x: 27, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
@@ -158,8 +158,8 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 9
-      pivot: {x: 0, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: -0.01, y: 0.5}
+      border: {x: 27, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
@@ -180,8 +180,8 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 9
-      pivot: {x: 0, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: -0.01, y: 0.5}
+      border: {x: 27, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
@@ -202,8 +202,8 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 9
-      pivot: {x: 0, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: -0.01, y: 0.5}
+      border: {x: 27, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
@@ -224,8 +224,8 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 9
-      pivot: {x: 0, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: -0.01, y: 0.5}
+      border: {x: 27, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
@@ -246,14 +246,14 @@ TextureImporter:
         width: 128
         height: 128
       alignment: 9
-      pivot: {x: 0, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: -0.01, y: 0.5}
+      border: {x: 27, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 023d20cd6d7a6c3b0800000000000000
+      spriteID: 0db0fddfd5ce5d544ab7333b7cf88d29
       internalID: -5492518154275728608
       vertices: []
       indices: 
@@ -273,7 +273,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":128.0,"y":128.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.0,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":9,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":128.0,"y":128.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":-0.009999999776482582,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":9,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       LaserBeam_0: 2151244663191871890
       LaserBeam_1: -3719188416788133479
