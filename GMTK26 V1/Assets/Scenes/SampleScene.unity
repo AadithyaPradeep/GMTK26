@@ -973,6 +973,8 @@ MonoBehaviour:
   - {fileID: 2479665210511819439, guid: 1929dfaaa3dff22439d3ea7bc1e44650, type: 3}
   panicChickenPrefabs:
   - {fileID: 1533770966765506361, guid: f44d21017a3d52241ad019263abc0834, type: 3}
+  laserChickenPrefabs:
+  - {fileID: 1646419433792147411, guid: a51d7401157120647a2ee2f9daed04fb, type: 3}
   spawnEffect: {fileID: 4999050520589805456, guid: 97d33ad94dd58c34da7a110f96b5a019, type: 3}
   farmerTransform: {fileID: 229318277}
   introBanner: {fileID: 81212988}
@@ -985,6 +987,7 @@ MonoBehaviour:
   mindUnlockWave: 2
   electricUnlockWave: 3
   panicUnlockWave: 2
+  laserUnlockWave: 3
   normalsAfterEachWave: 3
   bombSpawnPercent: 60
   mindSpawnPercent: 15

@@ -180,12 +180,14 @@ public class ChickenWander : MonoBehaviour
             if (other == null || other == this)
                 continue;
 
-            // Only plain normals / panics — not bombs, minds, or electrics.
+            // Only plain normals / panics — not bombs, minds, electrics, or lasers.
             if (other.GetComponent<Bomb>() != null)
                 continue;
             if (other.GetComponent<MindCluck>() != null)
                 continue;
             if (other.GetComponent<ElectricChicken>() != null)
+                continue;
+            if (other.GetComponent<LaserChicken>() != null)
                 continue;
 
             float d = Vector2.Distance(transform.position, other.transform.position);

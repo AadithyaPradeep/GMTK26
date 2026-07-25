@@ -4,9 +4,10 @@ using UnityEngine;
 
 /// <summary>
 /// Starts with protected normals, then endless waves.
-/// Lethals (bombs / electrics) share a threat cap.
+/// Lethals (bombs / electrics / lasers) share a threat cap.
 /// Minds are non-lethal with their own cap.
 /// Panics are flock chickens: they count toward game over when killed.
+/// Lasers: exactly one per wave from unlock wave onward.
 /// Spawn chance uses percentages among unlocked types.
 /// </summary>
 public class ChickenSpawner : MonoBehaviour
@@ -25,6 +26,7 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private GameObject[] mindChickenPrefabs;
     [SerializeField] private GameObject[] electricChickenPrefabs;
     [SerializeField] private GameObject[] panicChickenPrefabs;
+    [SerializeField] private GameObject[] laserChickenPrefabs;
     [SerializeField] private GameObject spawnEffect;
 
     [Header("References")]
@@ -45,6 +47,7 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private int mindUnlockWave = 2;
     [SerializeField] private int electricUnlockWave = 3;
     [SerializeField] private int panicUnlockWave = 1;
+    [SerializeField] private int laserUnlockWave = 3;
     [SerializeField] private int normalsAfterEachWave = 2;
 
     [Header("Spawn Chances %")]
@@ -146,6 +149,14 @@ public class ChickenSpawner : MonoBehaviour
         int burst = Mathf.Min(hardMaxSpawnBurst, startSpawnBurst + (wave - 1) / Mathf.Max(1, wavesPerBurstIncrease));
         float spawnCooldown = 0f;
         int panicsSpawnedThisWave = 0;
+
+        // Exactly one laser chicken per unlocked wave.
+        if (wave >= laserUnlockWave)
+        {
+            GameObject laser = Spawn(Pick(laserChickenPrefabs));
+            if (laser != null)
+                lethals.Add(laser);
+        }
 
         while (SecondsUntilNextWave > 0f && !IsGameOver)
         {
