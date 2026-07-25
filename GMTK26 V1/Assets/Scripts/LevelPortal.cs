@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Trigger portal — walking the farmer into it loads the next world scene.
@@ -40,7 +39,7 @@ public class LevelPortal : MonoBehaviour
 
     private void Update()
     {
-        if (loading)
+        if (loading || SceneFader.IsBusy)
             return;
 
         CacheFarmer();
@@ -53,7 +52,7 @@ public class LevelPortal : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (loading || other == null)
+        if (loading || SceneFader.IsBusy || other == null)
             return;
 
         if (other.GetComponent<PlayerMovement>() == null
@@ -83,10 +82,10 @@ public class LevelPortal : MonoBehaviour
 
     private void EnterPortal()
     {
-        if (loading)
+        if (loading || SceneFader.IsBusy)
             return;
 
         loading = true;
-        SceneManager.LoadScene(targetSceneName);
+        SceneFader.Load(targetSceneName);
     }
 }

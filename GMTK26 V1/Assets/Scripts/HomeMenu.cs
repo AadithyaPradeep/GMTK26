@@ -1,6 +1,5 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
@@ -19,6 +18,7 @@ public class HomeMenu : MonoBehaviour
     private void Awake()
     {
         Time.timeScale = 1f;
+        SceneFader.EnsureExists();
         BuildUi();
     }
 
@@ -34,7 +34,7 @@ public class HomeMenu : MonoBehaviour
 
     private void StartGame(bool chaos)
     {
-        if (loading)
+        if (loading || SceneFader.IsBusy)
             return;
 
         loading = true;
@@ -43,7 +43,7 @@ public class HomeMenu : MonoBehaviour
         else
             GameMode.SetStory();
 
-        SceneManager.LoadScene(gameSceneName);
+        SceneFader.Load(gameSceneName);
     }
 
     private void BuildUi()
