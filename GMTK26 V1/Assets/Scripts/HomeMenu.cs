@@ -3,19 +3,23 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Title / home scene UI. Play = story mode, Chaos = bomb-rush gun mode.
-/// Story How To Play runs inside World 1 after load.
+/// Title / home scene UI. Uses scene Hierarchy objects so you can edit them in the Inspector.
 /// </summary>
 public class HomeMenu : MonoBehaviour
 {
     [SerializeField] private string gameSceneName = "SampleScene";
     [SerializeField] private TMP_FontAsset font;
-    [SerializeField] private string titleText = "EXPLODING CHICKENS";
-    [SerializeField] private string playButtonText = "PLAY";
-    [SerializeField] private string chaosButtonText = "CHAOS";
+    [SerializeField] private ChickenDirectoryCatalog directoryCatalog;
+
+    [Header("Scene UI (assign in Hierarchy)")]
+    [SerializeField] private GameObject homeCanvas;
+    [SerializeField] private GameObject homeContent;
+    [SerializeField] private Button playButton;
+    [SerializeField] private Button chaosButton;
+    [SerializeField] private Button directoryButton;
 
     private bool loading;
-    private GameObject homeCanvas;
+    private ChickenDirectoryUI directoryUi;
 
     private void Awake()
     {
@@ -25,7 +29,9 @@ public class HomeMenu : MonoBehaviour
         SceneFader.ClearBusy();
         if (PauseMenu.Instance != null)
             PauseMenu.Instance.SetPaused(false);
-        BuildUi();
+
+        ResolveSceneRefs();
+        WireButtons();
     }
 
     public void OnPlayPressed()
@@ -36,6 +42,25 @@ public class HomeMenu : MonoBehaviour
     public void OnChaosPressed()
     {
         StartGame(chaos: true);
+    }
+
+    public void OnDirectoryPressed()
+    {
+        if (loading || directoryUi != null)
+            return;
+
+        if (homeCanvas == null)
+            return;
+
+        if (directoryCatalog == null)
+            directoryCatalog = ChickenDirectoryCatalog.LoadOrCreateDefaults();
+
+        directoryUi = ChickenDirectoryUI.Show(
+            homeCanvas.transform,
+            font,
+            directoryCatalog,
+            homeContent,
+            () => directoryUi = null);
     }
 
     private void StartGame(bool chaos)
@@ -63,120 +88,88 @@ public class HomeMenu : MonoBehaviour
         SceneFader.Load(gameSceneName);
     }
 
-    private void BuildUi()
+    private void ResolveSceneRefs()
     {
-        homeCanvas = new GameObject("HomeMenuCanvas");
-        homeCanvas.transform.SetParent(null);
+        if (homeCanvas == null)
+        {
+            Transform found = transform.root.Find("HomeMenuCanvas");
+            if (found == null)
+            {
+                GameObject go = GameObject.Find("HomeMenuCanvas");
+                if (go != null)
+                    found = go.transform;
+            }
 
-        Canvas canvas = homeCanvas.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 500;
+            if (found != null)
+                homeCanvas = found.gameObject;
+        }
 
-        CanvasScaler scaler = homeCanvas.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-        scaler.matchWidthOrHeight = 0.5f;
-
-        homeCanvas.AddComponent<GraphicRaycaster>();
-
-        GameObject bgGo = new GameObject("Backdrop", typeof(RectTransform));
-        bgGo.transform.SetParent(homeCanvas.transform, false);
-        StretchFull(bgGo.GetComponent<RectTransform>());
-        Image bg = bgGo.AddComponent<Image>();
-        bg.color = new Color(0.05f, 0.08f, 0.05f, 1f);
-        bg.raycastTarget = true;
-
-        GameObject titleGo = new GameObject("Title", typeof(RectTransform));
-        titleGo.transform.SetParent(homeCanvas.transform, false);
-        RectTransform titleRt = titleGo.GetComponent<RectTransform>();
-        titleRt.anchorMin = new Vector2(0.5f, 0.55f);
-        titleRt.anchorMax = new Vector2(0.5f, 0.55f);
-        titleRt.pivot = new Vector2(0.5f, 0.5f);
-        titleRt.anchoredPosition = Vector2.zero;
-        titleRt.sizeDelta = new Vector2(1400f, 160f);
-
-        TextMeshProUGUI title = titleGo.AddComponent<TextMeshProUGUI>();
-        title.text = titleText;
-        title.fontSize = 84f;
-        title.alignment = TextAlignmentOptions.Center;
-        title.color = Color.white;
-        title.raycastTarget = false;
-        ApplyFont(title);
-
-        CreateMenuButton(
-            homeCanvas.transform,
-            "PlayButton",
-            playButtonText,
-            new Vector2(-180f, 0f),
-            new Color(0.92f, 0.82f, 0.28f, 1f),
-            new Color(0.12f, 0.1f, 0.05f, 1f),
-            OnPlayPressed);
-
-        CreateMenuButton(
-            homeCanvas.transform,
-            "ChaosButton",
-            chaosButtonText,
-            new Vector2(180f, 0f),
-            new Color(0.85f, 0.28f, 0.22f, 1f),
-            Color.white,
-            OnChaosPressed);
-    }
-
-    private void CreateMenuButton(
-        Transform parent,
-        string name,
-        string labelText,
-        Vector2 anchoredPos,
-        Color bgColor,
-        Color labelColor,
-        UnityEngine.Events.UnityAction onClick)
-    {
-        GameObject buttonGo = new GameObject(name, typeof(RectTransform));
-        buttonGo.transform.SetParent(parent, false);
-        RectTransform buttonRt = buttonGo.GetComponent<RectTransform>();
-        buttonRt.anchorMin = new Vector2(0.5f, 0.32f);
-        buttonRt.anchorMax = new Vector2(0.5f, 0.32f);
-        buttonRt.pivot = new Vector2(0.5f, 0.5f);
-        buttonRt.anchoredPosition = anchoredPos;
-        buttonRt.sizeDelta = new Vector2(300f, 96f);
-
-        Image buttonImage = buttonGo.AddComponent<Image>();
-        buttonImage.color = bgColor;
-
-        Button button = buttonGo.AddComponent<Button>();
-        ColorBlock colors = button.colors;
-        colors.highlightedColor = Color.Lerp(bgColor, Color.white, 0.25f);
-        colors.pressedColor = Color.Lerp(bgColor, Color.black, 0.25f);
-        button.colors = colors;
-        button.onClick.AddListener(onClick);
-
-        GameObject labelGo = new GameObject("Label", typeof(RectTransform));
-        labelGo.transform.SetParent(buttonGo.transform, false);
-        StretchFull(labelGo.GetComponent<RectTransform>());
-
-        TextMeshProUGUI label = labelGo.AddComponent<TextMeshProUGUI>();
-        label.text = labelText;
-        label.fontSize = 48f;
-        label.alignment = TextAlignmentOptions.Center;
-        label.color = labelColor;
-        label.raycastTarget = false;
-        ApplyFont(label);
-    }
-
-    private void ApplyFont(TextMeshProUGUI tmp)
-    {
-        if (font == null || tmp == null)
+        if (homeCanvas == null)
             return;
 
-        tmp.font = font;
-        tmp.fontSharedMaterial = font.material;
+        Canvas canvas = homeCanvas.GetComponent<Canvas>();
+        if (canvas != null)
+            canvas.sortingOrder = Mathf.Max(canvas.sortingOrder, 500);
+
+        if (homeContent == null)
+        {
+            Transform content = homeCanvas.transform.Find("HomeContent");
+            if (content != null)
+                homeContent = content.gameObject;
+            else
+                homeContent = homeCanvas; // fallback: hide whole canvas menu layer carefully via content
+        }
+
+        if (playButton == null)
+            playButton = FindButton("PlayButton");
+        if (chaosButton == null)
+            chaosButton = FindButton("ChaosButton");
+        if (directoryButton == null)
+            directoryButton = FindButton("DirectoryButton");
     }
 
-    private static void StretchFull(RectTransform rt)
+    private Button FindButton(string name)
     {
-        rt.anchorMin = Vector2.zero;
-        rt.anchorMax = Vector2.one;
-        rt.offsetMin = Vector2.zero;
-        rt.offsetMax = Vector2.zero;
+        if (homeContent != null)
+        {
+            Transform t = homeContent.transform.Find(name);
+            if (t != null)
+                return t.GetComponent<Button>();
+        }
+
+        if (homeCanvas != null)
+        {
+            Transform t = homeCanvas.transform.Find(name);
+            if (t != null)
+                return t.GetComponent<Button>();
+
+            // Nested under HomeContent
+            t = homeCanvas.transform.Find("HomeContent/" + name);
+            if (t != null)
+                return t.GetComponent<Button>();
+        }
+
+        return null;
+    }
+
+    private void WireButtons()
+    {
+        if (playButton != null)
+        {
+            playButton.onClick.RemoveAllListeners();
+            playButton.onClick.AddListener(OnPlayPressed);
+        }
+
+        if (chaosButton != null)
+        {
+            chaosButton.onClick.RemoveAllListeners();
+            chaosButton.onClick.AddListener(OnChaosPressed);
+        }
+
+        if (directoryButton != null)
+        {
+            directoryButton.onClick.RemoveAllListeners();
+            directoryButton.onClick.AddListener(OnDirectoryPressed);
+        }
     }
 }
