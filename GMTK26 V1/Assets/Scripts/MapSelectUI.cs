@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Home overlay: pick Farm / Dusk / Combo (Story) or Farm / Dusk (Chaos).
+/// Home overlay: pick maps + Combo (Story) or maps only (Chaos).
 /// </summary>
 public class MapSelectUI : MonoBehaviour
 {
@@ -69,6 +69,9 @@ public class MapSelectUI : MonoBehaviour
 
         CreateHeaderButton(header.transform, "BackButton", "BACK", new Vector2(28f, 0f), Close);
 
+        int cardCount = GameMode.Maps.Length + (chaosMode ? 0 : 1);
+        float rowWidth = Mathf.Clamp(260f * cardCount + 40f, 900f, 1500f);
+
         GameObject row = new GameObject("Cards", typeof(RectTransform));
         row.transform.SetParent(transform, false);
         RectTransform rowRt = row.GetComponent<RectTransform>();
@@ -76,16 +79,16 @@ public class MapSelectUI : MonoBehaviour
         rowRt.anchorMax = new Vector2(0.5f, 0.5f);
         rowRt.pivot = new Vector2(0.5f, 0.5f);
         rowRt.anchoredPosition = new Vector2(0f, -20f);
-        rowRt.sizeDelta = new Vector2(1100f, 420f);
+        rowRt.sizeDelta = new Vector2(rowWidth, 420f);
 
         HorizontalLayoutGroup layout = row.AddComponent<HorizontalLayoutGroup>();
-        layout.spacing = 28f;
+        layout.spacing = 20f;
         layout.childAlignment = TextAnchor.MiddleCenter;
         layout.childControlWidth = true;
         layout.childControlHeight = true;
         layout.childForceExpandWidth = true;
         layout.childForceExpandHeight = true;
-        layout.padding = new RectOffset(20, 20, 10, 10);
+        layout.padding = new RectOffset(16, 16, 10, 10);
 
         for (int i = 0; i < GameMode.Maps.Length; i++)
         {
@@ -103,7 +106,7 @@ public class MapSelectUI : MonoBehaviour
                 row.transform,
                 GameMode.ComboId,
                 "COMBO",
-                "Alternate both after Wave 5",
+                "Alternate all three after Wave 5",
                 null,
                 splitCombo: true);
         }
@@ -128,16 +131,16 @@ public class MapSelectUI : MonoBehaviour
         cardGo.transform.SetParent(parent, false);
 
         LayoutElement le = cardGo.AddComponent<LayoutElement>();
-        le.minWidth = 280f;
-        le.preferredWidth = 320f;
+        le.minWidth = 220f;
+        le.preferredWidth = 280f;
         le.flexibleWidth = 1f;
 
         Image cardBg = cardGo.AddComponent<Image>();
         cardBg.color = new Color(0.12f, 0.16f, 0.12f, 1f);
 
         VerticalLayoutGroup v = cardGo.AddComponent<VerticalLayoutGroup>();
-        v.padding = new RectOffset(16, 16, 16, 16);
-        v.spacing = 12f;
+        v.padding = new RectOffset(14, 14, 14, 14);
+        v.spacing = 10f;
         v.childAlignment = TextAnchor.UpperCenter;
         v.childControlWidth = true;
         v.childControlHeight = true;
@@ -147,8 +150,8 @@ public class MapSelectUI : MonoBehaviour
         GameObject previewGo = new GameObject("Preview", typeof(RectTransform));
         previewGo.transform.SetParent(cardGo.transform, false);
         LayoutElement previewLe = previewGo.AddComponent<LayoutElement>();
-        previewLe.minHeight = 200f;
-        previewLe.preferredHeight = 220f;
+        previewLe.minHeight = 180f;
+        previewLe.preferredHeight = 200f;
         previewLe.flexibleHeight = 1f;
 
         Image previewFrame = previewGo.AddComponent<Image>();
@@ -160,13 +163,13 @@ public class MapSelectUI : MonoBehaviour
         else
             BuildSinglePreview(previewGo.transform, preview);
 
-        TextMeshProUGUI titleTmp = CreateTmp(cardGo.transform, "Title", title, 34f,
+        TextMeshProUGUI titleTmp = CreateTmp(cardGo.transform, "Title", title, 30f,
             new Color(0.992f, 0.969f, 0.635f, 1f), TextAlignmentOptions.Center);
         titleTmp.raycastTarget = false;
         LayoutElement titleLe = titleTmp.gameObject.AddComponent<LayoutElement>();
-        titleLe.preferredHeight = 40f;
+        titleLe.preferredHeight = 36f;
 
-        TextMeshProUGUI lineTmp = CreateTmp(cardGo.transform, "OneLiner", oneLiner, 20f,
+        TextMeshProUGUI lineTmp = CreateTmp(cardGo.transform, "OneLiner", oneLiner, 18f,
             new Color(0.75f, 0.85f, 0.7f, 1f), TextAlignmentOptions.Center);
         lineTmp.raycastTarget = false;
         lineTmp.enableWordWrapping = true;
@@ -209,48 +212,43 @@ public class MapSelectUI : MonoBehaviour
 
     private void BuildSplitPreview(Transform parent)
     {
-        GameObject left = new GameObject("Left", typeof(RectTransform));
-        left.transform.SetParent(parent, false);
-        RectTransform leftRt = left.GetComponent<RectTransform>();
-        leftRt.anchorMin = new Vector2(0f, 0f);
-        leftRt.anchorMax = new Vector2(0.5f, 1f);
-        leftRt.offsetMin = new Vector2(8f, 8f);
-        leftRt.offsetMax = new Vector2(-4f, -8f);
+        int count = Mathf.Max(1, GameMode.Maps.Length);
+        Color[] fallbacks =
+        {
+            new Color(0.35f, 0.45f, 0.28f, 1f),
+            new Color(0.2f, 0.22f, 0.35f, 1f),
+            new Color(0.28f, 0.26f, 0.3f, 1f),
+        };
 
-        Image leftImg = left.AddComponent<Image>();
-        leftImg.raycastTarget = false;
-        leftImg.preserveAspect = true;
-        Sprite farm = GetPreview(0);
-        if (farm != null)
+        for (int i = 0; i < count; i++)
         {
-            leftImg.sprite = farm;
-            leftImg.color = Color.white;
-        }
-        else
-        {
-            leftImg.color = new Color(0.35f, 0.45f, 0.28f, 1f);
-        }
+            float x0 = (float)i / count;
+            float x1 = (float)(i + 1) / count;
 
-        GameObject right = new GameObject("Right", typeof(RectTransform));
-        right.transform.SetParent(parent, false);
-        RectTransform rightRt = right.GetComponent<RectTransform>();
-        rightRt.anchorMin = new Vector2(0.5f, 0f);
-        rightRt.anchorMax = new Vector2(1f, 1f);
-        rightRt.offsetMin = new Vector2(4f, 8f);
-        rightRt.offsetMax = new Vector2(-8f, -8f);
+            GameObject slice = new GameObject("Slice_" + i, typeof(RectTransform));
+            slice.transform.SetParent(parent, false);
+            RectTransform rt = slice.GetComponent<RectTransform>();
+            rt.anchorMin = new Vector2(x0, 0f);
+            rt.anchorMax = new Vector2(x1, 1f);
+            float padL = i == 0 ? 8f : 2f;
+            float padR = i == count - 1 ? 8f : 2f;
+            rt.offsetMin = new Vector2(padL, 8f);
+            rt.offsetMax = new Vector2(-padR, -8f);
 
-        Image rightImg = right.AddComponent<Image>();
-        rightImg.raycastTarget = false;
-        rightImg.preserveAspect = true;
-        Sprite dusk = GetPreview(1);
-        if (dusk != null)
-        {
-            rightImg.sprite = dusk;
-            rightImg.color = Color.white;
-        }
-        else
-        {
-            rightImg.color = new Color(0.2f, 0.22f, 0.35f, 1f);
+            Image img = slice.AddComponent<Image>();
+            img.raycastTarget = false;
+            img.preserveAspect = true;
+
+            Sprite preview = GetPreview(i);
+            if (preview != null)
+            {
+                img.sprite = preview;
+                img.color = Color.white;
+            }
+            else
+            {
+                img.color = fallbacks[i % fallbacks.Length];
+            }
         }
     }
 

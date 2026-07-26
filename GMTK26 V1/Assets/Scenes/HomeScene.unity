@@ -471,6 +471,7 @@ MonoBehaviour:
   directoryCatalog: {fileID: 0}
   farmPreview: {fileID: -2783347762963126951, guid: 8fbe91f0ba49a6146a75841a093d205f, type: 3}
   duskPreview: {fileID: 4958611023780074078, guid: 371931f74235d2b468ddf620c21f28f1, type: 3}
+  graveyardPreview: {fileID: 8437210835909464880, guid: 2e00a50971177bb4c84a6a44e7b89fe6, type: 3}
   homeCanvas: {fileID: 266922164}
   homeContent: {fileID: 310000001}
   playButton: {fileID: 1811678199}

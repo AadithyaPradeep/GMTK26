@@ -14,6 +14,7 @@ public static class GameMode
     public const string ComboId = "combo";
     public const string FarmId = "farm";
     public const string DuskId = "dusk";
+    public const string GraveyardId = "graveyard";
 
     /// <summary>Set by Home → Play; consumed once when the first story world boots.</summary>
     public static bool PendingHowToPlay { get; set; }
@@ -33,11 +34,12 @@ public static class GameMode
         }
     }
 
-    /// <summary>Ordered story / chaos maps. Append here when adding Map 3.</summary>
+    /// <summary>Ordered story / chaos maps. Append here when adding another world.</summary>
     public static readonly MapInfo[] Maps =
     {
         new MapInfo(FarmId, "FARM", "SampleScene", "Daytime fields", chaosEligible: true),
         new MapInfo(DuskId, "DUSK", "World2", "Night tileset", chaosEligible: true),
+        new MapInfo(GraveyardId, "GRAVEYARD", "World3", "Haunted grounds", chaosEligible: true),
     };
 
     public static void SetStory()

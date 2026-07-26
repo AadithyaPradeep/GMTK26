@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Title / home scene UI. Uses scene Hierarchy objects so you can edit them in the Inspector.
-/// Play / Chaos open MapSelectUI; assign Farm / Dusk preview sprites below.
+/// Play / Chaos open MapSelectUI; assign Farm / Dusk / Graveyard preview sprites below.
 /// </summary>
 public class HomeMenu : MonoBehaviour
 {
@@ -14,6 +14,7 @@ public class HomeMenu : MonoBehaviour
     [Header("Map Select Previews")]
     [SerializeField] private Sprite farmPreview;
     [SerializeField] private Sprite duskPreview;
+    [SerializeField] private Sprite graveyardPreview;
 
     [Header("Scene UI (assign in Hierarchy)")]
     [SerializeField] private GameObject homeCanvas;
@@ -76,7 +77,7 @@ public class HomeMenu : MonoBehaviour
         if (homeCanvas == null)
             return;
 
-        Sprite[] previews = { farmPreview, duskPreview };
+        Sprite[] previews = { farmPreview, duskPreview, graveyardPreview };
         mapSelectUi = MapSelectUI.Show(
             homeCanvas.transform,
             font,
