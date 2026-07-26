@@ -1861,7 +1861,8 @@ MonoBehaviour:
   bombChickenPrefabs:
   - {fileID: 3643648148065418811, guid: ad758a9e61819c245a695b140a2096ca, type: 3}
   mindChickenPrefabs: []
-  electricChickenPrefabs: []
+  electricChickenPrefabs:
+  - {fileID: 615997517586447113, guid: 971c83bb205f72445b1964d5f35783f3, type: 3}
   panicChickenPrefabs:
   - {fileID: 1533770966765506361, guid: f44d21017a3d52241ad019263abc0834, type: 3}
   rogueChickenPrefabs:
@@ -1923,7 +1924,7 @@ MonoBehaviour:
   chaosMaxElectricsOnScreen: 18
   bombSpawnPercent: 85
   mindSpawnPercent: 0
-  electricSpawnPercent: 0
+  electricSpawnPercent: 85
   panicSpawnPercent: 15
   rogueSpawnPercent: 20
   startSpawnInterval: 4

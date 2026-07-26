@@ -45,6 +45,8 @@ public class AlienLiftVictim : MonoBehaviour
                 return true;
             if (GetComponent<FireChicken>() != null)
                 return true;
+            if (GetComponent<SkeleCluck>() != null)
+                return true;
             if (GetComponent<ElectricChicken>() != null)
                 return true;
             if (GetComponent<LaserChicken>() != null)
@@ -236,6 +238,7 @@ public class AlienLiftVictim : MonoBehaviour
         // Pause every special power while midair — including blue bombs and fire.
         FreezePower(GetComponent<Bomb>());
         FreezePower(GetComponent<FireChicken>());
+        FreezePower(GetComponent<SkeleCluck>());
         FreezePower(GetComponent<LaserChicken>());
         FreezePower(GetComponent<ElectricChicken>());
         FreezePower(GetComponent<MindCluck>());

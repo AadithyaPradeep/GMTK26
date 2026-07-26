@@ -135,7 +135,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChickenWander
   areaMin: {x: -5, y: -5}
   areaMax: {x: 5, y: 5}
-  moveSpeed: 1.75
+  moveSpeed: 2.25
   arrivalThreshold: 0.05
   minIdleTime: 1
   maxIdleTime: 3
@@ -208,15 +208,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 615997517586447113}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9015ab9fed46fd4c9f6b99bfb092461, type: 3}
+  m_Script: {fileID: 11500000, guid: 8f3a1c2e4b5d6789a0c1e2f3a4b5c6d7, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Bomb
+  m_EditorClassIdentifier: Assembly-CSharp::SkeleCluck
   timer: 5
   text: {fileID: 394170339863123567}
-  explosion: {fileID: 4999050520589805456, guid: f5aa5a5a37ecc7c4bbdef3747428bc5c, type: 3}
+  arrowPrefab: {fileID: 2561202802773407825, guid: bac7943baa30f6743b72f44211d60b87, type: 3}
+  hitExplosionPrefab: {fileID: 880011223344556700, guid: 7b1e7ebdc3bf37e499088867846d936f, type: 3}
   source: {fileID: 294655850951660440}
-  explosionRadius: 2.5
-  explosionVfxDuration: 0.7
+  arrowSpeed: 18
+  mapTravelFraction: 0.6
+  hitVfxDuration: 0.7
+  bodyHitRadius: 0.35
+  shotsPerBurst: 3
+  shotInterval: 0.12
+  cooldown: 5
 --- !u!114 &294655850951660440
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -477,8 +483,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190277
-  m_fontColor: {r: 0.7735849, g: 0, b: 0, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
