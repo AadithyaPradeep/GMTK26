@@ -798,6 +798,10 @@ public class ChickenSpawner : MonoBehaviour
         if (go == null)
             return;
 
+        // Ghosts only despawn after their own haunt limit.
+        if (GhostChicken.IsProtected(go))
+            return;
+
         Bomb bomb = go.GetComponent<Bomb>();
         if (bomb != null)
         {

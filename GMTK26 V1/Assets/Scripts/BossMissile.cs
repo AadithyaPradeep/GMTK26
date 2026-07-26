@@ -233,6 +233,9 @@ public class BossMissile : MonoBehaviour
         if (go.GetComponent<BossChicken>() != null)
             return false;
 
+        if (GhostChicken.IsProtected(go))
+            return false;
+
         LaserChicken laser = go.GetComponent<LaserChicken>();
         // Held player laser can be destroyed by missiles (protect it!).
         if (laser != null && laser.IsImmune && !laser.IsHeld)
