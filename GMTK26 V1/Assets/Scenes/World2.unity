@@ -978,7 +978,7 @@ MonoBehaviour:
   rogueChickenPrefabs: []
   laserChickenPrefabs: []
   bossChickenPrefabs: []
-  bossGunPrefab: {fileID: 0}
+  bossGunPrefab: {fileID: 2215910319616120880, guid: 21396efd98bbc56488156aacfac637d7, type: 3}
   missilePrefab: {fileID: 0}
   livesPrefab: {fileID: 0}
   spawnEffect: {fileID: 4999050520589805456, guid: 97d33ad94dd58c34da7a110f96b5a019, type: 3}
@@ -1020,6 +1020,16 @@ MonoBehaviour:
   bossBombFuseMax: 10
   bossWaveLaserCooldown: 3
   normalsAfterEachWave: 3
+  chaosBombChickenPrefabs:
+  - {fileID: 4603569667051958, guid: 1069ebe1a88e5ed489dcbb211fa6e5ed, type: 3}
+  chaosElectricChickenPrefabs:
+  - {fileID: 2479665210511819439, guid: 1929dfaaa3dff22439d3ea7bc1e44650, type: 3}
+  chaosElectricStartDelay: 15
+  chaosElectricTimerMin: 5
+  chaosElectricTimerMax: 7
+  chaosElectricSpawnInterval: 0.25
+  chaosElectricSpawnBurst: 3
+  chaosMaxElectricsOnScreen: 18
   bombSpawnPercent: 60
   mindSpawnPercent: 20
   electricSpawnPercent: 16

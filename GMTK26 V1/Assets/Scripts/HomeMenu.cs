@@ -4,12 +4,16 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Title / home scene UI. Uses scene Hierarchy objects so you can edit them in the Inspector.
+/// Play / Chaos open MapSelectUI; assign Farm / Dusk preview sprites below.
 /// </summary>
 public class HomeMenu : MonoBehaviour
 {
-    [SerializeField] private string gameSceneName = "SampleScene";
     [SerializeField] private TMP_FontAsset font;
     [SerializeField] private ChickenDirectoryCatalog directoryCatalog;
+
+    [Header("Map Select Previews")]
+    [SerializeField] private Sprite farmPreview;
+    [SerializeField] private Sprite duskPreview;
 
     [Header("Scene UI (assign in Hierarchy)")]
     [SerializeField] private GameObject homeCanvas;
@@ -20,6 +24,7 @@ public class HomeMenu : MonoBehaviour
 
     private bool loading;
     private ChickenDirectoryUI directoryUi;
+    private MapSelectUI mapSelectUi;
 
     private void Awake()
     {
@@ -36,17 +41,17 @@ public class HomeMenu : MonoBehaviour
 
     public void OnPlayPressed()
     {
-        StartGame(chaos: false);
+        OpenMapSelect(chaos: false);
     }
 
     public void OnChaosPressed()
     {
-        StartGame(chaos: true);
+        OpenMapSelect(chaos: true);
     }
 
     public void OnDirectoryPressed()
     {
-        if (loading || directoryUi != null)
+        if (loading || directoryUi != null || mapSelectUi != null)
             return;
 
         if (homeCanvas == null)
@@ -63,7 +68,26 @@ public class HomeMenu : MonoBehaviour
             () => directoryUi = null);
     }
 
-    private void StartGame(bool chaos)
+    private void OpenMapSelect(bool chaos)
+    {
+        if (loading || mapSelectUi != null || directoryUi != null)
+            return;
+
+        if (homeCanvas == null)
+            return;
+
+        Sprite[] previews = { farmPreview, duskPreview };
+        mapSelectUi = MapSelectUI.Show(
+            homeCanvas.transform,
+            font,
+            previews,
+            homeContent,
+            chaos,
+            mapId => StartGame(chaos, mapId),
+            () => mapSelectUi = null);
+    }
+
+    private void StartGame(bool chaos, string mapId)
     {
         if (loading)
             return;
@@ -73,19 +97,23 @@ public class HomeMenu : MonoBehaviour
         Time.timeScale = 1f;
         AudioListener.pause = false;
 
+        if (mapId == GameMode.ComboId)
+            GameMode.SetCombo();
+        else
+            GameMode.SetSingleMap(mapId);
+
+        string scene = GameMode.StartSceneName;
+
         if (chaos)
         {
             GameMode.SetChaos();
-        }
-        else
-        {
-            GameMode.SetStory();
-            GameMode.PendingHowToPlay = true;
-            SceneFader.LoadHoldBlack(gameSceneName);
+            SceneFader.Load(scene);
             return;
         }
 
-        SceneFader.Load(gameSceneName);
+        GameMode.SetStory();
+        GameMode.PendingHowToPlay = true;
+        SceneFader.LoadHoldBlack(scene);
     }
 
     private void ResolveSceneRefs()
@@ -117,7 +145,7 @@ public class HomeMenu : MonoBehaviour
             if (content != null)
                 homeContent = content.gameObject;
             else
-                homeContent = homeCanvas; // fallback: hide whole canvas menu layer carefully via content
+                homeContent = homeCanvas;
         }
 
         if (playButton == null)
@@ -143,7 +171,6 @@ public class HomeMenu : MonoBehaviour
             if (t != null)
                 return t.GetComponent<Button>();
 
-            // Nested under HomeContent
             t = homeCanvas.transform.Find("HomeContent/" + name);
             if (t != null)
                 return t.GetComponent<Button>();

@@ -90,6 +90,10 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private int normalsAfterEachWave = 2;
 
     [Header("Chaos Mode")]
+    [Tooltip("If set, Chaos uses these bombs instead of bombChickenPrefabs (e.g. Farm bombs on Dusk).")]
+    [SerializeField] private GameObject[] chaosBombChickenPrefabs;
+    [Tooltip("If set, Chaos uses these electrics instead of electricChickenPrefabs.")]
+    [SerializeField] private GameObject[] chaosElectricChickenPrefabs;
     [SerializeField] private float chaosElectricStartDelay = 15f;
     [SerializeField] private float chaosElectricTimerMin = 5f;
     [SerializeField] private float chaosElectricTimerMax = 7f;
@@ -337,12 +341,11 @@ public class ChickenSpawner : MonoBehaviour
             ? new Vector3(midX, midY, 0f)
             : new Vector3(spawnAreaMax.x, midY, 0f);
 
-        // World2 center portal always returns to World 1; World1 edge portal goes to World2.
-        string target = portalTargetScene;
+        // Respect Farm / Dusk / Combo selection from Home map pick.
+        string current = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        string target = GameMode.PortalTargetScene(current);
         if (string.IsNullOrEmpty(target))
-            target = portalAtCenter ? "SampleScene" : "World2";
-        if (portalAtCenter)
-            target = "SampleScene";
+            target = string.IsNullOrEmpty(portalTargetScene) ? "SampleScene" : portalTargetScene;
 
         GameObject portal = null;
         GameObject sceneGate = FindSceneGate();
@@ -807,16 +810,42 @@ public class ChickenSpawner : MonoBehaviour
 
     private GameObject FindExplosionPrefab()
     {
-        GameObject bombPrefab = Pick(bombChickenPrefabs);
+        GameObject bombPrefab = PickChaosBombPrefab();
+        if (bombPrefab == null)
+            bombPrefab = Pick(bombChickenPrefabs);
         if (bombPrefab == null)
             return null;
         Bomb bomb = bombPrefab.GetComponent<Bomb>();
         return bomb != null ? bomb.explosion : null;
     }
 
+    private GameObject PickChaosBombPrefab()
+    {
+        if (GameMode.IsChaos && chaosBombChickenPrefabs != null && chaosBombChickenPrefabs.Length > 0)
+        {
+            GameObject chaos = Pick(chaosBombChickenPrefabs);
+            if (chaos != null)
+                return chaos;
+        }
+
+        return Pick(bombChickenPrefabs);
+    }
+
+    private GameObject PickChaosElectricPrefab()
+    {
+        if (GameMode.IsChaos && chaosElectricChickenPrefabs != null && chaosElectricChickenPrefabs.Length > 0)
+        {
+            GameObject chaos = Pick(chaosElectricChickenPrefabs);
+            if (chaos != null)
+                return chaos;
+        }
+
+        return Pick(electricChickenPrefabs);
+    }
+
     private GameObject SpawnBossBomb()
     {
-        GameObject prefab = Pick(bombChickenPrefabs);
+        GameObject prefab = PickChaosBombPrefab();
         if (prefab == null)
             return null;
 
@@ -850,7 +879,7 @@ public class ChickenSpawner : MonoBehaviour
 
     private GameObject SpawnChaosElectric()
     {
-        GameObject prefab = Pick(electricChickenPrefabs);
+        GameObject prefab = PickChaosElectricPrefab();
         if (prefab == null)
             return null;
 
