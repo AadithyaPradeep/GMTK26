@@ -148,10 +148,6 @@ public class LevelPortal : MonoBehaviour
         if (!string.IsNullOrEmpty(targetSceneName))
             return targetSceneName;
 
-        // World2 finish portal should always return to World 1.
-        if (SceneManager.GetActiveScene().name == "World2")
-            return "SampleScene";
-
-        return "World2";
+        return GameMode.PortalTargetScene(SceneManager.GetActiveScene().name);
     }
 }
