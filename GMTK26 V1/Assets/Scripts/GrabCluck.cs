@@ -87,6 +87,10 @@ public class GrabCluck : MonoBehaviour
         if (fire != null)
             fire.IsHeld = true;
 
+        AlienLiftVictim lift = cluck.GetComponent<AlienLiftVictim>();
+        if (lift != null)
+            lift.OnFarmerGrabbed();
+
         cluck.SetParent(transform);
         if (source != null)
         {
@@ -172,6 +176,10 @@ public class GrabCluck : MonoBehaviour
 
         if (fire != null)
             fire.IsHeld = false;
+
+        AlienLiftVictim lift = cluck.GetComponent<AlienLiftVictim>();
+        if (lift != null)
+            lift.OnFarmerDropped();
 
         if (GameAudio.Instance != null)
             GameAudio.Instance.PlayDrop();

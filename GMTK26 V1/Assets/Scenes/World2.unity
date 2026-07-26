@@ -969,7 +969,8 @@ MonoBehaviour:
   - {fileID: 1533770966765506361, guid: 2bbbc67fbaa9dc1459c37c1da7720b60, type: 3}
   bombChickenPrefabs:
   - {fileID: 740304301570221861, guid: 5c3fb3821b96ba64082a9f3f1e8fcb04, type: 3}
-  mindChickenPrefabs: []
+  mindChickenPrefabs:
+  - {fileID: 5073943185949986789, guid: cdb7fb3dd7f71c1429597a063fef82ff, type: 3}
   electricChickenPrefabs:
   - {fileID: 7256149043055931299, guid: f5959a892d2968e4e96d1817b3a1a8bf, type: 3}
   panicChickenPrefabs:
@@ -981,9 +982,11 @@ MonoBehaviour:
   missilePrefab: {fileID: 0}
   livesPrefab: {fileID: 0}
   spawnEffect: {fileID: 4999050520589805456, guid: 97d33ad94dd58c34da7a110f96b5a019, type: 3}
-  levelPortalPrefab: {fileID: 0}
+  levelPortalPrefab: {fileID: 1000758950, guid: b2c3d4e5f60718293a4b5c6d7e8f901a, type: 3}
   centerFarmerOnStart: 1
-  spawnPortalOnFinish: 0
+  spawnPortalOnFinish: 1
+  portalTargetScene: SampleScene
+  portalAtCenter: 1
   farmerTransform: {fileID: 229318277}
   introBanner: {fileID: 81212988}
   spawnAreaMin: {x: -12, y: -4.8}
@@ -993,7 +996,8 @@ MonoBehaviour:
   delayBeforeFirstWave: 3
   waveDuration: 15
   wave4Duration: 20
-  mindUnlockWave: 99
+  mindUnlockWave: 3
+  mindUnlockWaveProgress: 0.5
   electricUnlockWave: 3
   electricMaxWave: 5
   panicUnlockWave: 2
@@ -1017,8 +1021,8 @@ MonoBehaviour:
   bossWaveLaserCooldown: 3
   normalsAfterEachWave: 3
   bombSpawnPercent: 60
-  mindSpawnPercent: 0
-  electricSpawnPercent: 25
+  mindSpawnPercent: 20
+  electricSpawnPercent: 16
   panicSpawnPercent: 15
   rogueSpawnPercent: 20
   startSpawnInterval: 4
@@ -1027,7 +1031,7 @@ MonoBehaviour:
   startMaxThreats: 3
   maxThreatIncreasePerWave: 1
   hardMaxThreats: 18
-  maxMindsOnScreen: 2
+  maxMindsOnScreen: 1
   maxPanicsPerWave: 2
   maxRoguesPerWave: 2
   startSpawnBurst: 1
