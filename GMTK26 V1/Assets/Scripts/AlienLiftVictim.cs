@@ -53,6 +53,8 @@ public class AlienLiftVictim : MonoBehaviour
                 return true;
             if (GetComponent<AlienChicken>() != null)
                 return true;
+            if (GetComponent<GhostChicken>() != null)
+                return true;
             return false;
         }
     }
@@ -242,6 +244,7 @@ public class AlienLiftVictim : MonoBehaviour
         FreezePower(GetComponent<LaserChicken>());
         FreezePower(GetComponent<ElectricChicken>());
         FreezePower(GetComponent<MindCluck>());
+        FreezePower(GetComponent<GhostChicken>());
     }
 
     private void FreezePower(Behaviour power)

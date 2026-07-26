@@ -332,7 +332,8 @@ public class BossChicken : MonoBehaviour
 
         return go.GetComponent<Bomb>() != null
             || go.GetComponent<MindCluck>() != null
-            || go.GetComponent<ElectricChicken>() != null;
+            || go.GetComponent<ElectricChicken>() != null
+            || go.GetComponent<GhostChicken>() != null;
     }
 
     public static bool IsPlainNormal(GameObject go)
@@ -352,6 +353,8 @@ public class BossChicken : MonoBehaviour
         if (go.GetComponent<ElectricChicken>() != null)
             return false;
         if (go.GetComponent<PanicChicken>() != null)
+            return false;
+        if (go.GetComponent<GhostChicken>() != null)
             return false;
         return true;
     }

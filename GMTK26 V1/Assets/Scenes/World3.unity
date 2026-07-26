@@ -1860,7 +1860,8 @@ MonoBehaviour:
   - {fileID: 1533770966765506361, guid: 2bbbc67fbaa9dc1459c37c1da7720b60, type: 3}
   bombChickenPrefabs:
   - {fileID: 3643648148065418811, guid: ad758a9e61819c245a695b140a2096ca, type: 3}
-  mindChickenPrefabs: []
+  mindChickenPrefabs:
+  - {fileID: 8172021755031089156, guid: e94f865294175ea40bd46c6fafa93956, type: 3}
   electricChickenPrefabs:
   - {fileID: 615997517586447113, guid: 971c83bb205f72445b1964d5f35783f3, type: 3}
   panicChickenPrefabs:
@@ -1888,7 +1889,7 @@ MonoBehaviour:
   delayBeforeFirstWave: 3
   waveDuration: 15
   wave4Duration: 20
-  mindUnlockWave: 2
+  mindUnlockWave: 4
   mindUnlockWaveProgress: 0
   electricUnlockWave: 3
   electricMaxWave: 0
@@ -1923,7 +1924,7 @@ MonoBehaviour:
   chaosElectricSpawnBurst: 3
   chaosMaxElectricsOnScreen: 18
   bombSpawnPercent: 85
-  mindSpawnPercent: 0
+  mindSpawnPercent: 70
   electricSpawnPercent: 85
   panicSpawnPercent: 15
   rogueSpawnPercent: 20
@@ -1933,7 +1934,7 @@ MonoBehaviour:
   startMaxThreats: 3
   maxThreatIncreasePerWave: 1
   hardMaxThreats: 18
-  maxMindsOnScreen: 2
+  maxMindsOnScreen: 8
   maxPanicsPerWave: 2
   maxRoguesPerWave: 2
   startSpawnBurst: 1
