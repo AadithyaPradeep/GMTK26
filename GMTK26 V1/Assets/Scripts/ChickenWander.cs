@@ -53,6 +53,7 @@ public class ChickenWander : MonoBehaviour
     private bool isMindCluck;
     private bool isBomb;
     private bool isPanic;
+    private bool isGhost;
     private bool gravityFrozen;
     private bool bossPanic;
     private bool bossMarchLeft;
@@ -165,6 +166,7 @@ public class ChickenWander : MonoBehaviour
         isMindCluck = GetComponent<MindCluck>() != null;
         isBomb = GetComponent<Bomb>() != null;
         isPanic = GetComponent<PanicChicken>() != null || GetComponent<RogueChicken>() != null;
+        isGhost = GetComponent<GhostChicken>() != null;
     }
 
     private void Awake()
@@ -228,6 +230,19 @@ public class ChickenWander : MonoBehaviour
             if (isApproachingNormals)
                 EndApproachNormals();
             UpdateBossPanicMovement();
+            return;
+        }
+
+        // Ghosts always chase the farmer (haunt when close — see GhostChicken).
+        if (isGhost)
+        {
+            if (isAttracted)
+                EndAttract();
+            if (isApproachingNormals)
+                EndApproachNormals();
+            if (isFleeing)
+                EndFlee();
+            ChaseFarmer();
             return;
         }
 
@@ -320,6 +335,29 @@ public class ChickenWander : MonoBehaviour
             animator.SetBool(IsMovingHash, false);
     }
 
+    private void ChaseFarmer()
+    {
+        if (farmerTransform == null)
+        {
+            if (animator != null)
+                animator.SetBool(IsMovingHash, false);
+            return;
+        }
+
+        float dist = Vector2.Distance(transform.position, farmerTransform.position);
+        if (dist <= arrivalThreshold)
+        {
+            if (animator != null)
+                animator.SetBool(IsMovingHash, false);
+            return;
+        }
+
+        if (animator != null)
+            animator.SetBool(IsMovingHash, true);
+
+        MoveToward(farmerTransform.position, CurrentMoveSpeed);
+    }
+
     private bool TryFleeFromFarmer()
     {
         if (farmerTransform == null)
@@ -392,7 +430,7 @@ public class ChickenWander : MonoBehaviour
             if (other == null || other == this)
                 continue;
 
-            // Only plain normals / panics — not bombs, minds, electrics, or lasers.
+            // Only plain normals / panics — not bombs, minds, electrics, lasers, or ghosts.
             if (other.GetComponent<Bomb>() != null)
                 continue;
             if (other.GetComponent<MindCluck>() != null)
@@ -400,6 +438,8 @@ public class ChickenWander : MonoBehaviour
             if (other.GetComponent<ElectricChicken>() != null)
                 continue;
             if (other.GetComponent<LaserChicken>() != null)
+                continue;
+            if (other.GetComponent<GhostChicken>() != null)
                 continue;
 
             float d = Vector2.Distance(transform.position, other.transform.position);
@@ -603,7 +643,7 @@ public class ChickenWander : MonoBehaviour
         return position;
     }
 
-    private bool IsWanderInterrupted => isFleeing || isAttracted || isApproachingNormals || bossPanic || bossMarchLeft || gravityFrozen;
+    private bool IsWanderInterrupted => isFleeing || isAttracted || isApproachingNormals || bossPanic || bossMarchLeft || gravityFrozen || isGhost;
 
     private IEnumerator WanderLoop()
     {
