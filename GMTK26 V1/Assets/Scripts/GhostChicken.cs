@@ -28,6 +28,15 @@ public class GhostChicken : MonoBehaviour
 
     public bool IsHaunting => haunting;
 
+    /// <summary>Ready to attack: chase farmer. On cooldown / mid-haunt: do not chase.</summary>
+    public bool ShouldChaseFarmer => enabled && !haunting && cooldown <= 0f;
+
+    public static bool IsProtected(Component c) =>
+        c != null && c.GetComponent<GhostChicken>() != null;
+
+    public static bool IsProtected(GameObject go) =>
+        go != null && go.GetComponent<GhostChicken>() != null;
+
     private void Awake()
     {
         wander = GetComponent<ChickenWander>();

@@ -8,6 +8,21 @@ public class ChickenDirectoryCatalog : ScriptableObject
 
     public IReadOnlyList<ChickenDirectoryEntry> Entries => entries;
 
+    public ChickenDirectoryEntry FindByDisplayName(string displayName)
+    {
+        if (entries == null || string.IsNullOrEmpty(displayName))
+            return null;
+
+        for (int i = 0; i < entries.Count; i++)
+        {
+            ChickenDirectoryEntry e = entries[i];
+            if (e != null && e.displayName == displayName)
+                return e;
+        }
+
+        return null;
+    }
+
     public static ChickenDirectoryCatalog LoadOrCreateDefaults()
     {
         ChickenDirectoryCatalog fromResources = Resources.Load<ChickenDirectoryCatalog>("ChickenDirectory/Catalog");
@@ -63,6 +78,23 @@ public class ChickenDirectoryCatalog : ScriptableObject
             Make("Alien Cluck", "AlienHIdle", ChickenDirectoryRole.Threat, "World 2",
                 "Abducts chickens into the sky. Friends and foes alike.",
                 "Not from around here. The tractor beam is a dead giveaway."),
+
+            Make("Zombie Cluck (looks like a christmas chicken tho)", "ZCluckIdle", ChickenDirectoryRole.Threat, "World 3",
+                "Graveyard bomb bird. Counts down, then goes boom.",
+                "Rose from the coop after a bad night and a worse diet. Still ticking. Still exploding. The festive colorway is an unfortunate coincidence, and it will not be taking questions."),
+
+            Make("Rogue Zombie Cluck", "HighlighZCluckIdle", ChickenDirectoryRole.Threat, "World 3",
+                "A zombie bomb that sprints. Catch it if you can. Survive it if you can't.",
+                "Same undead fuse, plus cardio. Apparently dying once was not enough motivation, so now it jogs. You will not enjoy the group fitness class."),
+
+            Make("Ghost Cluck", "GhostCluckIdle", ChickenDirectoryRole.Threat, "World 3",
+                "Haunts the farmer with lights-out. Two scares, then it fades.",
+                "Floats around like it pays rent in vibes. When the timer hits zero it turns the farm into a nightlight situation: you, a tiny circle of hope, and whatever is chewing on your ankles outside it. Then it peaces out forever. Rude, but iconic.",
+                new Color(0f, 253f / 255f, 1f, 0.35f)),
+
+            Make("Skele Cluck", "SkeleCluckIdle", ChickenDirectoryRole.Threat, "World 3",
+                "Fires arrow volleys. Bones with aim.",
+                "All rattle, no feathers. The arrows are the point."),
         };
 
         return catalog;
@@ -74,7 +106,8 @@ public class ChickenDirectoryCatalog : ScriptableObject
         ChickenDirectoryRole role,
         string worldHint,
         string shortDescription,
-        string story)
+        string story,
+        Color? portraitColor = null)
     {
         ChickenDirectoryEntry entry = CreateInstance<ChickenDirectoryEntry>();
         entry.hideFlags = HideFlags.HideAndDontSave;
@@ -85,6 +118,7 @@ public class ChickenDirectoryCatalog : ScriptableObject
         entry.shortDescription = shortDescription;
         entry.story = story;
         entry.portrait = LoadPortrait(portraitResourceName);
+        entry.portraitColor = portraitColor ?? Color.white;
         return entry;
     }
 

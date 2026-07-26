@@ -92,6 +92,9 @@ public class FireballProjectile : MonoBehaviour
             if (chicken.GetComponent<BossChicken>() != null)
                 continue;
 
+            if (GhostChicken.IsProtected(chicken))
+                continue;
+
             LaserChicken laser = chicken.GetComponent<LaserChicken>();
             if (laser != null && laser.IsImmune)
                 continue;
@@ -168,6 +171,9 @@ public class FireballProjectile : MonoBehaviour
         if (chicken == null)
             return;
 
+        if (GhostChicken.IsProtected(chicken))
+            return;
+
         // Fireballs never harm fire chickens (self or same kind).
         if (chicken.GetComponent<FireChicken>() != null)
             return;
@@ -204,6 +210,9 @@ public class FireballProjectile : MonoBehaviour
                 continue;
 
             if (chicken.GetComponent<BossChicken>() != null)
+                continue;
+
+            if (GhostChicken.IsProtected(chicken))
                 continue;
 
             LaserChicken laser = chicken.GetComponent<LaserChicken>();

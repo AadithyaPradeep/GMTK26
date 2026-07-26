@@ -523,6 +523,9 @@ public class LaserChicken : MonoBehaviour
             if (chicken.GetComponent<BossChicken>() != null)
                 continue;
 
+            if (GhostChicken.IsProtected(chicken))
+                continue;
+
             LaserChicken otherLaser = chicken.GetComponent<LaserChicken>();
             if (otherLaser != null && otherLaser.IsImmune)
                 continue;

@@ -144,6 +144,9 @@ public class Bomb : MonoBehaviour
             if (chicken.GetComponent<BossChicken>() != null)
                 continue;
 
+            if (GhostChicken.IsProtected(chicken))
+                continue;
+
             Vector2 toChicken = (Vector2)chicken.transform.position - origin;
             if (toChicken.sqrMagnitude <= radiusSq)
                 Destroy(chicken.gameObject);

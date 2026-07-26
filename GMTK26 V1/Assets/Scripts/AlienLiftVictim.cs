@@ -183,6 +183,12 @@ public class AlienLiftVictim : MonoBehaviour
         if (this == null)
             return;
 
+        if (GhostChicken.IsProtected(this))
+        {
+            ForceRelease();
+            return;
+        }
+
         AlienChicken source = alien;
         ClearLiftState(restoreGroundY: false);
         if (source != null)

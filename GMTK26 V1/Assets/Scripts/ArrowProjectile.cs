@@ -84,6 +84,9 @@ public class ArrowProjectile : MonoBehaviour
             if (chicken.GetComponent<BossChicken>() != null)
                 continue;
 
+            if (GhostChicken.IsProtected(chicken))
+                continue;
+
             LaserChicken laser = chicken.GetComponent<LaserChicken>();
             if (laser != null && laser.IsImmune)
                 continue;
@@ -161,6 +164,9 @@ public class ArrowProjectile : MonoBehaviour
     private void ApplyHit(ChickenWander chicken)
     {
         if (chicken == null)
+            return;
+
+        if (GhostChicken.IsProtected(chicken))
             return;
 
         // Arrows never harm skeleton chickens (self or same kind).

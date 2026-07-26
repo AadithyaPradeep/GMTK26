@@ -1934,7 +1934,7 @@ MonoBehaviour:
   startMaxThreats: 3
   maxThreatIncreasePerWave: 1
   hardMaxThreats: 18
-  maxMindsOnScreen: 8
+  maxMindsOnScreen: 1
   maxPanicsPerWave: 2
   maxRoguesPerWave: 2
   startSpawnBurst: 1

@@ -233,7 +233,7 @@ public class ChickenWander : MonoBehaviour
             return;
         }
 
-        // Ghosts always chase the farmer (haunt when close — see GhostChicken).
+        // Ghosts: chase only when cooldown is ready; roam casually otherwise.
         if (isGhost)
         {
             if (isAttracted)
@@ -242,7 +242,22 @@ public class ChickenWander : MonoBehaviour
                 EndApproachNormals();
             if (isFleeing)
                 EndFlee();
-            ChaseFarmer();
+
+            GhostChicken ghost = GetComponent<GhostChicken>();
+            if (ghost != null && ghost.ShouldChaseFarmer)
+            {
+                ChaseFarmer();
+                return;
+            }
+
+            if (ghost != null && ghost.IsHaunting)
+            {
+                if (animator != null)
+                    animator.SetBool(IsMovingHash, false);
+                return;
+            }
+
+            // Cooldown roam — skip flee / attract; WanderLoop drives movement.
             return;
         }
 
@@ -643,7 +658,19 @@ public class ChickenWander : MonoBehaviour
         return position;
     }
 
-    private bool IsWanderInterrupted => isFleeing || isAttracted || isApproachingNormals || bossPanic || bossMarchLeft || gravityFrozen || isGhost;
+    private bool IsWanderInterrupted =>
+        isFleeing || isAttracted || isApproachingNormals || bossPanic || bossMarchLeft || gravityFrozen || IsGhostControllingMove;
+
+    private bool IsGhostControllingMove
+    {
+        get
+        {
+            if (!isGhost)
+                return false;
+            GhostChicken ghost = GetComponent<GhostChicken>();
+            return ghost != null && (ghost.ShouldChaseFarmer || ghost.IsHaunting);
+        }
+    }
 
     private IEnumerator WanderLoop()
     {
