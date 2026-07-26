@@ -53,6 +53,10 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private Vector2 spawnAreaMin = new Vector2(-7.5f, -4.5f);
     [SerializeField] private Vector2 spawnAreaMax = new Vector2(7.5f, 4.5f);
 
+    [Header("World Tuning")]
+    [Tooltip("Multiplies every spawned chicken's base move speed (1 = default).")]
+    [SerializeField] private float chickenSpeedMultiplier = 1f;
+
     [Header("Opening")]
     [SerializeField] private int startingNormals = 8;
     [SerializeField] private float openingSpawnGap = 0.25f;
@@ -161,9 +165,10 @@ public class ChickenSpawner : MonoBehaviour
 
     private IEnumerator BootSequence()
     {
-        // Only after Home → Play. Chaos / World2 / portal loop skip.
+        // Only after Home → Play. Chaos / portal loop skip.
         bool showHtp = GameMode.PendingHowToPlay;
         GameMode.PendingHowToPlay = false;
+        GameMode.PendingStartScene = null;
 
         if (showHtp && !GameMode.IsChaos)
         {
@@ -181,15 +186,21 @@ public class ChickenSpawner : MonoBehaviour
             else
                 HowToPlayIntro.HideIfPresent();
 
-            // Now reveal World 1 under the dismissed HTP.
             yield return SceneFader.RevealRoutine();
         }
         else
         {
             HowToPlayIntro.HideIfPresent();
+
             while (SceneFader.IsBusy)
                 yield return null;
+
+            if (SceneFader.IsHoldingBlack)
+                yield return SceneFader.RevealRoutine();
         }
+
+        if (GameAudio.Instance != null)
+            GameAudio.Instance.ReleaseIntroHold();
 
         if (introBanner != null)
             introBanner.SetActive(true);
@@ -867,6 +878,7 @@ public class ChickenSpawner : MonoBehaviour
             wander.SetWanderArea(spawnAreaMin, spawnAreaMax);
             wander.farmerTransform = farmerTransform;
             wander.SetBossMarchLeft(true);
+            ApplyWorldSpeed(wander);
         }
 
         Bomb bomb = bombGo.GetComponent<Bomb>();
@@ -900,6 +912,7 @@ public class ChickenSpawner : MonoBehaviour
             wander.SetWanderArea(spawnAreaMin, spawnAreaMax);
             wander.farmerTransform = farmerTransform;
             wander.SetBossMarchLeft(true);
+            ApplyWorldSpeed(wander);
         }
 
         ElectricChicken electric = electricGo.GetComponent<ElectricChicken>();
@@ -1278,9 +1291,18 @@ public class ChickenSpawner : MonoBehaviour
         {
             wander.SetWanderArea(spawnAreaMin, spawnAreaMax);
             wander.farmerTransform = farmerTransform;
+            ApplyWorldSpeed(wander);
         }
 
         return chicken;
+    }
+
+    private void ApplyWorldSpeed(ChickenWander wander)
+    {
+        if (wander == null)
+            return;
+        if (chickenSpeedMultiplier > 0f && !Mathf.Approximately(chickenSpeedMultiplier, 1f))
+            wander.MultiplyMoveSpeed(chickenSpeedMultiplier);
     }
 
     private IEnumerator PlaySpawnEffect(Vector2 pos)

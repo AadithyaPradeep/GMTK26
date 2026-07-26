@@ -85,6 +85,14 @@ public static class HowToPlayIntro
 
         howToPlayRoot.SetActive(false);
         IsShowing = false;
+
+        // Consume leftover Enter so the next scene doesn't see a buffered press.
+        float settle = 0.15f;
+        while (settle > 0f)
+        {
+            settle -= Time.unscaledDeltaTime;
+            yield return null;
+        }
     }
 
     private static IEnumerator Fade(CanvasGroup group, float from, float to, float duration)

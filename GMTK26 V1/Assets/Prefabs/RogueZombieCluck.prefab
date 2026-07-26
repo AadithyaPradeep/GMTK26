@@ -15,8 +15,9 @@ GameObject:
   - component: {fileID: 3954061556841706712}
   - component: {fileID: 7655022343627814051}
   - component: {fileID: 4087363246175038924}
+  - component: {fileID: 910011223344556801}
   m_Layer: 6
-  m_Name: ZombieCluck
+  m_Name: RogueZombieCluck
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -136,7 +137,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChickenWander
   areaMin: {x: -5, y: -5}
   areaMax: {x: 5, y: 5}
-  moveSpeed: 1.75
+  moveSpeed: 2.2
   arrivalThreshold: 0.05
   minIdleTime: 1
   maxIdleTime: 3
@@ -218,6 +219,18 @@ MonoBehaviour:
   source: {fileID: 4087363246175038924}
   explosionRadius: 2.5
   explosionVfxDuration: 0.7
+--- !u!114 &910011223344556801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3643648148065418811}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4e5f6a7b8c9d0e1f2a3b4c5d6e7f809, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RogueChicken
 --- !u!114 &4087363246175038924
 MonoBehaviour:
   m_ObjectHideFlags: 0

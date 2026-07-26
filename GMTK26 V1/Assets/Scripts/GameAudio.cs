@@ -8,6 +8,12 @@ public class GameAudio : MonoBehaviour
 {
     public static GameAudio Instance { get; private set; }
 
+    /// <summary>
+    /// Set by Home → Story before LoadHoldBlack so BGM doesn't start under How To Play
+    /// (and so we don't start Farm music when another map was selected).
+    /// </summary>
+    public static bool HoldBgmForIntro { get; set; }
+
     [Header("Clips")]
     [SerializeField] private AudioClip bgm;
     [SerializeField] private AudioClip chickenIdle;
@@ -85,10 +91,31 @@ public class GameAudio : MonoBehaviour
         sfxSource.spatialBlend = 0f;
     }
 
+    private bool idleLoopStarted;
+
     private void Start()
     {
+        if (HoldBgmForIntro)
+            return;
+
+        BeginGameplayAudio();
+    }
+
+    /// <summary>Call after How To Play / scene reveal so BGM starts on the real map only.</summary>
+    public void ReleaseIntroHold()
+    {
+        HoldBgmForIntro = false;
+        BeginGameplayAudio();
+    }
+
+    private void BeginGameplayAudio()
+    {
         PlayBgm();
-        StartCoroutine(IdleCluckLoop());
+        if (!idleLoopStarted)
+        {
+            idleLoopStarted = true;
+            StartCoroutine(IdleCluckLoop());
+        }
     }
 
     private void OnDestroy()
