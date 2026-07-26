@@ -1805,12 +1805,12 @@ MonoBehaviour:
   nextWaveFormat: Next Wave in {0} s
   waveSubText: Protect Your Chickens !
   waveBannerDuration: 2
-  gameOverText: 'GAME OVER
+  gameOverText: 'GAME OVER!
 
-    All chickens lost'
-  laserLostGameOverText: 'GAME OVER
+    ALL CHICKENS DEAD!'
+  laserLostGameOverText: 'GAME OVER!
 
-    Laser chicken lost'
+    LASER CHICKEN DEAD!'
   finishedText: LEVEL 1 DONE!!
 --- !u!1 &966039093
 GameObject:
@@ -12252,13 +12252,21 @@ MonoBehaviour:
   grab: {fileID: 8300000, guid: f8a308b4b272fc949808c185f39bff35, type: 3}
   drop: {fileID: 8300000, guid: 6b436b4a4133fba408aa9e7b60da6463, type: 3}
   step: {fileID: 8300000, guid: d0205099d0bff70488a9a07171161ad8, type: 3}
+  alienPower: {fileID: 8300000, guid: c1ff96ca79b640247a1dc1bb80b36840, type: 3}
+  laserFire: {fileID: 8300000, guid: e3857d1fef7c2744a9883c7755ae9ac7, type: 3}
+  zombieSpawn: {fileID: 8300000, guid: f2b7d9ffd2e49e24eb15f4847a41e04b, type: 3}
+  mindHypnosis: {fileID: 8300000, guid: 941c4bb29aa380740b22e6b068db944d, type: 3}
+  fireAmbient: {fileID: 8300000, guid: 4d0efa5e78c19464a85688d8a534824f, type: 3}
   bgmVolume: 0.35
   sfxVolume: 0.85
   idleCluckVolume: 0.45
   stepVolume: 0.08
   tickVolume: 0.5
+  voiceVolume: 0.45
+  fireAmbientScale: 0.7
   idleCluckMinInterval: 2.5
   idleCluckMaxInterval: 5.5
+  playIdleClucks: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

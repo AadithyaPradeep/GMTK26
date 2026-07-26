@@ -1,6 +1,8 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
@@ -25,9 +27,10 @@ public class WaveTimerUI : MonoBehaviour
     [SerializeField] private string nextWaveFormat = "Next Wave in {0} s";
     [SerializeField] private string waveSubText = "Protect Your Chickens !";
     [SerializeField] private float waveBannerDuration = 2f;
-    [SerializeField] private string gameOverText = "GAME OVER\nAll chickens lost";
-    [SerializeField] private string laserLostGameOverText = "GAME OVER\nLaser chicken lost";
+    [SerializeField] private string gameOverText = "GAME OVER!\nALL CHICKENS DEAD!";
+    [SerializeField] private string laserLostGameOverText = "GAME OVER!\nLASER CHICKEN DEAD!";
     [SerializeField] private string finishedText = "LEVEL 1 DONE!!";
+    [SerializeField] private string homeSceneName = "HomeScene";
 
     private TextMeshProUGUI hintLabel;
     private Coroutine hintRoutine;
@@ -36,6 +39,11 @@ public class WaveTimerUI : MonoBehaviour
     private bool showingFinished;
     private bool usingSceneHud;
     private int lastBannerWave = -1;
+
+    private GameObject gameOverRoot;
+    private TextMeshProUGUI gameOverLabel;
+    private bool gameOverUiBuilt;
+    private bool navigatingAway;
 
     private void Awake()
     {
@@ -106,10 +114,13 @@ public class WaveTimerUI : MonoBehaviour
         if (spawner.IsGameOver)
         {
             StopWaveBanner();
-            ShowStatus(string.IsNullOrEmpty(activeGameOverText) ? gameOverText : activeGameOverText);
             ClearHint();
+            HideSceneStatusLabels();
+            ShowGameOverUi(string.IsNullOrEmpty(activeGameOverText) ? gameOverText : activeGameOverText);
             return;
         }
+
+        HideGameOverUi();
 
         if (spawner.IsFinished || showingFinished)
         {
@@ -277,6 +288,56 @@ public class WaveTimerUI : MonoBehaviour
         }
     }
 
+    private void ShowGameOverUi(string message)
+    {
+        EnsureGameOverUi();
+        if (gameOverRoot == null)
+            return;
+
+        if (gameOverLabel != null)
+        {
+            ApplyFont(gameOverLabel, gameOverFontSize);
+            // Keep the scene HUD cream/yellow look when available.
+            if (waveLabel != null)
+                gameOverLabel.color = waveLabel.color;
+            else
+                gameOverLabel.color = new Color(0.992f, 0.969f, 0.635f, 1f);
+            gameOverLabel.text = message;
+            gameOverLabel.enabled = true;
+        }
+
+        if (!gameOverRoot.activeSelf)
+            gameOverRoot.SetActive(true);
+    }
+
+    private void HideGameOverUi()
+    {
+        if (gameOverRoot != null && gameOverRoot.activeSelf)
+            gameOverRoot.SetActive(false);
+    }
+
+    private void HideSceneStatusLabels()
+    {
+        HideWaveBanner();
+        if (nextWaveLabel != null)
+        {
+            nextWaveLabel.text = string.Empty;
+            nextWaveLabel.enabled = false;
+        }
+
+        if (label != null)
+        {
+            label.text = string.Empty;
+            label.enabled = false;
+        }
+
+        if (waveLabel != null)
+        {
+            waveLabel.text = string.Empty;
+            waveLabel.enabled = false;
+        }
+    }
+
     private void ShowStatus(string message)
     {
         HideWaveBanner();
@@ -303,6 +364,193 @@ public class WaveTimerUI : MonoBehaviour
         ApplyFont(target, gameOverFontSize);
         target.text = message;
         target.enabled = true;
+    }
+
+    private void EnsureGameOverUi()
+    {
+        if (gameOverUiBuilt)
+            return;
+
+        gameOverUiBuilt = true;
+        EnsureEventSystem();
+
+        TMP_FontAsset font = ResolveFont();
+
+        GameObject canvasGo = new GameObject("GameOverCanvas");
+        canvasGo.transform.SetParent(transform, false);
+
+        Canvas canvas = canvasGo.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 800;
+
+        CanvasScaler scaler = canvasGo.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.matchWidthOrHeight = 0.5f;
+
+        canvasGo.AddComponent<GraphicRaycaster>();
+
+        gameOverRoot = new GameObject("GameOverRoot", typeof(RectTransform));
+        gameOverRoot.transform.SetParent(canvasGo.transform, false);
+        RectTransform rootRt = gameOverRoot.GetComponent<RectTransform>();
+        rootRt.anchorMin = Vector2.zero;
+        rootRt.anchorMax = Vector2.one;
+        rootRt.offsetMin = Vector2.zero;
+        rootRt.offsetMax = Vector2.zero;
+
+        // Centered two-line status (wide enough for "GAME OVER!" on one line).
+        GameObject textGo = new GameObject("GameOverText", typeof(RectTransform));
+        textGo.transform.SetParent(gameOverRoot.transform, false);
+        RectTransform textRt = textGo.GetComponent<RectTransform>();
+        textRt.anchorMin = new Vector2(0.5f, 0.5f);
+        textRt.anchorMax = new Vector2(0.5f, 0.5f);
+        textRt.pivot = new Vector2(0.5f, 0.5f);
+        textRt.anchoredPosition = new Vector2(-120f, 40f);
+        textRt.sizeDelta = new Vector2(1100f, 220f);
+
+        gameOverLabel = textGo.AddComponent<TextMeshProUGUI>();
+        gameOverLabel.alignment = TextAlignmentOptions.Center;
+        gameOverLabel.enableWordWrapping = false;
+        gameOverLabel.overflowMode = TextOverflowModes.Overflow;
+        gameOverLabel.raycastTarget = false;
+        if (font != null)
+        {
+            gameOverLabel.font = font;
+            gameOverLabel.fontSharedMaterial = font.material;
+        }
+
+        // Side buttons (right of the message).
+        CreateGameOverButton(
+            gameOverRoot.transform,
+            "REPLAY",
+            new Vector2(520f, 70f),
+            new Color(0.92f, 0.82f, 0.28f, 1f),
+            new Color(0.12f, 0.1f, 0.05f, 1f),
+            font,
+            ReplayCurrentMap);
+
+        CreateGameOverButton(
+            gameOverRoot.transform,
+            "HOME",
+            new Vector2(520f, -20f),
+            new Color(0.85f, 0.28f, 0.22f, 1f),
+            Color.white,
+            font,
+            ReturnToHome);
+
+        gameOverRoot.SetActive(false);
+    }
+
+    private void CreateGameOverButton(
+        Transform parent,
+        string labelText,
+        Vector2 anchoredPos,
+        Color bgColor,
+        Color labelColor,
+        TMP_FontAsset font,
+        UnityEngine.Events.UnityAction onClick)
+    {
+        GameObject buttonGo = new GameObject(labelText + "Button", typeof(RectTransform));
+        buttonGo.transform.SetParent(parent, false);
+        RectTransform buttonRt = buttonGo.GetComponent<RectTransform>();
+        buttonRt.anchorMin = new Vector2(0.5f, 0.5f);
+        buttonRt.anchorMax = new Vector2(0.5f, 0.5f);
+        buttonRt.pivot = new Vector2(0.5f, 0.5f);
+        buttonRt.anchoredPosition = anchoredPos;
+        buttonRt.sizeDelta = new Vector2(280f, 72f);
+
+        Image buttonImage = buttonGo.AddComponent<Image>();
+        buttonImage.color = bgColor;
+
+        Button button = buttonGo.AddComponent<Button>();
+        ColorBlock colors = button.colors;
+        colors.highlightedColor = Color.Lerp(bgColor, Color.white, 0.2f);
+        colors.pressedColor = Color.Lerp(bgColor, Color.black, 0.2f);
+        button.colors = colors;
+        button.onClick.AddListener(onClick);
+
+        GameObject labelGo = new GameObject("Label", typeof(RectTransform));
+        labelGo.transform.SetParent(buttonGo.transform, false);
+        RectTransform labelRt = labelGo.GetComponent<RectTransform>();
+        labelRt.anchorMin = Vector2.zero;
+        labelRt.anchorMax = Vector2.one;
+        labelRt.offsetMin = Vector2.zero;
+        labelRt.offsetMax = Vector2.zero;
+
+        TextMeshProUGUI tmp = labelGo.AddComponent<TextMeshProUGUI>();
+        tmp.text = labelText;
+        tmp.fontSize = 40f;
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.color = labelColor;
+        tmp.raycastTarget = false;
+        if (font != null)
+        {
+            tmp.font = font;
+            tmp.fontSharedMaterial = font.material;
+        }
+    }
+
+    private void ReplayCurrentMap()
+    {
+        if (navigatingAway || SceneFader.IsBusy)
+            return;
+
+        navigatingAway = true;
+        Time.timeScale = 1f;
+        AudioListener.pause = false;
+        if (PauseMenu.Instance != null)
+            PauseMenu.Instance.SetPaused(false);
+
+        // Keep Story/Chaos + map prefs; skip How To Play on replay.
+        GameMode.PendingHowToPlay = false;
+        GameMode.PendingStartScene = null;
+        GameAudio.HoldBgmForIntro = false;
+
+        SceneFader.EnsureExists();
+        SceneFader.ClearBusy();
+        SceneFader.Load(SceneManager.GetActiveScene().name);
+    }
+
+    private void ReturnToHome()
+    {
+        if (navigatingAway || SceneFader.IsBusy)
+            return;
+
+        navigatingAway = true;
+        Time.timeScale = 1f;
+        AudioListener.pause = false;
+        if (PauseMenu.Instance != null)
+            PauseMenu.Instance.SetPaused(false);
+
+        GameMode.PendingHowToPlay = false;
+        GameMode.PendingStartScene = null;
+        GameAudio.HoldBgmForIntro = false;
+
+        SceneFader.EnsureExists();
+        SceneFader.ClearBusy();
+        SceneFader.Load(homeSceneName);
+    }
+
+    private static void EnsureEventSystem()
+    {
+        if (EventSystem.current != null)
+            return;
+
+        GameObject es = new GameObject("EventSystem");
+        es.AddComponent<EventSystem>();
+        es.AddComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
+    }
+
+    private TMP_FontAsset ResolveFont()
+    {
+        if (pixelonFont != null)
+            return pixelonFont;
+
+        TMP_FontAsset fromResources = Resources.Load<TMP_FontAsset>("Pixelon SDF");
+        if (fromResources != null)
+            return fromResources;
+
+        return TMP_Settings.defaultFontAsset;
     }
 
     private void ResolveSceneLabels()

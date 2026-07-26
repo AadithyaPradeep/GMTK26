@@ -126,6 +126,9 @@ public class AlienChicken : MonoBehaviour
         sequentialKillTimer = sequentialKillInterval;
         pendingGrabTimes.Clear();
         SetCooldownSprint(false);
+
+        if (GameAudio.Instance != null)
+            GameAudio.Instance.PlayAlienPower();
     }
 
     private void EndPulse()
