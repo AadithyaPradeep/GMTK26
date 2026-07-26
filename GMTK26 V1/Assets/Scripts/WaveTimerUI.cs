@@ -29,7 +29,7 @@ public class WaveTimerUI : MonoBehaviour
     private void Awake()
     {
         if (spawner == null)
-            spawner = FindFirstObjectByType<ChickenSpawner>();
+            spawner = FindAnyObjectByType<ChickenSpawner>();
 
         if (label == null)
             label = CreateLabel();

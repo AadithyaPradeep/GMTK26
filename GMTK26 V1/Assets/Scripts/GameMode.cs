@@ -9,6 +9,9 @@ public static class GameMode
     public const string Story = "story";
     public const string Chaos = "chaos";
 
+    /// <summary>Set by Home → Play; consumed once when World 1 boots.</summary>
+    public static bool PendingHowToPlay { get; set; }
+
     public static bool IsChaos => PlayerPrefs.GetString(PrefsKey, Story) == Chaos;
 
     public static void SetStory()
@@ -21,5 +24,6 @@ public static class GameMode
     {
         PlayerPrefs.SetString(PrefsKey, Chaos);
         PlayerPrefs.Save();
+        PendingHowToPlay = false;
     }
 }

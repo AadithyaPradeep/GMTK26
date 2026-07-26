@@ -167,7 +167,7 @@ public class FireChicken : MonoBehaviour
 
     private float ResolveTravelDistance()
     {
-        ChickenSpawner spawner = FindFirstObjectByType<ChickenSpawner>();
+        ChickenSpawner spawner = FindAnyObjectByType<ChickenSpawner>();
         if (spawner != null)
             return Mathf.Max(1f, spawner.MapWidth * mapTravelFraction);
 

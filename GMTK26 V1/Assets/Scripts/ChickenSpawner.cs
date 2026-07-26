@@ -143,25 +143,45 @@ public class ChickenSpawner : MonoBehaviour
             PlaceFarmerAtAreaCenter();
 
         PauseMenu.EnsureExists();
-        DormantHowToPlay();
-        StartGame();
+        StartCoroutine(BootSequence());
     }
 
-    /// <summary>Keep How To Play in the scene but disabled for now.</summary>
-    private static void DormantHowToPlay()
+    private IEnumerator BootSequence()
     {
-        Transform[] all = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        for (int i = 0; i < all.Length; i++)
+        // Only after Home → Play. Chaos / World2 / portal loop skip.
+        bool showHtp = GameMode.PendingHowToPlay;
+        GameMode.PendingHowToPlay = false;
+
+        if (showHtp && !GameMode.IsChaos)
         {
-            Transform t = all[i];
-            if (t == null)
-                continue;
-            if (t.name != "How To Play" && t.name != "HowToPlay")
-                continue;
-            if (!t.gameObject.scene.IsValid() || !t.gameObject.scene.isLoaded)
-                continue;
-            t.gameObject.SetActive(false);
+            // Wait until the scene is loaded and held under a black fader.
+            float timeout = 5f;
+            while (!SceneFader.IsHoldingBlack && timeout > 0f)
+            {
+                timeout -= Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            GameObject htp = HowToPlayIntro.FindInScene();
+            if (htp != null)
+                yield return HowToPlayIntro.Play(htp);
+            else
+                HowToPlayIntro.HideIfPresent();
+
+            // Now reveal World 1 under the dismissed HTP.
+            yield return SceneFader.RevealRoutine();
         }
+        else
+        {
+            HowToPlayIntro.HideIfPresent();
+            while (SceneFader.IsBusy)
+                yield return null;
+        }
+
+        if (introBanner != null)
+            introBanner.SetActive(false);
+
+        StartGame();
     }
 
     private void PlaceFarmerAtAreaCenter()
@@ -197,7 +217,7 @@ public class ChickenSpawner : MonoBehaviour
         {
             if (storyBossLaser == null)
             {
-                var lostUi = FindFirstObjectByType<WaveTimerUI>();
+                var lostUi = FindAnyObjectByType<WaveTimerUI>();
                 if (lostUi != null)
                     lostUi.SetLaserLostGameOver();
                 EndGame();
@@ -218,10 +238,6 @@ public class ChickenSpawner : MonoBehaviour
 
     private IEnumerator RunGame()
     {
-        // How To Play / intro banner kept dormant for now.
-        if (introBanner != null)
-            introBanner.SetActive(false);
-
         // CHAOS mode: separate home-button mode (bomb rush + gun).
         if (GameMode.IsChaos)
         {
@@ -270,7 +286,7 @@ public class ChickenSpawner : MonoBehaviour
 
         yield return ExplodeAllRemainingMobs();
 
-        var ui = FindFirstObjectByType<WaveTimerUI>();
+        var ui = FindAnyObjectByType<WaveTimerUI>();
         if (ui != null)
             ui.ShowFinished();
 
@@ -363,7 +379,7 @@ public class ChickenSpawner : MonoBehaviour
 
     private static GameObject FindSceneGate()
     {
-        Transform[] transforms = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        Transform[] transforms = FindObjectsByType<Transform>(FindObjectsInactive.Include);
         for (int i = 0; i < transforms.Length; i++)
         {
             Transform t = transforms[i];
@@ -508,7 +524,7 @@ public class ChickenSpawner : MonoBehaviour
         {
             if (storyBossLaser == null)
             {
-                var lostUi = FindFirstObjectByType<WaveTimerUI>();
+                var lostUi = FindAnyObjectByType<WaveTimerUI>();
                 if (lostUi != null)
                     lostUi.SetLaserLostGameOver();
                 EndGame();
@@ -527,7 +543,7 @@ public class ChickenSpawner : MonoBehaviour
                 m.Explode();
         }
 
-        var ui = FindFirstObjectByType<WaveTimerUI>();
+        var ui = FindAnyObjectByType<WaveTimerUI>();
         if (ui != null)
             ui.ClearHint();
 
@@ -573,7 +589,7 @@ public class ChickenSpawner : MonoBehaviour
             }
         }
 
-        var ui = FindFirstObjectByType<WaveTimerUI>();
+        var ui = FindAnyObjectByType<WaveTimerUI>();
         if (ui != null)
             ui.ShowHint("PROTECT THE LASER CHICKEN", durationSeconds: -1f);
 

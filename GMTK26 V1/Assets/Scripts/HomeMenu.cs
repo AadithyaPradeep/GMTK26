@@ -4,6 +4,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Title / home scene UI. Play = story mode, Chaos = bomb-rush gun mode.
+/// Story How To Play runs inside World 1 after load.
 /// </summary>
 public class HomeMenu : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class HomeMenu : MonoBehaviour
     [SerializeField] private string chaosButtonText = "CHAOS";
 
     private bool loading;
+    private GameObject homeCanvas;
 
     private void Awake()
     {
@@ -47,38 +49,45 @@ public class HomeMenu : MonoBehaviour
         AudioListener.pause = false;
 
         if (chaos)
+        {
             GameMode.SetChaos();
+        }
         else
+        {
             GameMode.SetStory();
+            GameMode.PendingHowToPlay = true;
+            SceneFader.LoadHoldBlack(gameSceneName);
+            return;
+        }
 
         SceneFader.Load(gameSceneName);
     }
 
     private void BuildUi()
     {
-        GameObject root = new GameObject("HomeMenuCanvas");
-        root.transform.SetParent(null);
+        homeCanvas = new GameObject("HomeMenuCanvas");
+        homeCanvas.transform.SetParent(null);
 
-        Canvas canvas = root.AddComponent<Canvas>();
+        Canvas canvas = homeCanvas.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 500;
 
-        CanvasScaler scaler = root.AddComponent<CanvasScaler>();
+        CanvasScaler scaler = homeCanvas.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920f, 1080f);
         scaler.matchWidthOrHeight = 0.5f;
 
-        root.AddComponent<GraphicRaycaster>();
+        homeCanvas.AddComponent<GraphicRaycaster>();
 
         GameObject bgGo = new GameObject("Backdrop", typeof(RectTransform));
-        bgGo.transform.SetParent(root.transform, false);
+        bgGo.transform.SetParent(homeCanvas.transform, false);
         StretchFull(bgGo.GetComponent<RectTransform>());
         Image bg = bgGo.AddComponent<Image>();
         bg.color = new Color(0.05f, 0.08f, 0.05f, 1f);
         bg.raycastTarget = true;
 
         GameObject titleGo = new GameObject("Title", typeof(RectTransform));
-        titleGo.transform.SetParent(root.transform, false);
+        titleGo.transform.SetParent(homeCanvas.transform, false);
         RectTransform titleRt = titleGo.GetComponent<RectTransform>();
         titleRt.anchorMin = new Vector2(0.5f, 0.55f);
         titleRt.anchorMax = new Vector2(0.5f, 0.55f);
@@ -94,9 +103,8 @@ public class HomeMenu : MonoBehaviour
         title.raycastTarget = false;
         ApplyFont(title);
 
-        // PLAY (left) + CHAOS (right)
         CreateMenuButton(
-            root.transform,
+            homeCanvas.transform,
             "PlayButton",
             playButtonText,
             new Vector2(-180f, 0f),
@@ -105,7 +113,7 @@ public class HomeMenu : MonoBehaviour
             OnPlayPressed);
 
         CreateMenuButton(
-            root.transform,
+            homeCanvas.transform,
             "ChaosButton",
             chaosButtonText,
             new Vector2(180f, 0f),

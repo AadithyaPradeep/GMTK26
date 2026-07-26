@@ -34,14 +34,14 @@ public class GrabCluck : MonoBehaviour
         if (Keyboard.current == null)
             return;
 
-        // Boss laser in hands: hold Space for machine-gun bursts.
+        // Boss laser in hands: hold Space/E for machine-gun bursts.
         if (grabbedCluck != null)
         {
             LaserChicken heldLaser = grabbedCluck.GetComponent<LaserChicken>();
             if (heldLaser != null && heldLaser.IsManualFire)
             {
                 // One shot per press (story laser cooldown) or hold for gun bursts.
-                if (Keyboard.current.spaceKey.wasPressedThisFrame || Keyboard.current.spaceKey.isPressed)
+                if (GrabPressedThisFrame() || GrabHeld())
                     heldLaser.TryFireManual();
                 return;
             }
@@ -49,20 +49,32 @@ public class GrabCluck : MonoBehaviour
             if (lockManualLaser)
                 return;
 
-            if (!Keyboard.current.spaceKey.wasPressedThisFrame)
+            if (!GrabPressedThisFrame())
                 return;
 
             Drop();
             return;
         }
 
-        if (Keyboard.current.spaceKey.isPressed && LaserChicken.TryFireAnyManual())
+        if (GrabHeld() && LaserChicken.TryFireAnyManual())
             return;
 
-        if (!Keyboard.current.spaceKey.wasPressedThisFrame)
+        if (!GrabPressedThisFrame())
             return;
 
         TryGrab();
+    }
+
+    private static bool GrabPressedThisFrame()
+    {
+        Keyboard kb = Keyboard.current;
+        return kb != null && (kb.spaceKey.wasPressedThisFrame || kb.eKey.wasPressedThisFrame);
+    }
+
+    private static bool GrabHeld()
+    {
+        Keyboard kb = Keyboard.current;
+        return kb != null && (kb.spaceKey.isPressed || kb.eKey.isPressed);
     }
 
     /// <summary>Puts a chicken/gun directly into the farmer's hands (boss-wave weapon).</summary>

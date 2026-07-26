@@ -19,8 +19,10 @@ public class SceneFader : MonoBehaviour
     private GraphicRaycaster raycaster;
     private Image fadeImage;
     private bool busy;
+    private bool holdingBlack;
 
     public static bool IsBusy => Instance != null && Instance.busy;
+    public static bool IsHoldingBlack => Instance != null && Instance.holdingBlack;
 
     public static void EnsureExists()
     {
@@ -33,10 +35,22 @@ public class SceneFader : MonoBehaviour
 
     public static void Load(string sceneName)
     {
-        ForceLoad(sceneName, null);
+        ForceLoad(sceneName, holdBlack: false, null);
     }
 
-    /// <summary>Clears any stuck fade / busy flag so UI can receive clicks again.</summary>
+    public static void Load(string sceneName, Action onFailedStart)
+    {
+        ForceLoad(sceneName, holdBlack: false, onFailedStart);
+    }
+
+    /// <summary>
+    /// Fade to black, load scene, and stay black until Reveal() — used so How To Play can show on top.
+    /// </summary>
+    public static void LoadHoldBlack(string sceneName)
+    {
+        ForceLoad(sceneName, holdBlack: true, null);
+    }
+
     public static void ClearBusy()
     {
         if (Instance == null)
@@ -44,10 +58,20 @@ public class SceneFader : MonoBehaviour
 
         Instance.StopAllCoroutines();
         Instance.busy = false;
+        Instance.holdingBlack = false;
         Instance.SetOverlayBlocking(false);
     }
 
-    public static void ForceLoad(string sceneName, Action onFailedStart)
+    public static IEnumerator RevealRoutine()
+    {
+        EnsureExists();
+        if (Instance == null)
+            yield break;
+
+        yield return Instance.StartCoroutine(Instance.RevealInternal());
+    }
+
+    private static void ForceLoad(string sceneName, bool holdBlack, Action onFailedStart)
     {
         if (string.IsNullOrEmpty(sceneName))
         {
@@ -64,8 +88,9 @@ public class SceneFader : MonoBehaviour
 
         Instance.StopAllCoroutines();
         Instance.busy = false;
+        Instance.holdingBlack = false;
         Instance.SetOverlayBlocking(false);
-        Instance.StartCoroutine(Instance.FadeAndLoad(sceneName, onFailedStart));
+        Instance.StartCoroutine(Instance.FadeAndLoad(sceneName, holdBlack, onFailedStart));
     }
 
     private void Awake()
@@ -91,14 +116,14 @@ public class SceneFader : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Never leave the fade overlay eating clicks after a load.
-        if (!busy)
+        if (!busy && !holdingBlack)
             SetOverlayBlocking(false);
     }
 
-    private IEnumerator FadeAndLoad(string sceneName, Action onFailedStart)
+    private IEnumerator FadeAndLoad(string sceneName, bool holdBlack, Action onFailedStart)
     {
         busy = true;
+        holdingBlack = false;
         yield return FadeTo(1f);
 
         AsyncOperation op = null;
@@ -120,22 +145,41 @@ public class SceneFader : MonoBehaviour
             catch (Exception)
             {
                 busy = false;
+                holdingBlack = false;
                 SetOverlayBlocking(false);
                 onFailedStart?.Invoke();
                 yield break;
             }
+        }
+        else
+        {
+            while (!op.isDone)
+                yield return null;
+        }
 
-            yield return null;
-            yield return FadeTo(0f);
-            busy = false;
-            SetOverlayBlocking(false);
+        yield return null;
+
+        if (holdBlack)
+        {
+            // Stay fully black; How To Play will draw above this.
+            holdingBlack = true;
+            busy = true;
+            SetOverlayBlocking(true);
+            if (canvasGroup != null)
+                canvasGroup.alpha = 1f;
             yield break;
         }
 
-        while (!op.isDone)
-            yield return null;
+        yield return FadeTo(0f);
+        busy = false;
+        holdingBlack = false;
+        SetOverlayBlocking(false);
+    }
 
-        yield return null;
+    private IEnumerator RevealInternal()
+    {
+        holdingBlack = false;
+        busy = true;
         yield return FadeTo(0f);
         busy = false;
         SetOverlayBlocking(false);
@@ -169,7 +213,7 @@ public class SceneFader : MonoBehaviour
     {
         if (canvasGroup != null)
         {
-            if (!blocking)
+            if (!blocking && !holdingBlack)
                 canvasGroup.alpha = 0f;
             canvasGroup.blocksRaycasts = blocking;
             canvasGroup.interactable = blocking;
@@ -182,7 +226,7 @@ public class SceneFader : MonoBehaviour
             raycaster.enabled = blocking;
 
         if (canvas != null)
-            canvas.enabled = blocking || (canvasGroup != null && canvasGroup.alpha > 0.01f);
+            canvas.enabled = blocking || holdingBlack || (canvasGroup != null && canvasGroup.alpha > 0.01f);
     }
 
     private void BuildOverlay()

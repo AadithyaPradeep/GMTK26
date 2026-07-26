@@ -13,7 +13,6 @@ public class BossSideBeam : MonoBehaviour
     private SpriteRenderer beamRenderer;
     private Vector2 direction;
     private bool facingLeft;
-    private bool running;
 
     public void Begin(GameObject laserBeamPrefab, bool faceLeft, float beamDuration)
     {
@@ -31,7 +30,6 @@ public class BossSideBeam : MonoBehaviour
                 beamRenderer.flipX = faceLeft;
         }
 
-        running = true;
         StartCoroutine(Run());
     }
 

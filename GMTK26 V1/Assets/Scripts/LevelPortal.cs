@@ -135,7 +135,7 @@ public class LevelPortal : MonoBehaviour
         Time.timeScale = 1f;
 
         // Prefer fader, but always fall back to a hard scene load so the portal never soft-locks.
-        SceneFader.ForceLoad(scene, () =>
+        SceneFader.Load(scene, () =>
         {
             // If fader somehow can't start, load directly.
             if (SceneManager.GetActiveScene().name != scene)

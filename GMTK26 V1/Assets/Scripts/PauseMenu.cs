@@ -94,6 +94,9 @@ public class PauseMenu : MonoBehaviour
         if (IsHomeScene(SceneManager.GetActiveScene().name))
             return;
 
+        if (HowToPlayIntro.IsShowing)
+            return;
+
         if (SceneFader.IsBusy)
             return;
 
