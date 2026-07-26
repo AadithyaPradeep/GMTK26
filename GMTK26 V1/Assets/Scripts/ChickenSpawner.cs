@@ -143,6 +143,7 @@ public class ChickenSpawner : MonoBehaviour
             PlaceFarmerAtAreaCenter();
 
         PauseMenu.EnsureExists();
+        CluckLivesUI.EnsureExists();
         StartCoroutine(BootSequence());
     }
 
