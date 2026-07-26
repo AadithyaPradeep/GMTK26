@@ -19,6 +19,12 @@ public static class GameMode
     /// <summary>Set by Home → Play; consumed once when the first story world boots.</summary>
     public static bool PendingHowToPlay { get; set; }
 
+    /// <summary>
+    /// Story map to enter after How To Play. When set to a scene other than SampleScene,
+    /// HTP plays on SampleScene then that scene loads.
+    /// </summary>
+    public static string PendingStartScene { get; set; }
+
     public static bool IsChaos => PlayerPrefs.GetString(PrefsKey, Story) == Chaos;
 
     public static bool IsCombo => CurrentMapId == ComboId;
@@ -53,6 +59,7 @@ public static class GameMode
         PlayerPrefs.SetString(PrefsKey, Chaos);
         PlayerPrefs.Save();
         PendingHowToPlay = false;
+        PendingStartScene = null;
     }
 
     public static void SetMap(string mapId)

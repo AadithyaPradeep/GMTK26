@@ -108,12 +108,18 @@ public class HomeMenu : MonoBehaviour
         if (chaos)
         {
             GameMode.SetChaos();
+            GameMode.PendingStartScene = null;
+            GameAudio.HoldBgmForIntro = false;
             SceneFader.Load(scene);
             return;
         }
 
         GameMode.SetStory();
         GameMode.PendingHowToPlay = true;
+        GameMode.PendingStartScene = null;
+        GameAudio.HoldBgmForIntro = true;
+
+        // Load the selected map directly (HTP lives on each story scene).
         SceneFader.LoadHoldBlack(scene);
     }
 

@@ -88,6 +88,14 @@ public class ChickenWander : MonoBehaviour
         areaMax = max;
     }
 
+    /// <summary>Scale base move speed (World3 faster chickens, etc.).</summary>
+    public void MultiplyMoveSpeed(float multiplier)
+    {
+        if (multiplier <= 0f)
+            return;
+        moveSpeed *= multiplier;
+    }
+
     public void SetBossPanic(bool enabled, Transform boss)
     {
         bossPanic = enabled;
