@@ -55,6 +55,9 @@ public class MindCluck : MonoBehaviour
     private void OnDisable()
     {
         Active.Remove(this);
+        if (IsPulsing && GameAudio.Instance != null)
+            GameAudio.Instance.NotifyMindPulseEnded();
+
         IsPulsing = false;
         if (pulseEffect != null)
         {
@@ -78,9 +81,15 @@ public class MindCluck : MonoBehaviour
                 radEff.SetActive(true);
             }
 
+            if (GameAudio.Instance != null)
+                GameAudio.Instance.NotifyMindPulseStarted();
+
             yield return new WaitForSeconds(pulseDuration);
 
             IsPulsing = false;
+            if (GameAudio.Instance != null)
+                GameAudio.Instance.NotifyMindPulseEnded();
+
             if (pulseEffect != null)
             {
                 pulseEffect.SetActive(false);

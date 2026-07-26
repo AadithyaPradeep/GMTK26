@@ -1413,7 +1413,19 @@ public class ChickenSpawner : MonoBehaviour
             ApplyWorldSpeed(wander);
         }
 
+        if (IsZombiePrefab(prefab) && GameAudio.Instance != null)
+            GameAudio.Instance.PlayZombieSpawn();
+
         return chicken;
+    }
+
+    private static bool IsZombiePrefab(GameObject prefab)
+    {
+        if (prefab == null)
+            return false;
+
+        string n = prefab.name;
+        return n.IndexOf("Zombie", System.StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     private void ApplyWorldSpeed(ChickenWander wander)

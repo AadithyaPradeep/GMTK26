@@ -31,6 +31,8 @@ public class HomeMenu : MonoBehaviour
     {
         Time.timeScale = 1f;
         AudioListener.pause = false;
+        GameAudio.HoldBgmForIntro = false;
+        GameAudio.EnsureExists();
         SceneFader.EnsureExists();
         SceneFader.ClearBusy();
         if (PauseMenu.Instance != null)

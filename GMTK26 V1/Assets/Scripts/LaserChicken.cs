@@ -341,7 +341,7 @@ public class LaserChicken : MonoBehaviour
             source.GenerateImpulse();
 
         if (GameAudio.Instance != null)
-            GameAudio.Instance.PlayExplosion();
+            GameAudio.Instance.PlayLaserFire();
 
         ApplyBeamDamageOnce();
 
@@ -413,7 +413,7 @@ public class LaserChicken : MonoBehaviour
             source.GenerateImpulse();
 
         if (GameAudio.Instance != null)
-            GameAudio.Instance.PlayExplosion();
+            GameAudio.Instance.PlayLaserFire();
 
         float elapsed = 0f;
         while (elapsed < duration)

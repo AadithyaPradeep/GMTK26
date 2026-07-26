@@ -48,6 +48,12 @@ public class FireChicken : MonoBehaviour
         wander = GetComponent<ChickenWander>();
     }
 
+    private void OnEnable()
+    {
+        if (GameAudio.Instance != null)
+            GameAudio.Instance.NotifyFireChickenSpawned();
+    }
+
     private void Start()
     {
         ResetTimer();
@@ -62,6 +68,9 @@ public class FireChicken : MonoBehaviour
         }
 
         firing = false;
+
+        if (GameAudio.Instance != null)
+            GameAudio.Instance.NotifyFireChickenDespawned();
     }
 
     private void Update()
