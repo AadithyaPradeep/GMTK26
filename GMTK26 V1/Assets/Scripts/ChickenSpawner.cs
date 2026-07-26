@@ -79,7 +79,7 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private float laserSpawnInterval = 3f;
     [SerializeField] private int bossUnlockWave = 6;
     [Tooltip("Testing: start story at this wave (0 = normal from wave 1).")]
-    [SerializeField] private int startAtWaveForTesting = 5;
+    [SerializeField] private int startAtWaveForTesting = 0;
     [SerializeField] private bool startAtBossWaveForTesting = false;
     [SerializeField] private int maxStoryWave = 5;
     [SerializeField] private int storyBossNormalCount = 8;
@@ -116,17 +116,17 @@ public class ChickenSpawner : MonoBehaviour
 
     [Header("Difficulty")]
     [SerializeField] private float startSpawnInterval = 4f;
-    [SerializeField] private float minSpawnInterval = 1.2f;
+    [SerializeField] private float minSpawnInterval = 0.9f;
     [SerializeField] private float intervalDecreasePerWave = 0.3f;
     [SerializeField] private int startMaxThreats = 4;
     [SerializeField] private int maxThreatIncreasePerWave = 1;
-    [SerializeField] private int hardMaxThreats = 18;
+    [SerializeField] private int hardMaxThreats = 32;
     [SerializeField] private int maxMindsOnScreen = 2;
     [SerializeField] private int maxPanicsPerWave = 2;
     [SerializeField] private int maxRoguesPerWave = 2;
     [SerializeField] private int startSpawnBurst = 1;
     [SerializeField] private int wavesPerBurstIncrease = 3;
-    [SerializeField] private int hardMaxSpawnBurst = 4;
+    [SerializeField] private int hardMaxSpawnBurst = 6;
 
     private readonly List<GameObject> protectedNormals = new List<GameObject>();
     private readonly List<GameObject> lethals = new List<GameObject>();
@@ -279,12 +279,18 @@ public class ChickenSpawner : MonoBehaviour
 
         // Testing shortcut: jump into a later wave (CurrentWave++ happens in the loop).
         if (startAtWaveForTesting > 0)
-            CurrentWave = Mathf.Clamp(startAtWaveForTesting, 1, maxStoryWave) - 1;
+        {
+            if (GameMode.IsCombo)
+                CurrentWave = Mathf.Clamp(startAtWaveForTesting, 1, maxStoryWave) - 1;
+            else
+                CurrentWave = Mathf.Max(1, startAtWaveForTesting) - 1;
+        }
 
+        // Combo: finish after maxStoryWave. Solo single-map: endless until flock wipe.
         while (!IsGameOver && !IsFinished)
         {
             CurrentWave++;
-            if (CurrentWave > maxStoryWave)
+            if (GameMode.IsCombo && CurrentWave > maxStoryWave)
                 break;
 
             yield return RunWave(CurrentWave);
@@ -292,18 +298,19 @@ public class ChickenSpawner : MonoBehaviour
             if (IsGameOver)
                 yield break;
 
-            if (CurrentWave >= maxStoryWave)
+            if (GameMode.IsCombo && CurrentWave >= maxStoryWave)
             {
                 yield return FinishLevel1();
                 yield break;
             }
 
-            if (normalsAfterEachWave > 0)
-                yield return SpawnProtectedNormals(normalsAfterEachWave);
+            int normals = GetNormalsAfterWave(CurrentWave);
+            if (normals > 0)
+                yield return SpawnProtectedNormals(normals);
         }
     }
 
-    /// <summary>Wave 5 clear: wipe remaining mobs, banner, open portal to World2.</summary>
+    /// <summary>Combo Wave 5 clear: wipe remaining mobs, banner, open portal.</summary>
     private IEnumerator FinishLevel1()
     {
         IsFinished = true;
@@ -423,9 +430,21 @@ public class ChickenSpawner : MonoBehaviour
         IsWaveActive = true;
         SecondsUntilNextWave = GetWaveDuration(wave);
 
-        float interval = Mathf.Max(minSpawnInterval, startSpawnInterval - (wave - 1) * intervalDecreasePerWave);
-        int maxThreats = Mathf.Min(hardMaxThreats, startMaxThreats + (wave - 1) * maxThreatIncreasePerWave);
-        int burst = Mathf.Min(hardMaxSpawnBurst, startSpawnBurst + (wave - 1) / Mathf.Max(1, wavesPerBurstIncrease));
+        float effectiveMinInterval = minSpawnInterval;
+        int effectiveHardThreats = hardMaxThreats;
+        int effectiveHardBurst = hardMaxSpawnBurst;
+        if (!GameMode.IsCombo && !GameMode.IsChaos)
+        {
+            effectiveMinInterval = Mathf.Min(effectiveMinInterval, 0.9f);
+            effectiveHardThreats = Mathf.Max(effectiveHardThreats, 32);
+            effectiveHardBurst = Mathf.Max(effectiveHardBurst, 6);
+        }
+
+        float interval = Mathf.Max(effectiveMinInterval, startSpawnInterval - (wave - 1) * intervalDecreasePerWave);
+        int maxThreats = Mathf.Min(effectiveHardThreats, startMaxThreats + (wave - 1) * maxThreatIncreasePerWave);
+        int burst = Mathf.Min(effectiveHardBurst, startSpawnBurst + (wave - 1) / Mathf.Max(1, wavesPerBurstIncrease));
+        int panicCap = GetMaxPanicsThisWave(wave);
+        float effectiveLaserInterval = GetLaserSpawnInterval();
         float spawnCooldown = 0f;
         float laserCooldown = 0f;
         int panicsSpawnedThisWave = 0;
@@ -451,13 +470,13 @@ public class ChickenSpawner : MonoBehaviour
                     GameObject laser = Spawn(Pick(laserChickenPrefabs));
                     if (laser != null)
                         lethals.Add(laser);
-                    laserCooldown = laserSpawnInterval;
+                    laserCooldown = effectiveLaserInterval;
                 }
             }
 
             bool canLethal = lethals.Count < maxThreats;
             bool canMind = CanSpawnMind(wave, mindsSpawnedThisWave);
-            bool canPanic = wave >= panicUnlockWave && panicsSpawnedThisWave < maxPanicsPerWave;
+            bool canPanic = wave >= panicUnlockWave && panicsSpawnedThisWave < panicCap;
             bool canRogue = wave >= rogueUnlockWave && roguesSpawnedThisWave < maxRoguesPerWave
                 && (Pick(rogueChickenPrefabs) != null || Pick(bombChickenPrefabs) != null);
 
@@ -467,7 +486,7 @@ public class ChickenSpawner : MonoBehaviour
                 {
                     canLethal = lethals.Count < maxThreats;
                     canMind = CanSpawnMind(wave, mindsSpawnedThisWave);
-                    canPanic = wave >= panicUnlockWave && panicsSpawnedThisWave < maxPanicsPerWave;
+                    canPanic = wave >= panicUnlockWave && panicsSpawnedThisWave < panicCap;
                     canRogue = wave >= rogueUnlockWave && roguesSpawnedThisWave < maxRoguesPerWave
                         && (Pick(rogueChickenPrefabs) != null || Pick(bombChickenPrefabs) != null);
                     if (!canLethal && !canMind && !canPanic && !canRogue)
@@ -1154,13 +1173,15 @@ public class ChickenSpawner : MonoBehaviour
 
     private ThreatKind PickThreatKind(int wave, bool canLethal, bool canMind, bool canPanic, bool canRogue)
     {
-        float bombW = canLethal && Pick(bombChickenPrefabs) != null ? bombSpawnPercent : 0f;
-        float mindW = canMind && Pick(mindChickenPrefabs) != null ? mindSpawnPercent : 0f;
+        GetEffectiveSpawnWeights(out float bombPct, out float mindPct, out float electricPct, out float panicPct, out float roguePct);
+
+        float bombW = canLethal && Pick(bombChickenPrefabs) != null ? bombPct : 0f;
+        float mindW = canMind && Pick(mindChickenPrefabs) != null ? mindPct : 0f;
         float electricW = canLethal && IsElectricWave(wave) && Pick(electricChickenPrefabs) != null
-            ? electricSpawnPercent
+            ? electricPct
             : 0f;
-        float panicW = canPanic && Pick(panicChickenPrefabs) != null ? panicSpawnPercent : 0f;
-        float rogueW = canRogue ? rogueSpawnPercent : 0f;
+        float panicW = canPanic && Pick(panicChickenPrefabs) != null ? panicPct : 0f;
+        float rogueW = canRogue ? roguePct : 0f;
 
         float total = bombW + mindW + electricW + panicW + rogueW;
         if (total <= 0f)
@@ -1182,12 +1203,98 @@ public class ChickenSpawner : MonoBehaviour
         return ThreatKind.Rogue;
     }
 
+    /// <summary>
+    /// Solo single-map mix: heavy primary lethals per world, light specials (alien/ghost/laser).
+    /// Combo keeps inspector percents for the fixed 5-wave run.
+    /// </summary>
+    private void GetEffectiveSpawnWeights(
+        out float bombPct, out float mindPct, out float electricPct, out float panicPct, out float roguePct)
+    {
+        bombPct = bombSpawnPercent;
+        mindPct = mindSpawnPercent;
+        electricPct = electricSpawnPercent;
+        panicPct = panicSpawnPercent;
+        roguePct = rogueSpawnPercent;
+
+        if (GameMode.IsCombo || GameMode.IsChaos)
+            return;
+
+        panicPct = Mathf.Max(panicPct, 28f);
+
+        string map = GameMode.CurrentMapId;
+        if (map == GameMode.FarmId)
+        {
+            bombPct = Mathf.Max(bombPct, 65f);
+            electricPct = Mathf.Max(electricPct, 60f);
+            mindPct = Mathf.Max(mindPct, 30f);
+        }
+        else if (map == GameMode.DuskId)
+        {
+            bombPct = Mathf.Max(bombPct, 65f);
+            electricPct = Mathf.Max(electricPct, 60f);
+            mindPct = Mathf.Min(mindPct, 12f);
+        }
+        else if (map == GameMode.GraveyardId)
+        {
+            bombPct = Mathf.Max(bombPct, 70f);
+            electricPct = Mathf.Max(electricPct, 70f);
+            mindPct = Mathf.Min(mindPct, 15f);
+        }
+    }
+
+    private int GetMaxMindsPerWave(int wave)
+    {
+        int baseCap = Mathf.Max(1, maxMindsOnScreen);
+
+        if (GameMode.IsCombo || GameMode.IsChaos)
+            return baseCap;
+
+        string map = GameMode.CurrentMapId;
+        // Dusk alien / Graveyard ghost: never more than 2 per wave.
+        if (map == GameMode.DuskId || map == GameMode.GraveyardId)
+            return Mathf.Min(baseCap, 2);
+
+        // Farm mind: slow ramp in endless.
+        if (map == GameMode.FarmId && wave > 5)
+            return Mathf.Min(5, baseCap + (wave - 5) / 2);
+
+        return baseCap;
+    }
+
+    private int GetMaxPanicsThisWave(int wave)
+    {
+        if (GameMode.IsCombo || GameMode.IsChaos)
+            return maxPanicsPerWave;
+
+        return Mathf.Min(6, maxPanicsPerWave + (wave - 1) / 2);
+    }
+
+    private int GetNormalsAfterWave(int wave)
+    {
+        if (normalsAfterEachWave <= 0)
+            return 0;
+
+        if (GameMode.IsCombo)
+            return normalsAfterEachWave;
+
+        return Mathf.Min(6, normalsAfterEachWave + (wave - 1) / 3);
+    }
+
+    private float GetLaserSpawnInterval()
+    {
+        // Farm lasers stay light in solo endless — do not flood.
+        if (!GameMode.IsCombo && GameMode.CurrentMapId == GameMode.FarmId)
+            return Mathf.Max(laserSpawnInterval * 2f, 6f);
+
+        return laserSpawnInterval;
+    }
+
     private bool CanSpawnMind(int wave, int mindsSpawnedThisWave)
     {
         if (Pick(mindChickenPrefabs) == null)
             return false;
-        // Cap is per wave (not concurrent) so a dead alien does not immediately respawn.
-        if (mindsSpawnedThisWave >= Mathf.Max(1, maxMindsOnScreen))
+        // Cap is per wave (not concurrent) so a dead alien/ghost does not immediately respawn.
+        if (mindsSpawnedThisWave >= GetMaxMindsPerWave(wave))
             return false;
         if (wave < mindUnlockWave)
             return false;
@@ -1203,7 +1310,8 @@ public class ChickenSpawner : MonoBehaviour
     {
         if (wave < electricUnlockWave)
             return false;
-        if (electricMaxWave > 0 && wave > electricMaxWave)
+        // Solo endless ignores electricMaxWave so Dusk fire keeps spawning past wave 5.
+        if (electricMaxWave > 0 && wave > electricMaxWave && GameMode.IsCombo)
             return false;
         if (wave > electricUnlockWave)
             return true;
