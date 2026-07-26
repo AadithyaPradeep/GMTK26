@@ -602,7 +602,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   movement: {fileID: -1680190386980627800, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
-  speed: 8
+  speed: 7
   rb: {fileID: 229318278}
   animator: {fileID: 229318275}
   spriteRenderer: {fileID: 229318276}
@@ -1140,7 +1140,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 13.146413
+  orthographic size: 5.625
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1752,7 +1752,7 @@ MonoBehaviour:
   electricSpawnPercent: 55
   panicSpawnPercent: 15
   rogueSpawnPercent: 20
-  startSpawnInterval: 4
+  startSpawnInterval: 5
   minSpawnInterval: 1.2
   intervalDecreasePerWave: 0.3
   startMaxThreats: 3

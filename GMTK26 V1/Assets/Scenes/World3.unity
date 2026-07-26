@@ -1282,7 +1282,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 13.146413
+  orthographic size: 5.625
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1929,7 +1929,7 @@ MonoBehaviour:
   electricSpawnPercent: 85
   panicSpawnPercent: 15
   rogueSpawnPercent: 20
-  startSpawnInterval: 4
+  startSpawnInterval: 5
   minSpawnInterval: 1.2
   intervalDecreasePerWave: 0.3
   startMaxThreats: 3
