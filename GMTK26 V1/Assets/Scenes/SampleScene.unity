@@ -1805,12 +1805,12 @@ MonoBehaviour:
   nextWaveFormat: Next Wave in {0} s
   waveSubText: Protect Your Chickens !
   waveBannerDuration: 2
-  gameOverText: 'GAME OVER
+  gameOverText: 'GAME OVER!
 
-    All chickens lost'
-  laserLostGameOverText: 'GAME OVER
+    ALL CHICKENS DEAD!'
+  laserLostGameOverText: 'GAME OVER!
 
-    Laser chicken lost'
+    LASER CHICKEN DEAD!'
   finishedText: LEVEL 1 DONE!!
 --- !u!1 &966039093
 GameObject:
