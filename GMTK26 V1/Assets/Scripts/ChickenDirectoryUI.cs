@@ -198,7 +198,10 @@ public class ChickenDirectoryUI : MonoBehaviour
         portrait.preserveAspect = true;
         portrait.raycastTarget = false;
         if (entry.portrait != null)
+        {
             portrait.sprite = entry.portrait;
+            portrait.color = entry.portraitColor;
+        }
         else
             portrait.color = new Color(0.3f, 0.35f, 0.3f, 1f);
 

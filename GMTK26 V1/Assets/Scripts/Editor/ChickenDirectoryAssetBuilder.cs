@@ -35,6 +35,7 @@ public static class ChickenDirectoryAssetBuilder
 
             asset.displayName = src.displayName;
             asset.portrait = src.portrait;
+            asset.portraitColor = src.portraitColor;
             asset.shortDescription = src.shortDescription;
             asset.story = src.story;
             asset.role = src.role;
