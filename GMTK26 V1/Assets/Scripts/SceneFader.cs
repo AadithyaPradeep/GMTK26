@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -29,11 +30,36 @@ public class SceneFader : MonoBehaviour
 
     public static void Load(string sceneName)
     {
+        ForceLoad(sceneName, null);
+    }
+
+    /// <summary>
+    /// Always starts a load (resets stuck busy state). Calls onFailedStart if the coroutine can't begin.
+    /// </summary>
+    public static void ForceLoad(string sceneName, Action onFailedStart)
+    {
         if (string.IsNullOrEmpty(sceneName))
+        {
+            onFailedStart?.Invoke();
             return;
+        }
 
         EnsureExists();
-        Instance.StartLoad(sceneName);
+        if (Instance == null)
+        {
+            onFailedStart?.Invoke();
+            return;
+        }
+
+        Instance.StopAllCoroutines();
+        Instance.busy = false;
+        if (Instance.canvasGroup != null)
+        {
+            Instance.canvasGroup.alpha = 0f;
+            Instance.canvasGroup.blocksRaycasts = false;
+        }
+
+        Instance.StartCoroutine(Instance.FadeAndLoad(sceneName, onFailedStart));
     }
 
     private void Awake()
@@ -57,20 +83,44 @@ public class SceneFader : MonoBehaviour
 
     private void StartLoad(string sceneName)
     {
-        if (busy)
-            return;
-
-        StartCoroutine(FadeAndLoad(sceneName));
+        ForceLoad(sceneName, null);
     }
 
-    private IEnumerator FadeAndLoad(string sceneName)
+    private IEnumerator FadeAndLoad(string sceneName, Action onFailedStart)
     {
         busy = true;
         yield return FadeTo(1f);
 
-        AsyncOperation op = SceneManager.LoadSceneAsync(sceneName);
+        AsyncOperation op = null;
+        try
+        {
+            op = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
+        }
+        catch (Exception)
+        {
+            op = null;
+        }
+
         if (op == null)
         {
+            // Hard sync load — works even when async returns null in some editor setups.
+            try
+            {
+                SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
+            }
+            catch (Exception)
+            {
+                busy = false;
+                if (canvasGroup != null)
+                {
+                    canvasGroup.alpha = 0f;
+                    canvasGroup.blocksRaycasts = false;
+                }
+                onFailedStart?.Invoke();
+                yield break;
+            }
+
+            yield return null;
             yield return FadeTo(0f);
             busy = false;
             yield break;
@@ -79,7 +129,6 @@ public class SceneFader : MonoBehaviour
         while (!op.isDone)
             yield return null;
 
-        // Let the new scene run Awake/Start once under cover of black.
         yield return null;
         yield return FadeTo(0f);
         busy = false;

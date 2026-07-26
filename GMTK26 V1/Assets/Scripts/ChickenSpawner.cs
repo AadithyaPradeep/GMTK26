@@ -40,6 +40,10 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private bool centerFarmerOnStart;
     [Tooltip("After final story wave: explode mobs, show finished text, open portal.")]
     [SerializeField] private bool spawnPortalOnFinish = true;
+    [Tooltip("Scene loaded when the finish portal is entered.")]
+    [SerializeField] private string portalTargetScene = "World2";
+    [Tooltip("If true, spawn the finish portal at the center of spawnArea (World2 loop).")]
+    [SerializeField] private bool portalAtCenter;
 
     [Header("References")]
     [SerializeField] private Transform farmerTransform;
@@ -58,6 +62,8 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private float waveDuration = 30f;
     [SerializeField] private float wave4Duration = 20f;
     [SerializeField] private int mindUnlockWave = 2;
+    [Tooltip("0 = spawn from wave start. 0.5 = halfway through the unlock wave.")]
+    [SerializeField] [Range(0f, 1f)] private float mindUnlockWaveProgress = 0f;
     [SerializeField] private int electricUnlockWave = 3;
     [Tooltip("Last wave electrics/fire can spawn (0 = no upper limit).")]
     [SerializeField] private int electricMaxWave = 0;
@@ -279,50 +285,75 @@ public class ChickenSpawner : MonoBehaviour
 
     private void OpenLevelPortal()
     {
-        Vector3 pos = new Vector3(
-            spawnAreaMax.x,
-            (spawnAreaMin.y + spawnAreaMax.y) * 0.5f,
-            0f);
+        float midX = (spawnAreaMin.x + spawnAreaMax.x) * 0.5f;
+        float midY = (spawnAreaMin.y + spawnAreaMax.y) * 0.5f;
+        Vector3 pos = portalAtCenter
+            ? new Vector3(midX, midY, 0f)
+            : new Vector3(spawnAreaMax.x, midY, 0f);
+
+        // World2 center portal always returns to World 1; World1 edge portal goes to World2.
+        string target = portalTargetScene;
+        if (string.IsNullOrEmpty(target))
+            target = portalAtCenter ? "SampleScene" : "World2";
+        if (portalAtCenter)
+            target = "SampleScene";
 
         GameObject portal = null;
+        GameObject sceneGate = FindSceneGate();
+
+        // Prefer a fresh prefab instance — scene Gate often has no collider / bad wiring.
         if (levelPortalPrefab != null)
         {
+            if (sceneGate != null)
+                sceneGate.SetActive(false);
+
             portal = Instantiate(levelPortalPrefab, pos, Quaternion.identity);
             portal.name = "Gate";
         }
         else
         {
-            GameObject existing = GameObject.Find("Gate");
-            if (existing != null)
-            {
-                portal = existing;
-                portal.transform.position = pos;
-                portal.SetActive(true);
-            }
+            portal = sceneGate;
         }
 
         if (portal == null)
             return;
 
-        if (portal.GetComponent<LevelPortal>() == null)
-            portal.AddComponent<LevelPortal>();
+        portal.SetActive(true);
+        portal.transform.position = pos;
+        portal.name = "Gate";
 
-        Collider2D col = portal.GetComponent<Collider2D>();
-        if (col == null)
-        {
-            var box = portal.AddComponent<BoxCollider2D>();
-            box.isTrigger = true;
-            box.size = new Vector2(1.2f, 1.8f);
-            col = box;
-        }
-        else
-        {
-            col.isTrigger = true;
-        }
-
+        // Animator can fight portal setup — keep the sprite, drop the controller drive.
         Animator anim = portal.GetComponent<Animator>();
         if (anim != null)
-            anim.Play(0, 0, 0f);
+            anim.enabled = false;
+
+        SpriteRenderer sr = portal.GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            sr.enabled = true;
+            sr.sortingOrder = Mathf.Max(sr.sortingOrder, 20);
+        }
+
+        LevelPortal levelPortal = portal.GetComponent<LevelPortal>();
+        if (levelPortal == null)
+            levelPortal = portal.AddComponent<LevelPortal>();
+        levelPortal.Configure(target, 4f);
+    }
+
+    private static GameObject FindSceneGate()
+    {
+        Transform[] transforms = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform t = transforms[i];
+            if (t == null || t.name != "Gate")
+                continue;
+            if (!t.gameObject.scene.IsValid() || !t.gameObject.scene.isLoaded)
+                continue;
+            return t.gameObject;
+        }
+
+        return null;
     }
 
     private IEnumerator RunWave(int wave)
@@ -337,6 +368,7 @@ public class ChickenSpawner : MonoBehaviour
         float laserCooldown = 0f;
         int panicsSpawnedThisWave = 0;
         int roguesSpawnedThisWave = 0;
+        int mindsSpawnedThisWave = 0;
         bool lasersUnlocked = wave >= laserUnlockWave && Pick(laserChickenPrefabs) != null;
 
         while (SecondsUntilNextWave > 0f && !IsGameOver)
@@ -362,7 +394,7 @@ public class ChickenSpawner : MonoBehaviour
             }
 
             bool canLethal = lethals.Count < maxThreats;
-            bool canMind = wave >= mindUnlockWave && minds.Count < maxMindsOnScreen;
+            bool canMind = CanSpawnMind(wave, mindsSpawnedThisWave);
             bool canPanic = wave >= panicUnlockWave && panicsSpawnedThisWave < maxPanicsPerWave;
             bool canRogue = wave >= rogueUnlockWave && roguesSpawnedThisWave < maxRoguesPerWave
                 && (Pick(rogueChickenPrefabs) != null || Pick(bombChickenPrefabs) != null);
@@ -372,7 +404,7 @@ public class ChickenSpawner : MonoBehaviour
                 for (int i = 0; i < burst; i++)
                 {
                     canLethal = lethals.Count < maxThreats;
-                    canMind = wave >= mindUnlockWave && minds.Count < maxMindsOnScreen;
+                    canMind = CanSpawnMind(wave, mindsSpawnedThisWave);
                     canPanic = wave >= panicUnlockWave && panicsSpawnedThisWave < maxPanicsPerWave;
                     canRogue = wave >= rogueUnlockWave && roguesSpawnedThisWave < maxRoguesPerWave
                         && (Pick(rogueChickenPrefabs) != null || Pick(bombChickenPrefabs) != null);
@@ -388,7 +420,10 @@ public class ChickenSpawner : MonoBehaviour
                         EnsureRogue(chicken);
 
                     if (kind == ThreatKind.Mind)
+                    {
                         minds.Add(chicken);
+                        mindsSpawnedThisWave++;
+                    }
                     else if (kind == ThreatKind.Panic)
                     {
                         panics.Add(chicken);
@@ -993,6 +1028,23 @@ public class ChickenSpawner : MonoBehaviour
         roll -= electricW;
         if (roll < panicW) return ThreatKind.Panic;
         return ThreatKind.Rogue;
+    }
+
+    private bool CanSpawnMind(int wave, int mindsSpawnedThisWave)
+    {
+        if (Pick(mindChickenPrefabs) == null)
+            return false;
+        // Cap is per wave (not concurrent) so a dead alien does not immediately respawn.
+        if (mindsSpawnedThisWave >= Mathf.Max(1, maxMindsOnScreen))
+            return false;
+        if (wave < mindUnlockWave)
+            return false;
+        if (wave > mindUnlockWave)
+            return true;
+
+        float duration = Mathf.Max(0.01f, GetWaveDuration(wave));
+        float elapsed = duration - SecondsUntilNextWave;
+        return elapsed >= duration * Mathf.Clamp01(mindUnlockWaveProgress);
     }
 
     private bool IsElectricWave(int wave)

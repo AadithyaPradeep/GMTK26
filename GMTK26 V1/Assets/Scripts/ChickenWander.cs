@@ -53,6 +53,7 @@ public class ChickenWander : MonoBehaviour
     private bool isMindCluck;
     private bool isBomb;
     private bool isPanic;
+    private bool gravityFrozen;
     private bool bossPanic;
     private bool bossMarchLeft;
     private Transform bossTransform;
@@ -97,6 +98,25 @@ public class ChickenWander : MonoBehaviour
     }
 
     public bool IsBossHuddling => bossPanic;
+
+    public void SetGravityFrozen(bool frozen)
+    {
+        gravityFrozen = frozen;
+        if (!frozen)
+            return;
+
+        if (isFleeing)
+            EndFlee();
+        if (isAttracted)
+            EndAttract();
+        if (isApproachingNormals)
+            EndApproachNormals();
+
+        if (animator != null)
+            animator.SetBool(IsMovingHash, false);
+    }
+
+    public bool IsGravityFrozen => gravityFrozen;
 
     /// <summary>Wave 6: flock chickens gather and stay on the far left.</summary>
     public static void SetBossLeftHuddleForFlock(bool enabled)
@@ -184,6 +204,9 @@ public class ChickenWander : MonoBehaviour
 
     private void Update()
     {
+        if (gravityFrozen)
+            return;
+
         if (bossMarchLeft)
         {
             UpdateBossMarchLeft();
@@ -572,7 +595,7 @@ public class ChickenWander : MonoBehaviour
         return position;
     }
 
-    private bool IsWanderInterrupted => isFleeing || isAttracted || isApproachingNormals || bossPanic || bossMarchLeft;
+    private bool IsWanderInterrupted => isFleeing || isAttracted || isApproachingNormals || bossPanic || bossMarchLeft || gravityFrozen;
 
     private IEnumerator WanderLoop()
     {

@@ -207,15 +207,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 5073943185949986789}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c7e4a1b92f0d4e6a8b3c5d7e9f1a2b3c, type: 3}
+  m_Script: {fileID: 11500000, guid: b4c5d6e708192a3b4c5d6e7f8091a2b3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MindCluck
-  attractRadius: 3
-  pulseDuration: 3
-  minCooldown: 3.5
-  maxCooldown: 6
-  pulseEffect: {fileID: 0}
-  radEff: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::AlienChicken
+  pullRadius: 3
+  liftHeight: 1.25
+  liftSpeed: 4
+  radiusVisual: {fileID: 5131612212071675035}
+  sequentialKillInterval: 5
+  markedKillSeconds: 3
 --- !u!1 &5131612212071675035
 GameObject:
   m_ObjectHideFlags: 0

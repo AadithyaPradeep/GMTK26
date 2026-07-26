@@ -1428,6 +1428,8 @@ MonoBehaviour:
   levelPortalPrefab: {fileID: 1000758950, guid: b2c3d4e5f60718293a4b5c6d7e8f901a, type: 3}
   centerFarmerOnStart: 0
   spawnPortalOnFinish: 1
+  portalTargetScene: World2
+  portalAtCenter: 0
   farmerTransform: {fileID: 229318277}
   introBanner: {fileID: 81212988}
   spawnAreaMin: {x: -12, y: -4.8}
@@ -1438,6 +1440,7 @@ MonoBehaviour:
   waveDuration: 15
   wave4Duration: 20
   mindUnlockWave: 2
+  mindUnlockWaveProgress: 0
   electricUnlockWave: 3
   electricMaxWave: 0
   panicUnlockWave: 2
@@ -1445,7 +1448,7 @@ MonoBehaviour:
   laserUnlockWave: 4
   laserSpawnInterval: 3
   bossUnlockWave: 6
-  startAtWaveForTesting: 5
+  startAtWaveForTesting: 0
   startAtBossWaveForTesting: 0
   maxStoryWave: 5
   storyBossNormalCount: 8
