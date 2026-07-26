@@ -181,7 +181,7 @@ public class MapSelectUI : MonoBehaviour
         titleRt.offsetMax = Vector2.zero;
 
         string sub = chaosMode
-            ? "Endless bombs & lightning — pick a battlefield"
+            ? "Endless bombs & lightning - pick a battlefield"
             : "Select a world, scout the flock, then dive in";
         TextMeshProUGUI subtitle = CreateTmp(header.transform, "Subtitle", sub, 18f,
             MutedText, TextAlignmentOptions.Center);
