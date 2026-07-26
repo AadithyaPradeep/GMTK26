@@ -262,6 +262,7 @@ MonoBehaviour:
   strikeRadius: 4
   strikeVfxDuration: 0.68
   damageDelay: 0.55
+  animSpeed: 4
 --- !u!1 &3170054332628371734
 GameObject:
   m_ObjectHideFlags: 0

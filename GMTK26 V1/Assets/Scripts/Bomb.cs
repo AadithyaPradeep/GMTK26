@@ -106,7 +106,9 @@ public class Bomb : MonoBehaviour
         if (source != null)
             source.GenerateImpulse();
 
-        KillChickensInRadius(origin);
+        // Chaos: only the gun and each chicken's own timer kill — no blast chains.
+        if (!GameMode.IsChaos)
+            KillChickensInRadius(origin);
 
         yield return new WaitForSeconds(explosionVfxDuration);
         Destroy(gameObject);

@@ -1733,10 +1733,16 @@ MonoBehaviour:
   bossSpawnInterval: 0.25
   bossSpawnBurst: 2
   bossMaxBombsOnScreen: 18
-  bossBombFuseMin: 1
-  bossBombFuseMax: 3
+  bossBombFuseMin: 8
+  bossBombFuseMax: 8
   bossWaveLaserCooldown: 3
   normalsAfterEachWave: 3
+  chaosElectricStartDelay: 15
+  chaosElectricTimerMin: 5
+  chaosElectricTimerMax: 7
+  chaosElectricSpawnInterval: 0.25
+  chaosElectricSpawnBurst: 3
+  chaosMaxElectricsOnScreen: 18
   bombSpawnPercent: 60
   mindSpawnPercent: 15
   electricSpawnPercent: 25

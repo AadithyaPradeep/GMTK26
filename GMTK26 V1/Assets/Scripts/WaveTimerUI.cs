@@ -62,6 +62,40 @@ public class WaveTimerUI : MonoBehaviour
         HideWaveBanner();
         if (nextWaveLabel != null)
             nextWaveLabel.enabled = false;
+
+        // Chaos has no waves — hide the story wave HUD entirely.
+        if (GameMode.IsChaos)
+            HideChaosWaveHud();
+    }
+
+    private void HideChaosWaveHud()
+    {
+        lastBannerWave = int.MaxValue;
+        HideWaveBanner();
+
+        if (waveLabel != null)
+        {
+            waveLabel.text = string.Empty;
+            waveLabel.enabled = false;
+            if (waveLabel.gameObject != null)
+                waveLabel.gameObject.SetActive(false);
+        }
+
+        if (waveSubLabel != null)
+        {
+            waveSubLabel.text = string.Empty;
+            waveSubLabel.enabled = false;
+            if (waveSubLabel.gameObject != null)
+                waveSubLabel.gameObject.SetActive(false);
+        }
+
+        if (nextWaveLabel != null)
+        {
+            nextWaveLabel.text = string.Empty;
+            nextWaveLabel.enabled = false;
+            if (nextWaveLabel.gameObject != null)
+                nextWaveLabel.gameObject.SetActive(false);
+        }
     }
 
     private void Update()
@@ -93,6 +127,14 @@ public class WaveTimerUI : MonoBehaviour
                 nextWaveLabel.text = string.Empty;
                 nextWaveLabel.enabled = false;
             }
+            return;
+        }
+
+        // Chaos: no wave banner / next-wave countdown.
+        if (GameMode.IsChaos)
+        {
+            StopWaveBanner();
+            HideChaosWaveHud();
             return;
         }
 

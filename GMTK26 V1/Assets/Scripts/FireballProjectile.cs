@@ -179,6 +179,13 @@ public class FireballProjectile : MonoBehaviour
             return;
         }
 
+        ElectricChicken electric = chicken.GetComponent<ElectricChicken>();
+        if (electric != null)
+        {
+            electric.Die();
+            return;
+        }
+
         Destroy(chicken.gameObject);
     }
 
@@ -219,6 +226,12 @@ public class FireballProjectile : MonoBehaviour
             if (bomb != null)
             {
                 bomb.Detonate();
+                continue;
+            }
+
+            if (electric != null)
+            {
+                electric.Die();
                 continue;
             }
 
