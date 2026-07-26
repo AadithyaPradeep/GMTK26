@@ -1067,13 +1067,17 @@ MonoBehaviour:
   spawner: {fileID: 911303574}
   pixelonFont: {fileID: 11400000, guid: 403495a2d9e80fb40b4cf62e4eb077da, type: 2}
   label: {fileID: 0}
+  waveLabel: {fileID: 1018111946}
+  waveSubLabel: {fileID: 1954297235}
+  nextWaveLabel: {fileID: 0}
   fontSize: 42
   gameOverFontSize: 72
   hintFontSize: 36
   textColor: {r: 1, g: 1, b: 1, a: 1}
-  waveFormat: 'WAVE {0}
-
-    {1}'
+  waveFormat: 'Wave {0}'
+  nextWaveFormat: 'Next Wave in {0} s'
+  waveSubText: 'Protect Your Chickens !'
+  waveBannerDuration: 2
   gameOverText: 'GAME OVER
 
     All chickens lost'

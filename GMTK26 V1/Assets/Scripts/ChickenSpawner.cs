@@ -180,7 +180,7 @@ public class ChickenSpawner : MonoBehaviour
         }
 
         if (introBanner != null)
-            introBanner.SetActive(false);
+            introBanner.SetActive(true);
 
         StartGame();
     }
