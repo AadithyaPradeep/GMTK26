@@ -137,7 +137,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &81212989
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1708,6 +1708,7 @@ MonoBehaviour:
   introBanner: {fileID: 81212988}
   spawnAreaMin: {x: -12, y: -4.8}
   spawnAreaMax: {x: 6, y: 4.1}
+  chickenSpeedMultiplier: 1
   startingNormals: 4
   openingSpawnGap: 0.25
   delayBeforeFirstWave: 3
@@ -1737,6 +1738,8 @@ MonoBehaviour:
   bossBombFuseMax: 8
   bossWaveLaserCooldown: 3
   normalsAfterEachWave: 3
+  chaosBombChickenPrefabs: []
+  chaosElectricChickenPrefabs: []
   chaosElectricStartDelay: 15
   chaosElectricTimerMin: 5
   chaosElectricTimerMax: 7
@@ -1797,9 +1800,9 @@ MonoBehaviour:
   gameOverFontSize: 72
   hintFontSize: 36
   textColor: {r: 1, g: 1, b: 1, a: 1}
-  waveFormat: 'Wave {0}'
-  nextWaveFormat: 'Next Wave in {0} s'
-  waveSubText: 'Protect Your Chickens !'
+  waveFormat: Wave {0}
+  nextWaveFormat: Next Wave in {0} s
+  waveSubText: Protect Your Chickens !
   waveBannerDuration: 2
   gameOverText: 'GAME OVER
 
