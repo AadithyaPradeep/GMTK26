@@ -61,6 +61,9 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        if (PauseMenu.IsPaused)
+            return;
+
         Vector2 live = GetLiveDirection();
 
         if (verticalLaneMode)
@@ -143,6 +146,9 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (PauseMenu.IsPaused)
+            return;
+
         if (!movementKeyDown)
         {
             if (verticalLaneMode)

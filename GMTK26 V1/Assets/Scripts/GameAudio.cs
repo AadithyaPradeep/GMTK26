@@ -24,12 +24,37 @@ public class GameAudio : MonoBehaviour
     [SerializeField] [Range(0f, 1f)] private float stepVolume = 0.55f;
     [SerializeField] [Range(0f, 1f)] private float tickVolume = 0.5f;
 
+    private const string MusicPrefKey = "MusicVolume";
+    private const string SfxPrefKey = "SfxVolume";
+
     [Header("Idle Clucks")]
     [SerializeField] private float idleCluckMinInterval = 2.5f;
     [SerializeField] private float idleCluckMaxInterval = 5.5f;
 
     public AudioClip BombTickClip => bombTick;
-    public float TickVolume => tickVolume;
+    public float TickVolume => tickVolume * sfxVolume;
+
+    public float MusicVolume
+    {
+        get => bgmVolume;
+        set
+        {
+            bgmVolume = Mathf.Clamp01(value);
+            if (bgmSource != null)
+                bgmSource.volume = bgmVolume;
+            PlayerPrefs.SetFloat(MusicPrefKey, bgmVolume);
+        }
+    }
+
+    public float SfxVolume
+    {
+        get => sfxVolume;
+        set
+        {
+            sfxVolume = Mathf.Clamp01(value);
+            PlayerPrefs.SetFloat(SfxPrefKey, sfxVolume);
+        }
+    }
 
     private AudioSource bgmSource;
     private AudioSource sfxSource;
@@ -43,6 +68,11 @@ public class GameAudio : MonoBehaviour
         }
 
         Instance = this;
+
+        if (PlayerPrefs.HasKey(MusicPrefKey))
+            bgmVolume = PlayerPrefs.GetFloat(MusicPrefKey, bgmVolume);
+        if (PlayerPrefs.HasKey(SfxPrefKey))
+            sfxVolume = PlayerPrefs.GetFloat(SfxPrefKey, sfxVolume);
 
         bgmSource = gameObject.AddComponent<AudioSource>();
         bgmSource.playOnAwake = false;
@@ -81,8 +111,8 @@ public class GameAudio : MonoBehaviour
     public void PlayGrab() => PlaySfx(grab, sfxVolume);
     public void PlayDrop() => PlaySfx(drop, sfxVolume);
     public void PlayExplosion() => PlaySfx(explosion, sfxVolume);
-    public void PlayStep() => PlaySfx(step, stepVolume);
-    public void PlayChickenIdle() => PlaySfx(chickenIdle, idleCluckVolume, Random.Range(0.92f, 1.08f));
+    public void PlayStep() => PlaySfx(step, stepVolume * sfxVolume);
+    public void PlayChickenIdle() => PlaySfx(chickenIdle, idleCluckVolume * sfxVolume, Random.Range(0.92f, 1.08f));
 
     public AudioSource CreateTickSource(GameObject host)
     {
@@ -94,7 +124,7 @@ public class GameAudio : MonoBehaviour
         source.loop = true;
         source.spatialBlend = 0f;
         source.clip = bombTick;
-        source.volume = tickVolume;
+        source.volume = tickVolume * sfxVolume;
         source.Play();
         return source;
     }
@@ -114,7 +144,10 @@ public class GameAudio : MonoBehaviour
         while (enabled)
         {
             float wait = Random.Range(idleCluckMinInterval, idleCluckMaxInterval);
-            yield return new WaitForSeconds(wait);
+            yield return new WaitForSecondsRealtime(wait);
+
+            if (PauseMenu.IsPaused)
+                continue;
 
             if (chickenIdle == null)
                 continue;

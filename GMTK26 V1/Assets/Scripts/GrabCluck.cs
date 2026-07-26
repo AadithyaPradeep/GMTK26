@@ -25,6 +25,9 @@ public class GrabCluck : MonoBehaviour
 
     private void Update()
     {
+        if (PauseMenu.IsPaused)
+            return;
+
         if (grabbedCluck == null && heldAnimator != null)
             ClearHoldState();
 

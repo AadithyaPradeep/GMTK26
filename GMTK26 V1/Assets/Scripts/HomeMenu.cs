@@ -18,7 +18,11 @@ public class HomeMenu : MonoBehaviour
     private void Awake()
     {
         Time.timeScale = 1f;
+        AudioListener.pause = false;
         SceneFader.EnsureExists();
+        SceneFader.ClearBusy();
+        if (PauseMenu.Instance != null)
+            PauseMenu.Instance.SetPaused(false);
         BuildUi();
     }
 
@@ -34,10 +38,14 @@ public class HomeMenu : MonoBehaviour
 
     private void StartGame(bool chaos)
     {
-        if (loading || SceneFader.IsBusy)
+        if (loading)
             return;
 
+        SceneFader.ClearBusy();
         loading = true;
+        Time.timeScale = 1f;
+        AudioListener.pause = false;
+
         if (chaos)
             GameMode.SetChaos();
         else
@@ -53,7 +61,7 @@ public class HomeMenu : MonoBehaviour
 
         Canvas canvas = root.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 100;
+        canvas.sortingOrder = 500;
 
         CanvasScaler scaler = root.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;

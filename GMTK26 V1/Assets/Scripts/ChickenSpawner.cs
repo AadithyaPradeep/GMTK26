@@ -142,7 +142,26 @@ public class ChickenSpawner : MonoBehaviour
         if (centerFarmerOnStart)
             PlaceFarmerAtAreaCenter();
 
+        PauseMenu.EnsureExists();
+        DormantHowToPlay();
         StartGame();
+    }
+
+    /// <summary>Keep How To Play in the scene but disabled for now.</summary>
+    private static void DormantHowToPlay()
+    {
+        Transform[] all = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < all.Length; i++)
+        {
+            Transform t = all[i];
+            if (t == null)
+                continue;
+            if (t.name != "How To Play" && t.name != "HowToPlay")
+                continue;
+            if (!t.gameObject.scene.IsValid() || !t.gameObject.scene.isLoaded)
+                continue;
+            t.gameObject.SetActive(false);
+        }
     }
 
     private void PlaceFarmerAtAreaCenter()
@@ -199,7 +218,9 @@ public class ChickenSpawner : MonoBehaviour
 
     private IEnumerator RunGame()
     {
-        StartCoroutine(HideIntroBannerAfterDelay(2f));
+        // How To Play / intro banner kept dormant for now.
+        if (introBanner != null)
+            introBanner.SetActive(false);
 
         // CHAOS mode: separate home-button mode (bomb rush + gun).
         if (GameMode.IsChaos)

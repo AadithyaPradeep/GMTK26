@@ -14,7 +14,10 @@ public class SceneFader : MonoBehaviour
     [SerializeField] private float fadeDuration = 0.45f;
     [SerializeField] private Color fadeColor = Color.black;
 
+    private Canvas canvas;
     private CanvasGroup canvasGroup;
+    private GraphicRaycaster raycaster;
+    private Image fadeImage;
     private bool busy;
 
     public static bool IsBusy => Instance != null && Instance.busy;
@@ -33,9 +36,17 @@ public class SceneFader : MonoBehaviour
         ForceLoad(sceneName, null);
     }
 
-    /// <summary>
-    /// Always starts a load (resets stuck busy state). Calls onFailedStart if the coroutine can't begin.
-    /// </summary>
+    /// <summary>Clears any stuck fade / busy flag so UI can receive clicks again.</summary>
+    public static void ClearBusy()
+    {
+        if (Instance == null)
+            return;
+
+        Instance.StopAllCoroutines();
+        Instance.busy = false;
+        Instance.SetOverlayBlocking(false);
+    }
+
     public static void ForceLoad(string sceneName, Action onFailedStart)
     {
         if (string.IsNullOrEmpty(sceneName))
@@ -53,12 +64,7 @@ public class SceneFader : MonoBehaviour
 
         Instance.StopAllCoroutines();
         Instance.busy = false;
-        if (Instance.canvasGroup != null)
-        {
-            Instance.canvasGroup.alpha = 0f;
-            Instance.canvasGroup.blocksRaycasts = false;
-        }
-
+        Instance.SetOverlayBlocking(false);
         Instance.StartCoroutine(Instance.FadeAndLoad(sceneName, onFailedStart));
     }
 
@@ -73,17 +79,21 @@ public class SceneFader : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
         BuildOverlay();
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private void OnDestroy()
     {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
         if (Instance == this)
             Instance = null;
     }
 
-    private void StartLoad(string sceneName)
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        ForceLoad(sceneName, null);
+        // Never leave the fade overlay eating clicks after a load.
+        if (!busy)
+            SetOverlayBlocking(false);
     }
 
     private IEnumerator FadeAndLoad(string sceneName, Action onFailedStart)
@@ -103,7 +113,6 @@ public class SceneFader : MonoBehaviour
 
         if (op == null)
         {
-            // Hard sync load — works even when async returns null in some editor setups.
             try
             {
                 SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
@@ -111,11 +120,7 @@ public class SceneFader : MonoBehaviour
             catch (Exception)
             {
                 busy = false;
-                if (canvasGroup != null)
-                {
-                    canvasGroup.alpha = 0f;
-                    canvasGroup.blocksRaycasts = false;
-                }
+                SetOverlayBlocking(false);
                 onFailedStart?.Invoke();
                 yield break;
             }
@@ -123,6 +128,7 @@ public class SceneFader : MonoBehaviour
             yield return null;
             yield return FadeTo(0f);
             busy = false;
+            SetOverlayBlocking(false);
             yield break;
         }
 
@@ -132,6 +138,7 @@ public class SceneFader : MonoBehaviour
         yield return null;
         yield return FadeTo(0f);
         busy = false;
+        SetOverlayBlocking(false);
     }
 
     private IEnumerator FadeTo(float target)
@@ -139,11 +146,11 @@ public class SceneFader : MonoBehaviour
         if (canvasGroup == null)
             yield break;
 
+        SetOverlayBlocking(true);
+
         float start = canvasGroup.alpha;
         float duration = Mathf.Max(0.05f, fadeDuration);
         float elapsed = 0f;
-
-        canvasGroup.blocksRaycasts = true;
 
         while (elapsed < duration)
         {
@@ -154,12 +161,33 @@ public class SceneFader : MonoBehaviour
         }
 
         canvasGroup.alpha = target;
-        canvasGroup.blocksRaycasts = target > 0.01f;
+        if (target <= 0.01f)
+            SetOverlayBlocking(false);
+    }
+
+    private void SetOverlayBlocking(bool blocking)
+    {
+        if (canvasGroup != null)
+        {
+            if (!blocking)
+                canvasGroup.alpha = 0f;
+            canvasGroup.blocksRaycasts = blocking;
+            canvasGroup.interactable = blocking;
+        }
+
+        if (fadeImage != null)
+            fadeImage.raycastTarget = blocking;
+
+        if (raycaster != null)
+            raycaster.enabled = blocking;
+
+        if (canvas != null)
+            canvas.enabled = blocking || (canvasGroup != null && canvasGroup.alpha > 0.01f);
     }
 
     private void BuildOverlay()
     {
-        Canvas canvas = gameObject.AddComponent<Canvas>();
+        canvas = gameObject.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 9999;
 
@@ -167,7 +195,7 @@ public class SceneFader : MonoBehaviour
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920f, 1080f);
 
-        gameObject.AddComponent<GraphicRaycaster>();
+        raycaster = gameObject.AddComponent<GraphicRaycaster>();
 
         canvasGroup = gameObject.AddComponent<CanvasGroup>();
         canvasGroup.alpha = 0f;
@@ -183,8 +211,10 @@ public class SceneFader : MonoBehaviour
         rt.offsetMin = Vector2.zero;
         rt.offsetMax = Vector2.zero;
 
-        Image image = imageGo.AddComponent<Image>();
-        image.color = fadeColor;
-        image.raycastTarget = true;
+        fadeImage = imageGo.AddComponent<Image>();
+        fadeImage.color = fadeColor;
+        fadeImage.raycastTarget = false;
+
+        SetOverlayBlocking(false);
     }
 }

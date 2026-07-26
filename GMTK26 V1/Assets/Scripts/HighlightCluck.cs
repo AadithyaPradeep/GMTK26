@@ -18,7 +18,7 @@ public class HighlightCluck : MonoBehaviour
 
     void Update()
     {
-        if (disabled) return;
+        if (disabled || PauseMenu.IsPaused) return;
 
         var count = Physics2D.RaycastNonAlloc(transform.position, mov.GetLastDirection(), results, range, cluckLayer);
         RaycastHit2D hit = count > 0 ? results[0] : default;
