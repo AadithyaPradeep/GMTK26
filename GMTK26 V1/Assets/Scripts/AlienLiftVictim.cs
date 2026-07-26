@@ -202,6 +202,13 @@ public class AlienLiftVictim : MonoBehaviour
             return;
         }
 
+        // Electrics only die to bomb explosions — release them instead.
+        if (GetComponent<ElectricChicken>() != null)
+        {
+            ForceRelease();
+            return;
+        }
+
         Destroy(gameObject);
     }
 

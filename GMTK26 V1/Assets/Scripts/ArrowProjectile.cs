@@ -180,12 +180,9 @@ public class ArrowProjectile : MonoBehaviour
             return;
         }
 
-        ElectricChicken electric = chicken.GetComponent<ElectricChicken>();
-        if (electric != null)
-        {
-            electric.Die();
+        // Electrics only die to bomb explosions.
+        if (chicken.GetComponent<ElectricChicken>() != null)
             return;
-        }
 
         Destroy(chicken.gameObject);
     }

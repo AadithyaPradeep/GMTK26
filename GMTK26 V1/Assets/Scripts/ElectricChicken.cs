@@ -3,6 +3,11 @@ using TMPro;
 using UnityEngine;
 using Unity.Cinemachine;
 
+/// <summary>
+/// Story/map play: countdown → lightning AoE → survive, reset timer, keep roaming/chasing.
+/// Only bomb explosions (not lightning, not other electrics) kill this chicken.
+/// Chaos: optional one-shot on timer via SetDestroyOnStrike(true).
+/// </summary>
 public class ElectricChicken : MonoBehaviour
 {
     public float timer = 5f;
@@ -27,7 +32,6 @@ public class ElectricChicken : MonoBehaviour
     private bool dying;
     private float timerMin = 4f;
     private float timerMax = 9f;
-    private static bool appQuitting;
 
     private float ScaledVfxDuration => strikeVfxDuration / Mathf.Max(0.01f, animSpeed);
     private float ScaledDamageDelay => damageDelay / Mathf.Max(0.01f, animSpeed);
@@ -42,11 +46,7 @@ public class ElectricChicken : MonoBehaviour
         timerConfigured = true;
         timerMin = timer;
         timerMax = timer;
-        if (text != null)
-        {
-            text.gameObject.SetActive(true);
-            text.text = Mathf.RoundToInt(timer).ToString();
-        }
+        SyncTimerText();
     }
 
     public void SetTimerRandom(float minSeconds, float maxSeconds)
@@ -57,11 +57,7 @@ public class ElectricChicken : MonoBehaviour
         timerMax = max;
         timerConfigured = true;
         timer = Random.Range(min, max);
-        if (text != null)
-        {
-            text.gameObject.SetActive(true);
-            text.text = Mathf.RoundToInt(timer).ToString();
-        }
+        SyncTimerText();
     }
 
     /// <summary>If true, chicken is destroyed after the strike animation (chaos mode).</summary>
@@ -71,27 +67,27 @@ public class ElectricChicken : MonoBehaviour
     }
 
     /// <summary>
-    /// Kill this electric: play fast lightning VFX + sound, then destroy.
-    /// Safe to call from gun / splash / timer.
+    /// Explicit death (chaos gun / chaos timer). Story electrics die only via bomb Destroy().
     /// </summary>
     public void Die()
     {
-        if (dying || strikeFxPlayed)
+        if (dying)
         {
             if (this != null && gameObject != null)
                 Destroy(gameObject);
             return;
         }
 
+        // Never self-kill mid story strike.
+        if (striking && !destroyOnStrike)
+            return;
+
         dying = true;
         striking = true;
         enabled = false;
 
-        Vector2 origin = transform.position;
         HideChickenVisuals();
-        PlayStrikeFx(origin);
-
-        // VFX is unparented and lives on its own; chicken can go immediately.
+        PlayStrikeFx(transform.position);
         Destroy(gameObject);
     }
 
@@ -99,22 +95,6 @@ public class ElectricChicken : MonoBehaviour
     {
         if (!timerConfigured)
             ResetTimer();
-    }
-
-    private void OnApplicationQuit()
-    {
-        appQuitting = true;
-    }
-
-    private void OnDestroy()
-    {
-        // Catch any raw Destroy() that skipped Die() — still show lightning.
-        if (appQuitting || !Application.isPlaying)
-            return;
-        if (strikeFxPlayed)
-            return;
-
-        PlayStrikeFx(transform.position);
     }
 
     private void Update()
@@ -138,7 +118,6 @@ public class ElectricChicken : MonoBehaviour
         if (striking || dying)
             return;
 
-        // Chaos one-shots: same death FX as a gun kill.
         if (destroyOnStrike)
         {
             Die();
@@ -153,7 +132,11 @@ public class ElectricChicken : MonoBehaviour
     {
         Vector2 origin = transform.position;
 
-        HideChickenVisuals();
+        // Pause movement for the flash only — chicken STAYS VISIBLE (hiding looked like death).
+        ChickenWander wander = GetComponent<ChickenWander>();
+        if (wander != null)
+            wander.enabled = false;
+
         PlayStrikeFx(origin);
 
         float delay = Mathf.Clamp(ScaledDamageDelay, 0f, ScaledVfxDuration);
@@ -166,14 +149,16 @@ public class ElectricChicken : MonoBehaviour
         if (remaining > 0f)
             yield return new WaitForSeconds(remaining);
 
-        if (this == null)
+        if (this == null || dying)
             yield break;
 
-        // Story electrics survive and arm the next strike.
-        ShowChickenVisuals();
         ResetTimer();
         striking = false;
         strikeFxPlayed = false;
+
+        // Resume roam / chase unless farmer is still holding this chicken.
+        if (wander != null && transform.parent == null)
+            wander.enabled = true;
     }
 
     private void PlayStrikeFx(Vector2 origin)
@@ -186,7 +171,6 @@ public class ElectricChicken : MonoBehaviour
         if (electricStrike != null)
         {
             GameObject vfx = Instantiate(electricStrike, origin, Quaternion.identity);
-            // Detach so it survives this chicken being destroyed.
             vfx.transform.SetParent(null);
             Animator anim = vfx.GetComponent<Animator>();
             if (anim != null)
@@ -222,38 +206,25 @@ public class ElectricChicken : MonoBehaviour
             wander.enabled = false;
     }
 
-    private void ShowChickenVisuals()
-    {
-        SpriteRenderer[] sprites = GetComponentsInChildren<SpriteRenderer>(true);
-        for (int i = 0; i < sprites.Length; i++)
-        {
-            if (sprites[i] != null)
-                sprites[i].enabled = true;
-        }
-
-        if (text != null)
-            text.gameObject.SetActive(true);
-
-        Collider2D col = GetComponent<Collider2D>();
-        if (col != null)
-            col.enabled = true;
-    }
-
     private void ResetTimer()
     {
         float min = timerConfigured ? timerMin : 4f;
         float max = timerConfigured ? timerMax : 9f;
         timer = Random.Range(min, max);
-        if (text != null)
-        {
-            text.gameObject.SetActive(true);
-            text.text = Mathf.RoundToInt(timer).ToString();
-        }
+        SyncTimerText();
+    }
+
+    private void SyncTimerText()
+    {
+        if (text == null)
+            return;
+        text.gameObject.SetActive(true);
+        text.text = Mathf.RoundToInt(timer).ToString();
     }
 
     private void ApplyStrike(Vector2 origin)
     {
-        // Chaos: only the gun and each chicken's own timer kill — no strike chains.
+        // Chaos: no AoE — gun + own timer only.
         if (GameMode.IsChaos)
             return;
 
@@ -283,17 +254,15 @@ public class ElectricChicken : MonoBehaviour
             if (toChicken.sqrMagnitude > radiusSq)
                 continue;
 
+            // Electrics never kill each other — lightning skips all ElectricChickens.
+            if (chicken.GetComponent<ElectricChicken>() != null)
+                continue;
+
             Bomb bomb = chicken.GetComponent<Bomb>();
             if (bomb != null)
             {
-                bomb.Detonate();
-                continue;
-            }
-
-            ElectricChicken otherElectric = chicken.GetComponent<ElectricChicken>();
-            if (otherElectric != null)
-            {
-                otherElectric.Die();
+                // Lightning-triggered blasts must not wipe electrics (looked like mutual kill).
+                bomb.Detonate(skipElectrics: true);
                 continue;
             }
 

@@ -52,6 +52,7 @@ public class ChickenWander : MonoBehaviour
     private bool isApproachingNormals;
     private bool isMindCluck;
     private bool isBomb;
+    private bool isElectric;
     private bool isPanic;
     private bool isGhost;
     private bool gravityFrozen;
@@ -165,6 +166,7 @@ public class ChickenWander : MonoBehaviour
     {
         isMindCluck = GetComponent<MindCluck>() != null;
         isBomb = GetComponent<Bomb>() != null;
+        isElectric = GetComponent<ElectricChicken>() != null;
         isPanic = GetComponent<PanicChicken>() != null || GetComponent<RogueChicken>() != null;
         isGhost = GetComponent<GhostChicken>() != null;
     }
@@ -405,8 +407,8 @@ public class ChickenWander : MonoBehaviour
 
     private bool TryApproachNormals()
     {
-        // Regular bombs close on normals; rogue bombs sprint like panics instead.
-        if (!isBomb || isPanic)
+        // Bombs and electrics close on normals; rogue bombs sprint like panics instead.
+        if ((!isBomb && !isElectric) || isPanic)
             return false;
 
         if (!TryGetNearestNormal(out Vector2 normalPos, out float dist))
@@ -445,16 +447,24 @@ public class ChickenWander : MonoBehaviour
             if (other == null || other == this)
                 continue;
 
-            // Only plain normals / panics — not bombs, minds, electrics, lasers, or ghosts.
+            // Only plain normals / panics — not bombs, minds, electrics, lasers, ghosts, or other specials.
             if (other.GetComponent<Bomb>() != null)
                 continue;
             if (other.GetComponent<MindCluck>() != null)
                 continue;
             if (other.GetComponent<ElectricChicken>() != null)
                 continue;
+            if (other.GetComponent<FireChicken>() != null)
+                continue;
+            if (other.GetComponent<SkeleCluck>() != null)
+                continue;
+            if (other.GetComponent<AlienChicken>() != null)
+                continue;
             if (other.GetComponent<LaserChicken>() != null)
                 continue;
             if (other.GetComponent<GhostChicken>() != null)
+                continue;
+            if (other.GetComponent<BossChicken>() != null)
                 continue;
 
             float d = Vector2.Distance(transform.position, other.transform.position);

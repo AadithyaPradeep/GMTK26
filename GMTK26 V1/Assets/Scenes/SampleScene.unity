@@ -1717,6 +1717,7 @@ MonoBehaviour:
   mindUnlockWave: 2
   mindUnlockWaveProgress: 0
   electricUnlockWave: 3
+  electricUnlockWaveProgress: 0.5
   electricMaxWave: 0
   panicUnlockWave: 2
   rogueUnlockWave: 2
@@ -1748,7 +1749,7 @@ MonoBehaviour:
   chaosMaxElectricsOnScreen: 18
   bombSpawnPercent: 60
   mindSpawnPercent: 15
-  electricSpawnPercent: 25
+  electricSpawnPercent: 55
   panicSpawnPercent: 15
   rogueSpawnPercent: 20
   startSpawnInterval: 4

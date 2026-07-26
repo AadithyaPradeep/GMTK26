@@ -1892,6 +1892,7 @@ MonoBehaviour:
   mindUnlockWave: 4
   mindUnlockWaveProgress: 0
   electricUnlockWave: 3
+  electricUnlockWaveProgress: 0.5
   electricMaxWave: 0
   panicUnlockWave: 2
   rogueUnlockWave: 2

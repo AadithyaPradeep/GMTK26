@@ -185,12 +185,9 @@ public class FireballProjectile : MonoBehaviour
             return;
         }
 
-        ElectricChicken electric = chicken.GetComponent<ElectricChicken>();
-        if (electric != null)
-        {
-            electric.Die();
+        // Electrics only die to bomb explosions.
+        if (chicken.GetComponent<ElectricChicken>() != null)
             return;
-        }
 
         Destroy(chicken.gameObject);
     }
@@ -219,8 +216,8 @@ public class FireballProjectile : MonoBehaviour
             if (laser != null && laser.IsImmune)
                 continue;
 
-            ElectricChicken electric = chicken.GetComponent<ElectricChicken>();
-            if (electric != null && electric.IsStriking)
+            // Electrics only die to bomb explosions.
+            if (chicken.GetComponent<ElectricChicken>() != null)
                 continue;
 
             // Fire chickens don't kill other fire chickens via splash (mirror bomb-vs-bomb).
@@ -235,12 +232,6 @@ public class FireballProjectile : MonoBehaviour
             if (bomb != null)
             {
                 bomb.Detonate();
-                continue;
-            }
-
-            if (electric != null)
-            {
-                electric.Die();
                 continue;
             }
 

@@ -222,6 +222,10 @@ public class BossMissile : MonoBehaviour
                 continue;
             }
 
+            // Electrics only die to bomb explosions.
+            if (chicken.GetComponent<ElectricChicken>() != null)
+                continue;
+
             Destroy(chicken.gameObject);
         }
     }

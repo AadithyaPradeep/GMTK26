@@ -69,6 +69,8 @@ public class ChickenSpawner : MonoBehaviour
     [Tooltip("0 = spawn from wave start. 0.5 = halfway through the unlock wave.")]
     [SerializeField] [Range(0f, 1f)] private float mindUnlockWaveProgress = 0f;
     [SerializeField] private int electricUnlockWave = 3;
+    [Tooltip("0 = spawn from wave start. 0.5 = halfway through the unlock wave.")]
+    [SerializeField] [Range(0f, 1f)] private float electricUnlockWaveProgress = 0.5f;
     [Tooltip("Last wave electrics/fire can spawn (0 = no upper limit).")]
     [SerializeField] private int electricMaxWave = 0;
     [SerializeField] private int panicUnlockWave = 1;
@@ -108,7 +110,7 @@ public class ChickenSpawner : MonoBehaviour
     [Header("Spawn Chances %")]
     [SerializeField] [Range(0f, 100f)] private float bombSpawnPercent = 60f;
     [SerializeField] [Range(0f, 100f)] private float mindSpawnPercent = 15f;
-    [SerializeField] [Range(0f, 100f)] private float electricSpawnPercent = 15f;
+    [SerializeField] [Range(0f, 100f)] private float electricSpawnPercent = 55f;
     [SerializeField] [Range(0f, 100f)] private float panicSpawnPercent = 15f;
     [SerializeField] [Range(0f, 100f)] private float rogueSpawnPercent = 20f;
 
@@ -1203,7 +1205,12 @@ public class ChickenSpawner : MonoBehaviour
             return false;
         if (electricMaxWave > 0 && wave > electricMaxWave)
             return false;
-        return true;
+        if (wave > electricUnlockWave)
+            return true;
+
+        float duration = Mathf.Max(0.01f, GetWaveDuration(wave));
+        float elapsed = duration - SecondsUntilNextWave;
+        return elapsed >= duration * Mathf.Clamp01(electricUnlockWaveProgress);
     }
 
     private GameObject PrefabFor(ThreatKind kind)

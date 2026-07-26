@@ -540,11 +540,12 @@ public class LaserChicken : MonoBehaviour
                 continue;
             }
 
-            // Boss gun (chaos): lightning chickens die with their strike FX.
+            // Chaos gun only — story electrics die solely from bomb explosions.
             ElectricChicken electric = chicken.GetComponent<ElectricChicken>();
             if (electric != null)
             {
-                electric.Die();
+                if (GameMode.IsChaos)
+                    electric.Die();
                 continue;
             }
 

@@ -60,15 +60,18 @@ public class Bomb : MonoBehaviour
             Detonate();
     }
 
+    private bool skipElectricsInBlast;
+
     /// <summary>
     /// Forces an immediate explosion (timer expiry or external trigger like an electric strike).
     /// </summary>
-    public void Detonate()
+    public void Detonate(bool skipElectrics = false)
     {
         if (dead)
             return;
 
         dead = true;
+        skipElectricsInBlast = skipElectrics;
 
         if (tickSource != null)
         {
@@ -132,10 +135,14 @@ public class Bomb : MonoBehaviour
             if (chicken.GetComponent<Bomb>() != null)
                 continue;
 
-            // Don't wipe a lightning chicken mid-strike (that used to orphan looping VFX).
             ElectricChicken electric = chicken.GetComponent<ElectricChicken>();
-            if (electric != null && electric.IsStriking)
-                continue;
+            if (electric != null)
+            {
+                // Timer bombs kill electrics. Lightning-triggered bombs must not
+                // (otherwise electrics look like they kill each other / themselves).
+                if (skipElectricsInBlast || electric.IsStriking)
+                    continue;
+            }
 
             LaserChicken laser = chicken.GetComponent<LaserChicken>();
             if (laser != null && laser.IsImmune)
