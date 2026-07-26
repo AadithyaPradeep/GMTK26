@@ -102,6 +102,10 @@ public class GrabCluck : MonoBehaviour
         if (fire != null)
             fire.IsHeld = true;
 
+        SkeleCluck skele = cluck.GetComponent<SkeleCluck>();
+        if (skele != null)
+            skele.IsHeld = true;
+
         AlienLiftVictim lift = cluck.GetComponent<AlienLiftVictim>();
         if (lift != null)
             lift.OnFarmerGrabbed();
@@ -166,6 +170,7 @@ public class GrabCluck : MonoBehaviour
         LaserChicken laser = cluck.GetComponent<LaserChicken>();
         ElectricChicken electric = cluck.GetComponent<ElectricChicken>();
         FireChicken fire = cluck.GetComponent<FireChicken>();
+        SkeleCluck skele = cluck.GetComponent<SkeleCluck>();
 
         if (heldAnimator != null)
             TrySetAnimBool(heldAnimator, "Grabbed", false);
@@ -181,7 +186,8 @@ public class GrabCluck : MonoBehaviour
 
         bool keepLocked = (laser != null && laser.IsFiring)
             || (electric != null && electric.IsStriking)
-            || (fire != null && fire.IsFiring);
+            || (fire != null && fire.IsFiring)
+            || (skele != null && skele.IsFiring);
 
         if (wander != null && !keepLocked)
             wander.enabled = true;
@@ -191,6 +197,9 @@ public class GrabCluck : MonoBehaviour
 
         if (fire != null)
             fire.IsHeld = false;
+
+        if (skele != null)
+            skele.IsHeld = false;
 
         AlienLiftVictim lift = cluck.GetComponent<AlienLiftVictim>();
         if (lift != null)
