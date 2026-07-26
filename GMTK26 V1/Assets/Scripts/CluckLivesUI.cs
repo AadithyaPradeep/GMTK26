@@ -5,6 +5,7 @@ using UnityEngine.UI;
 /// <summary>
 /// Top-left row of CluckIcons — one per alive regular/panic chicken.
 /// Icons disappear from the right when flock dies; reappear when more spawn.
+/// Last remaining icon blinks red.
 /// </summary>
 public class CluckLivesUI : MonoBehaviour
 {
@@ -12,9 +13,12 @@ public class CluckLivesUI : MonoBehaviour
 
     [SerializeField] private ChickenSpawner spawner;
     [SerializeField] private Sprite cluckIcon;
-    [SerializeField] private float iconSize = 64f;
-    [SerializeField] private float spacing = 10f;
+    [SerializeField] private float iconSize = 96f;
+    [SerializeField] private float spacing = 12f;
     [SerializeField] private Vector2 padding = new Vector2(28f, 24f);
+    [SerializeField] private Color normalColor = Color.white;
+    [SerializeField] private Color dangerColor = new Color(1f, 0.2f, 0.2f, 1f);
+    [SerializeField] private float blinkSpeed = 4f;
 
     private readonly List<Image> icons = new List<Image>();
     private RectTransform row;
@@ -80,6 +84,8 @@ public class CluckLivesUI : MonoBehaviour
         int alive = spawner.ProtectedAlive;
         if (alive != displayedCount)
             SetCount(alive);
+
+        UpdateDangerBlink();
     }
 
     private void SetCount(int count)
@@ -92,9 +98,24 @@ public class CluckLivesUI : MonoBehaviour
 
         for (int i = 0; i < icons.Count; i++)
         {
-            if (icons[i] != null)
-                icons[i].gameObject.SetActive(i < count);
+            if (icons[i] == null)
+                continue;
+
+            icons[i].gameObject.SetActive(i < count);
+            icons[i].color = normalColor;
         }
+    }
+
+    private void UpdateDangerBlink()
+    {
+        if (displayedCount != 1 || icons.Count == 0 || icons[0] == null)
+            return;
+
+        if (!icons[0].gameObject.activeSelf)
+            return;
+
+        float t = (Mathf.Sin(Time.unscaledTime * blinkSpeed * Mathf.PI) + 1f) * 0.5f;
+        icons[0].color = Color.Lerp(normalColor, dangerColor, t);
     }
 
     private Image CreateIcon(int index)
@@ -111,6 +132,7 @@ public class CluckLivesUI : MonoBehaviour
 
         Image img = go.AddComponent<Image>();
         img.sprite = cluckIcon;
+        img.color = normalColor;
         img.preserveAspect = true;
         img.raycastTarget = false;
         return img;
