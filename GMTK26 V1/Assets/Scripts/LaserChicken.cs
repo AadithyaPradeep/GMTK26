@@ -537,7 +537,15 @@ public class LaserChicken : MonoBehaviour
                 continue;
             }
 
-            // Held gun / protected story laser: detonate bombs, never wipe the flock.
+            // Boss gun (chaos): lightning chickens die with their strike FX.
+            ElectricChicken electric = chicken.GetComponent<ElectricChicken>();
+            if (electric != null)
+            {
+                electric.Die();
+                continue;
+            }
+
+            // Held gun / protected story laser: never wipe normals / panics / minds.
             if (manualFire || protectFlock)
                 continue;
 

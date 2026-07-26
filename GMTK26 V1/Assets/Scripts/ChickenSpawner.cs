@@ -84,10 +84,18 @@ public class ChickenSpawner : MonoBehaviour
     [SerializeField] private float bossSpawnInterval = 0.25f;
     [SerializeField] private int bossSpawnBurst = 2;
     [SerializeField] private int bossMaxBombsOnScreen = 18;
-    [SerializeField] private float bossBombFuseMin = 10f;
-    [SerializeField] private float bossBombFuseMax = 10f;
+    [SerializeField] private float bossBombFuseMin = 8f;
+    [SerializeField] private float bossBombFuseMax = 8f;
     [SerializeField] private float bossWaveLaserCooldown = 3f;
     [SerializeField] private int normalsAfterEachWave = 2;
+
+    [Header("Chaos Mode")]
+    [SerializeField] private float chaosElectricStartDelay = 15f;
+    [SerializeField] private float chaosElectricTimerMin = 5f;
+    [SerializeField] private float chaosElectricTimerMax = 7f;
+    [SerializeField] private float chaosElectricSpawnInterval = 0.25f;
+    [SerializeField] private int chaosElectricSpawnBurst = 3;
+    [SerializeField] private int chaosMaxElectricsOnScreen = 18;
 
     [Header("Spawn Chances %")]
     [SerializeField] [Range(0f, 100f)] private float bombSpawnPercent = 60f;
@@ -656,22 +664,25 @@ public class ChickenSpawner : MonoBehaviour
         return bossGo;
     }
 
-    /// <summary>CHAOS mode: short-fuse bombs from the right + gun in farmer hands.</summary>
+    /// <summary>CHAOS mode: endless bomb rush from the right + gun; electrics after a delay.</summary>
     private IEnumerator RunChaosWave()
     {
         IsWaveActive = true;
-        SecondsUntilNextWave = bossWaveDuration;
+        SecondsUntilNextWave = 999f;
         bossWaveNoFlock = true;
 
         yield return PrepareChaosWave();
 
         float spawnCooldown = 0f;
+        float electricSpawnCooldown = 0f;
+        float elapsed = 0f;
 
-        while (SecondsUntilNextWave > 0f && !IsGameOver)
+        while (!IsGameOver)
         {
             float dt = Time.deltaTime;
-            SecondsUntilNextWave = Mathf.Max(0f, SecondsUntilNextWave - dt);
+            elapsed += dt;
             spawnCooldown -= dt;
+            electricSpawnCooldown -= dt;
             Prune(lethals);
 
             if (spawnCooldown <= 0f && CountAliveBossBombs() < Mathf.Max(1, bossMaxBombsOnScreen))
@@ -687,22 +698,27 @@ public class ChickenSpawner : MonoBehaviour
                 spawnCooldown = Mathf.Max(0.05f, bossSpawnInterval);
             }
 
-            yield return null;
-        }
+            if (elapsed >= chaosElectricStartDelay
+                && electricSpawnCooldown <= 0f
+                && CountAliveChaosElectrics() < Mathf.Max(1, chaosMaxElectricsOnScreen))
+            {
+                int burst = Mathf.Max(1, chaosElectricSpawnBurst);
+                int alive = CountAliveChaosElectrics();
+                int room = Mathf.Max(0, chaosMaxElectricsOnScreen - alive);
+                int toSpawn = Mathf.Min(burst, room);
 
-        while (!IsGameOver && CountAliveBossBombs() > 0)
-        {
-            Prune(lethals);
+                for (int i = 0; i < toSpawn; i++)
+                    SpawnChaosElectric();
+
+                electricSpawnCooldown = Mathf.Max(0.05f, chaosElectricSpawnInterval);
+            }
+
             yield return null;
         }
 
         ClearLaserBossBuffs();
         ClearBossGun();
         RestoreFarmerBossMode();
-
-        int refill = Mathf.Max(normalsAfterEachWave, 3);
-        if (refill > 0)
-            yield return SpawnProtectedNormals(refill);
 
         bossWaveNoFlock = false;
         IsWaveActive = false;
@@ -832,6 +848,42 @@ public class ChickenSpawner : MonoBehaviour
         return bombGo;
     }
 
+    private GameObject SpawnChaosElectric()
+    {
+        GameObject prefab = Pick(electricChickenPrefabs);
+        if (prefab == null)
+            return null;
+
+        Vector2 pos = new Vector2(
+            spawnAreaMax.x,
+            Random.Range(spawnAreaMin.y, spawnAreaMax.y));
+
+        if (spawnEffect != null)
+            StartCoroutine(PlaySpawnEffect(pos));
+
+        GameObject electricGo = Instantiate(prefab, pos, Quaternion.identity);
+        if (electricGo == null)
+            return null;
+
+        ChickenWander wander = electricGo.GetComponent<ChickenWander>();
+        if (wander != null)
+        {
+            wander.SetWanderArea(spawnAreaMin, spawnAreaMax);
+            wander.farmerTransform = farmerTransform;
+            wander.SetBossMarchLeft(true);
+        }
+
+        ElectricChicken electric = electricGo.GetComponent<ElectricChicken>();
+        if (electric != null)
+        {
+            electric.SetTimerRandom(chaosElectricTimerMin, chaosElectricTimerMax);
+            electric.SetDestroyOnStrike(true);
+        }
+
+        lethals.Add(electricGo);
+        return electricGo;
+    }
+
     private int CountAliveBossBombs()
     {
         int n = 0;
@@ -841,6 +893,20 @@ public class ChickenSpawner : MonoBehaviour
             if (go == null)
                 continue;
             if (go.GetComponent<Bomb>() != null)
+                n++;
+        }
+        return n;
+    }
+
+    private int CountAliveChaosElectrics()
+    {
+        int n = 0;
+        for (int i = 0; i < lethals.Count; i++)
+        {
+            GameObject go = lethals[i];
+            if (go == null)
+                continue;
+            if (go.GetComponent<ElectricChicken>() != null)
                 n++;
         }
         return n;
