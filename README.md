@@ -24,15 +24,16 @@ Source: [jam ratings page](https://itch.io/jam/gmtk-jam-2026/rate/4827331)
 
 ## Gameplay
 
-![Gameplay 1](docs/media/gameplay-01.png)
+<p align="center">
+  <img src="docs/media/gameplay-01.png" width="32%" alt="Gameplay 1" />
+  <img src="docs/media/gameplay-02.png" width="32%" alt="Gameplay 2" />
+  <img src="docs/media/gameplay-03.png" width="32%" alt="Gameplay 3" />
+</p>
 
-![Gameplay 2](docs/media/gameplay-02.png)
-
-![Gameplay 3](docs/media/gameplay-03.png)
-
-![Gameplay 4](docs/media/gameplay-04.png)
-
-![Gameplay 5](docs/media/gameplay-05.png)
+<p align="center">
+  <img src="docs/media/gameplay-04.png" width="32%" alt="Gameplay 4" />
+  <img src="docs/media/gameplay-05.png" width="32%" alt="Gameplay 5" />
+</p>
 
 ## How to play
 
